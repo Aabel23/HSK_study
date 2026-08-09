@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Chinese Study - học và ghi nhớ 150 từ vựng HSK1.">
+    <title>Chinese Study</title>
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/vocabulary.css">
+    <link rel="stylesheet" href="/frontend/css/flashcard.css">
+    <link rel="stylesheet" href="/frontend/css/matching.css">
+    <link rel="stylesheet" href="/frontend/css/sentences.css">
+    <link rel="stylesheet" href="/frontend/css/progress.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <a class="brand" href="#dashboard" aria-label="Chinese Study - Tổng quan">
+                <span class="brand-mark">学</span>
+                <span><strong>Chinese Study</strong><small>HSK 1 · Tiếng Việt</small></span>
+            </a>
+            <nav class="main-nav" aria-label="Điều hướng chính">
+                <a href="#dashboard" data-page="dashboard"><span class="nav-icon">⌂</span>Tổng quan</a>
+                <a href="#vocabulary" data-page="vocabulary"><span class="nav-icon">词</span>Từ vựng HSK1</a>
+                <a href="#flashcard" data-page="flashcard"><span class="nav-icon">卡</span>Flashcard</a>
+                <a href="#matching" data-page="matching"><span class="nav-icon">连</span>Nối từ</a>
+                <a href="#sentences" data-page="sentences"><span class="nav-icon">句</span>Luyện câu</a>
+                <a href="#progress" data-page="progress"><span class="nav-icon">✓</span>Tiến độ</a>
+            </nav>
+            <div class="sidebar-note">
+                <span class="eyebrow">Mục tiêu</span>
+                <strong>150 từ HSK1</strong>
+                <p>Học đều mỗi ngày, nhớ lâu hơn.</p>
+            </div>
+        </aside>
+
+        <div class="app-main">
+            <header class="topbar">
+                <button class="icon-button menu-toggle" id="menu-toggle" type="button" aria-label="Mở menu">☰</button>
+                <div>
+                    <p class="eyebrow">Chinese Study</p>
+                    <h1 id="page-title">Tổng quan</h1>
+                </div>
+                <div class="topbar-badge"><span></span> Dữ liệu lưu trên máy</div>
+            </header>
+            <main id="page-content" tabindex="-1" aria-live="polite">
+                <div class="page-loading"><span class="spinner"></span><p>Đang mở trang...</p></div>
+            </main>
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="toast-region" class="toast-region" aria-live="assertive"></div>
+
+    <script src="/frontend/js/api.js" defer></script>
+    <script src="/frontend/js/dashboard.js" defer></script>
+    <script src="/frontend/js/vocabulary.js" defer></script>
+    <script src="/frontend/js/flashcard.js" defer></script>
+    <script src="/frontend/js/matching.js" defer></script>
+    <script src="/frontend/js/sentences.js" defer></script>
+    <script src="/frontend/js/progress.js" defer></script>
+    <script src="/frontend/js/app.js" defer></script>
+</body>
+</html>

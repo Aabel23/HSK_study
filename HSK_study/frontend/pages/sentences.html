@@ -1,0 +1,50 @@
+<section class="page sentences-page">
+    <div class="practice-heading sentence-heading">
+        <div><span class="eyebrow">Tư duy bằng Hán ngữ</span><h2>Luyện đặt câu</h2><p>Sắp xếp các cụm từ thành câu đúng và đối chiếu bản dịch tiếng Việt.</p></div>
+        <div class="subtitle-options" aria-label="Tùy chọn phụ đề">
+            <label><input id="toggle-pinyin" type="checkbox" checked><span class="switch"></span><span><strong>Pinyin</strong><small>Hiện dưới chữ Hán</small></span></label>
+            <label><input id="toggle-vietnamese" type="checkbox" checked><span class="switch"></span><span><strong>Tiếng Việt</strong><small>Hiện nghĩa câu</small></span></label>
+        </div>
+    </div>
+
+    <div id="sentence-state" class="content-state"></div>
+    <section class="setup-card sentence-setup" id="sentence-setup">
+        <div class="setup-icon">句</div><h3>Tạo phiên luyện câu</h3><p>Mỗi câu chỉ dùng cấu trúc và từ vựng cơ bản phù hợp HSK1.</p>
+        <div class="sentence-setup-grid">
+            <label>Số lượng câu<select id="sentence-count"><option value="5">5 câu</option><option value="10" selected>10 câu</option><option value="15">15 câu</option><option value="20">20 câu</option></select></label>
+            <label>Chủ đề<select id="sentence-topic"><option value="">Tất cả chủ đề</option></select></label>
+        </div>
+        <button class="button button-primary button-wide" id="start-sentences" type="button">Bắt đầu luyện <span>→</span></button>
+    </section>
+
+    <section id="sentence-session" hidden>
+        <div class="sentence-session-bar">
+            <div><span id="sentence-position">Câu 1 / 10</span><div class="progress-track"><span id="sentence-progress"></span></div></div>
+            <div class="sentence-live-score"><span><small>Đúng</small><strong id="sentence-correct">0</strong></span><span><small>Thử lại</small><strong id="sentence-incorrect">0</strong></span></div>
+        </div>
+        <article class="sentence-workspace" id="sentence-workspace">
+            <div class="sentence-prompt">
+                <span class="topic-chip" id="sentence-topic-label"></span>
+                <span class="eyebrow">Sắp xếp thành câu đúng</span>
+                <p class="sentence-meaning" id="sentence-meaning"></p>
+            </div>
+            <div class="sentence-zone-label"><span>Câu của bạn</span><small>Bấm vào cụm từ để đưa trở lại</small></div>
+            <div class="sentence-answer-zone" id="sentence-answer"><span class="sentence-placeholder">Chọn các cụm từ bên dưới...</span></div>
+            <div class="sentence-zone-label"><span>Các cụm từ</span><small>Đã được xáo trộn</small></div>
+            <div class="sentence-token-bank" id="sentence-token-bank"></div>
+            <div class="sentence-feedback" id="sentence-feedback" hidden></div>
+            <div class="sentence-actions">
+                <button class="button button-secondary" id="reset-sentence" type="button">Đặt lại</button>
+                <button class="button button-primary" id="check-sentence" type="button" disabled>Kiểm tra câu</button>
+                <button class="button button-primary" id="next-sentence" type="button" hidden>Câu tiếp theo <span>→</span></button>
+            </div>
+        </article>
+    </section>
+
+    <section class="result-card sentence-result" id="sentence-result" hidden>
+        <div class="result-mark">句</div><span class="eyebrow">Hoàn thành</span><h2>Bạn vừa hoàn thành phiên luyện câu!</h2><p>Thứ tự từ và ý nghĩa câu đã được lưu vào tiến độ học.</p>
+        <div class="result-stats" id="sentence-result-stats"></div>
+        <div class="result-actions"><button class="button button-primary" id="restart-sentences" type="button">Luyện lại</button><button class="button button-secondary" data-go-dashboard type="button">Về Tổng quan</button></div>
+    </section>
+</section>
+

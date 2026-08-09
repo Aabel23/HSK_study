@@ -1,0 +1,25 @@
+.completion-panel { display: flex; min-height: 180px; align-items: center; justify-content: space-between; padding: 28px 36px; border-radius: var(--radius-large); color: #fff; background: linear-gradient(120deg, #303640, #454d58); box-shadow: var(--shadow-card); }
+.completion-panel > div:first-child > strong { display: block; margin: 3px 0; font-size: 44px; letter-spacing: -2px; }
+.completion-panel p { margin: 0; color: #c9ced4; }
+.completion-ring { --completion: 0%; display: grid; width: 112px; height: 112px; place-items: center; border-radius: 50%; background: conic-gradient(#e36553 var(--completion), rgba(255,255,255,.14) 0); }
+.completion-ring::before { content: ""; grid-area: 1/1; width: 86px; height: 86px; border-radius: 50%; background: #343b45; }
+.completion-ring span { position: relative; grid-area: 1/1; font-size: 20px; font-weight: 800; }
+.progress-stats { margin: 15px 0; }
+.progress-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.count-badge { display: inline-grid; min-width: 30px; height: 27px; place-items: center; padding: 0 7px; border-radius: 999px; background: var(--color-primary-soft); color: var(--color-primary); font-size: 11px; font-weight: 800; }
+.count-badge.success { background: #e8f6ed; color: var(--color-success); }
+.word-progress-list { display: grid; max-height: 345px; overflow: auto; }
+.progress-word { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 11px; padding: 10px 0; border-bottom: 1px solid #eef0f2; }
+.progress-word:last-child { border-bottom: 0; }
+.progress-word > strong { font: 700 22px/1 "Microsoft YaHei", sans-serif; }
+.progress-word span strong { display: block; font-size: 13px; }.progress-word span small, .progress-word > small { color: var(--color-muted); font-size: 10px; }
+.sessions-panel { margin-top: 15px; }
+.session-list { display: grid; }
+.session-item { display: grid; grid-template-columns: 38px 1fr auto auto; align-items: center; gap: 13px; padding: 11px 0; border-bottom: 1px solid #eef0f2; }
+.session-item:last-child { border-bottom: 0; }
+.session-type-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; background: var(--color-primary-soft); color: var(--color-primary); font-weight: 800; }
+.session-item strong { display: block; font-size: 13px; }.session-item small { color: var(--color-muted); font-size: 10px; }
+.session-score { font-weight: 800; }.session-date { min-width: 115px; color: var(--color-muted); font-size: 11px; text-align: right; }
+@media (max-width: 850px) { .progress-columns { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .completion-panel { padding: 23px; }.completion-ring { width: 92px; height: 92px; }.completion-ring::before { width: 70px; height: 70px; }.session-item { grid-template-columns: 38px 1fr auto; }.session-date { display: none; } }
+

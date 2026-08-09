@@ -1,0 +1,23 @@
+# Quy tắc làm việc trong repository
+
+- Xem phiên bản hiện tại là baseline di sản cần được bảo tồn.
+- Mọi thay đổi từ thời điểm này phải theo hướng chỉ bổ sung, không cắt giảm.
+- Không xóa hoặc làm mất chức năng, route, API, dữ liệu HSK1, file, giao diện hay hành vi hiện có nếu chưa có yêu cầu rõ ràng từ chủ dự án.
+- Giữ tương thích ngược với API, schema database và dữ liệu tiến độ đã lưu.
+- Không dùng migration phá hủy dữ liệu; thay đổi schema phải theo hướng bổ sung và giữ được dữ liệu cũ.
+- Đọc `README.md` và `docs/SPEC.md` trước khi sửa code.
+- Ứng dụng chỉ sử dụng dữ liệu HSK1.
+- Không thêm dữ liệu HSK2 trở lên.
+- Không thêm âm thanh hoặc nhận diện giọng nói.
+- Không thêm quiz nếu không được yêu cầu.
+- Không sử dụng framework frontend.
+- Không thay đổi kiến trúc lớn nếu không cần thiết.
+- Không viết SQL trong route.
+- Business logic đặt trong service.
+- API frontend dùng chung đặt trong `api.js`.
+- Mỗi page có JavaScript riêng.
+- Không hardcode dữ liệu học trong frontend.
+- Chạy test sau khi sửa backend.
+- Không để test tác động database chính.
+- Không thêm authentication trong MVP.
+- Không thêm Docker nếu chưa được yêu cầu.
