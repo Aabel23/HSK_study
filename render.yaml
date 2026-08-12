@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: hsk-study
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: CHINESE_STUDY_ENV
+        value: production
+      - key: CHINESE_STUDY_SEED
+        value: "true"
+      - key: CHINESE_STUDY_DOCS
+        value: "false"
