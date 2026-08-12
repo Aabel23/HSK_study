@@ -16,6 +16,8 @@ def get_vocabulary_list(
     hsk_level: HskLevel | None = None,
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    favorites_only: bool = False,
+    sort: str = Query(default="id", pattern="^(id|hanzi|pinyin|level|frequency|recent|due)$"),
 ):
     return vocabulary_service.list_vocabulary(
         search=search,
@@ -24,6 +26,8 @@ def get_vocabulary_list(
         hsk_level=hsk_level.value if hsk_level else None,
         limit=limit,
         offset=offset,
+        favorites_only=favorites_only,
+        sort=sort,
     )
 
 

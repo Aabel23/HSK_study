@@ -23,10 +23,11 @@ def test_progress_statistics_and_completion(client):
     response = client.get("/api/progress")
     assert response.status_code == 200
     data = response.json()
-    assert data["total_vocabulary"] == 150
-    assert data["new_count"] == 149
+    total = data["total_vocabulary"]
+    assert total > 10000
+    assert data["new_count"] == total - 1
     assert data["mastered_count"] == 1
-    assert data["completion_percentage"] == 0.7
+    assert data["completion_percentage"] == round(1 / total * 100, 1)
 
 
 def test_invalid_progress_status(client):
@@ -40,7 +41,7 @@ def test_dashboard_uses_persisted_data(client):
     item_id = first_vocabulary_id(client)
     client.post("/api/progress/status", json={"vocabulary_id": item_id, "status": "learning"})
     data = client.get("/api/dashboard").json()
-    assert data["total_vocabulary"] == 150
+    assert data["total_vocabulary"] > 10000
     assert data["viewed_vocabulary"] == 1
     assert data["learning_vocabulary"] == 1
 

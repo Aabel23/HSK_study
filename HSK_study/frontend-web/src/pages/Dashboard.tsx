@@ -1,0 +1,284 @@
+import { Suspense, lazy } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { api } from "../lib/api";
+import { useApi } from "../lib/useApi";
+import { formatNumber, formatPercent } from "../lib/format";
+import {
+  Badge,
+  Button,
+  Card,
+  ErrorState,
+  Heatmap,
+  PageHeader,
+  PageSkeleton,
+  ProgressBar,
+  ProgressRing,
+  Skeleton,
+  StatTile,
+} from "../components/ui";
+import {
+  IconArrowRight,
+  IconBolt,
+  IconBook,
+  IconCheckSquare,
+  IconFlame,
+  IconHeadphones,
+  IconLayers,
+  IconMessage,
+  IconPencil,
+  IconRefresh,
+  IconShuffle,
+  IconTarget,
+} from "../components/icons";
+
+const FEATURES = [
+  { to: "/review", label: "Ôn tập thông minh", desc: "Đúng từ, đúng lúc", icon: IconRefresh, accent: "accent" as const },
+  { to: "/vocabulary", label: "Từ vựng", desc: "Tra cứu & lọc theo cấp độ", icon: IconBook, accent: "sky" as const },
+  { to: "/flashcards", label: "Flashcard", desc: "Ôn nhanh, tự đánh giá", icon: IconLayers, accent: "gold" as const },
+  { to: "/matching", label: "Nối từ", desc: "Ghép Hán tự với nghĩa/pinyin", icon: IconShuffle, accent: "jade" as const },
+  { to: "/sentences", label: "Luyện câu", desc: "Sắp xếp cụm từ đúng thứ tự", icon: IconMessage, accent: "sky" as const },
+  { to: "/listening", label: "Luyện nghe", desc: "Nghe phát âm, chọn đáp án", icon: IconHeadphones, accent: "violet" as const },
+  { to: "/quiz", label: "Kiểm tra", desc: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, accent: "accent" as const },
+  { to: "/writing", label: "Luyện viết", desc: "Tập viết chữ Hán đúng nét", icon: IconPencil, accent: "gold" as const },
+];
+
+const LEVEL_LABEL: Record<string, string> = {
+  "1": "HSK 1", "2": "HSK 2", "3": "HSK 3", "4": "HSK 4",
+  "5": "HSK 5", "6": "HSK 6", "7-9": "HSK 7-9",
+};
+
+const ForecastChart = lazy(() =>
+  import("../components/DashboardCharts").then((module) => ({ default: module.ForecastChart }))
+);
+const ActivityChart = lazy(() =>
+  import("../components/DashboardCharts").then((module) => ({ default: module.ActivityChart }))
+);
+
+export default function Dashboard() {
+  const dashboard = useApi(() => api.dashboard(), []);
+  const streak = useApi(() => api.streak(182), []);
+  const review = useApi(() => api.review.stats(), []);
+
+  if (dashboard.loading && !dashboard.data) return <PageSkeleton />;
+  if (dashboard.error) return <ErrorState message={dashboard.error} onRetry={dashboard.reload} />;
+  const data = dashboard.data;
+  if (!data) return null;
+
+  const masteredPct = data.total_vocabulary
+    ? (data.mastered_vocabulary / data.total_vocabulary) * 100
+    : 0;
+
+  const forecast = (review.data?.forecast ?? []).slice(0, 10).map((point) => ({
+    label: point.offset === 0 ? "Hôm nay" : `+${point.offset}`,
+    count: point.count,
+  }));
+
+  const activity = (streak.data?.history ?? []).slice(-14).map((entry) => ({
+    label: entry.activity_date.slice(5),
+    reviews: entry.reviews_done,
+  }));
+
+  return (
+    <div className="animate-float-in">
+      <PageHeader
+        eyebrow="HSK Master"
+        title="Chào mừng trở lại"
+        description="Theo dõi tiến độ từ vựng, luyện nghe, luyện viết và kiểm tra trên toàn bộ 9 cấp độ HSK."
+        action={
+          <Link to="/review">
+            <Button size="lg">
+              <IconRefresh className="h-4 w-4" />
+              {review.data && review.data.due_now > 0
+                ? `Ôn ${formatNumber(review.data.due_now)} từ đến hạn`
+                : "Bắt đầu ôn tập"}
+            </Button>
+          </Link>
+        }
+      />
+
+      {/* Today's goal is the single most actionable thing on this page, so it
+          leads the layout ahead of the lifetime totals. */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="flex items-center gap-6 p-6">
+          <ProgressRing value={streak.data?.goal_percentage ?? 0} accent="gold" size={116} stroke={9}>
+            <span className="font-display tnum text-2xl font-bold text-gold">
+              {formatNumber(streak.data?.today_reviews)}
+            </span>
+            <span className="text-[10px] text-ink-faint">/ {formatNumber(streak.data?.daily_goal)}</span>
+          </ProgressRing>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Mục tiêu hôm nay</p>
+            <p className="font-display mt-1 text-xl font-bold text-ink">
+              {streak.data?.goal_met ? "Đã hoàn thành" : "Tiếp tục nào"}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Badge tone="accent">
+                <IconFlame className="h-3 w-3" /> {formatNumber(streak.data?.current_streak)} ngày
+              </Badge>
+              <Badge tone="gold">
+                <IconBolt className="h-3 w-3" /> {formatNumber(streak.data?.today_xp)} XP
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 lg:col-span-2">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Lịch ôn 10 ngày tới</p>
+              <p className="font-display mt-1 text-xl font-bold text-ink">
+                {formatNumber(review.data?.due_now)} từ đang chờ
+              </p>
+            </div>
+            <Badge tone="jade">Tỉ lệ nhớ {formatPercent(review.data?.retention_percentage, 1)}</Badge>
+          </div>
+          <div className="mt-4 h-32">
+            <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
+              <ForecastChart data={forecast} />
+            </Suspense>
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <StatTile label="Tổng từ vựng" value={formatNumber(data.total_vocabulary)} accent="accent" icon={<IconBook className="h-4 w-4" />} />
+        <StatTile label="Đã thuộc" value={formatNumber(data.mastered_vocabulary)} hint={formatPercent(masteredPct, 1) + " tổng số"} accent="jade" />
+        <StatTile label="Đang học" value={formatNumber(data.learning_vocabulary)} accent="gold" />
+        <StatTile label="Cần ôn" value={formatNumber(data.review_vocabulary)} accent="sky" icon={<IconTarget className="h-4 w-4" />} />
+        <StatTile label="Chữ đã luyện viết" value={formatNumber(data.writing_practiced)} hint={`${formatNumber(data.writing_mastered)} thành thạo`} accent="violet" />
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <Card className="p-6 lg:col-span-2">
+          <h2 className="font-display text-lg font-bold text-ink">Tiến độ theo cấp độ</h2>
+          <div className="mt-5 flex flex-col gap-4">
+            {data.hsk_levels.map((level) => {
+              const pct = level.total ? (level.mastered / level.total) * 100 : 0;
+              return (
+                <div key={level.level}>
+                  <div className="mb-1.5 flex items-center justify-between text-sm">
+                    <span className="font-semibold text-ink">{LEVEL_LABEL[level.level]}</span>
+                    <span className="tnum text-ink-soft">
+                      {formatNumber(level.mastered)}/{formatNumber(level.total)} đã thuộc
+                    </span>
+                  </div>
+                  <ProgressBar value={pct} accent="jade" />
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="font-display text-lg font-bold text-ink">Độ chính xác</h2>
+          <div className="mt-4 flex flex-col gap-3 text-sm">
+            <ResultRow label="Nối từ" correct={data.matching_correct} incorrect={data.matching_incorrect} accuracy={data.matching_accuracy} />
+            <ResultRow label="Luyện câu" correct={data.sentence_correct} incorrect={data.sentence_incorrect} accuracy={data.sentence_accuracy} />
+            <ResultRow label="Luyện nghe" correct={data.listening_correct} incorrect={data.listening_incorrect} accuracy={data.listening_accuracy} />
+            <ResultRow label="Kiểm tra" correct={data.quiz_correct} incorrect={data.quiz_incorrect} accuracy={data.quiz_accuracy} />
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <Card className="p-6">
+          <h2 className="font-display text-lg font-bold text-ink">Hoạt động 14 ngày</h2>
+          <div className="mt-4 h-40">
+            <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
+              <ActivityChart data={activity} />
+            </Suspense>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold text-ink">Chuỗi ngày học</h2>
+            <Badge tone="accent">
+              <IconFlame className="h-3 w-3" /> Kỷ lục {formatNumber(streak.data?.longest_streak)}
+            </Badge>
+          </div>
+          <div className="mt-5">
+            {streak.data ? (
+              <Heatmap days={streak.data.heatmap} weeks={26} />
+            ) : (
+              <p className="text-sm text-ink-faint">Chưa có dữ liệu hoạt động.</p>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-ink-faint">
+            Mỗi ô là một ngày; ô càng đậm nghĩa là bạn ôn càng nhiều.
+          </p>
+        </Card>
+      </div>
+
+      <h2 className="font-display mt-10 mb-4 text-lg font-bold text-ink">Bắt đầu luyện tập</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {FEATURES.map((feature, index) => (
+          <motion.div
+            key={feature.to}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(index * 0.04, 0.3) }}
+          >
+            <Link to={feature.to}>
+              <Card className="group flex h-full flex-col justify-between p-5 transition-colors duration-200 hover:border-accent/50">
+                <div>
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+                  <p className="font-display font-bold text-ink">{feature.label}</p>
+                  <p className="mt-1 text-xs text-ink-soft">{feature.desc}</p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  Bắt đầu <IconArrowRight className="h-3.5 w-3.5" />
+                </div>
+              </Card>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
+      {data.recent_vocabulary.length > 0 && (
+        <div className="mt-10">
+          <h2 className="font-display mb-4 text-lg font-bold text-ink">Từ vựng vừa học</h2>
+          <div className="flex flex-wrap gap-2">
+            {data.recent_vocabulary.map((item) => (
+              <Badge key={item.id} tone="neutral">
+                <span className="hanzi font-semibold text-ink">{item.hanzi}</span>
+                <span className="text-ink-faint">·</span>
+                {item.meaning}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResultRow({
+  label,
+  correct,
+  incorrect,
+  accuracy,
+}: {
+  label: string;
+  correct: number;
+  incorrect: number;
+  accuracy: number;
+}) {
+  const total = correct + incorrect;
+  return (
+    <div className="border-b border-border-soft pb-2.5 last:border-0 last:pb-0">
+      <div className="flex items-center justify-between">
+        <span className="text-ink-soft">{label}</span>
+        <span className="tnum font-semibold text-ink">{total === 0 ? "—" : formatPercent(accuracy)}</span>
+      </div>
+      {total > 0 && (
+        <div className="mt-1.5">
+          <ProgressBar value={accuracy} accent={accuracy >= 80 ? "jade" : accuracy >= 50 ? "gold" : "accent"} />
+        </div>
+      )}
+    </div>
+  );
+}

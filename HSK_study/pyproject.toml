@@ -1,0 +1,45 @@
+[project]
+name = "chinese-study"
+version = "3.0.0"
+description = "Ứng dụng học tiếng Trung HSK 1-9 dành cho người Việt (offline-first desktop app)."
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "pydantic>=2.6",
+    "edge-tts>=7.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.6"]
+build = ["pyinstaller>=6.0"]
+
+[tool.pytest.ini_options]
+# Scoped to tests/ so the vendored ui-ux-pro-max-skill test suite is not collected.
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated:UserWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [
+    "build",
+    "dist",
+    "frontend-web/node_modules",
+    "ui-ux-pro-max-skill",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",   # long SQL literals read better unwrapped
+    "B008",   # FastAPI Depends/Query defaults are calls by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

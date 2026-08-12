@@ -8,6 +8,7 @@ from typing import Any
 
 from backend.database import get_connection, utc_now
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
+from backend.services import streak_service
 
 
 def list_topics() -> list[str]:
@@ -18,15 +19,47 @@ def list_topics() -> list[str]:
     return [row[0] for row in rows]
 
 
-def create_session(count: int, topic: str | None = None) -> dict[str, Any]:
-    conditions = "WHERE topic = ?" if topic else ""
-    parameters: list[Any] = [topic] if topic else []
+def list_levels() -> list[dict[str, Any]]:
+    """Sentence counts per HSK level, for the level picker."""
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT hsk_level AS level, COUNT(*) AS total,
+                   MIN(difficulty) AS min_tokens, MAX(difficulty) AS max_tokens
+            FROM sentences
+            GROUP BY hsk_level
+            ORDER BY hsk_level
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def create_session(
+    count: int,
+    topic: str | None = None,
+    hsk_level: str | None = None,
+    max_tokens: int | None = None,
+) -> dict[str, Any]:
+    conditions: list[str] = []
+    parameters: list[Any] = []
+    if topic:
+        conditions.append("topic = ?")
+        parameters.append(topic)
+    if hsk_level:
+        conditions.append("hsk_level = ?")
+        parameters.append(hsk_level)
+    if max_tokens:
+        conditions.append("difficulty <= ?")
+        parameters.append(max_tokens)
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
     with get_connection() as connection:
         rows = connection.execute(
             f"""
-            SELECT id, hanzi, pinyin, meaning, topic, tokens_json, pinyin_tokens_json
+            SELECT id, hanzi, pinyin, meaning, topic, tokens_json, pinyin_tokens_json,
+                   hsk_level, difficulty
             FROM sentences
-            {conditions}
+            {where_clause}
             ORDER BY RANDOM()
             LIMIT ?
             """,
@@ -65,6 +98,8 @@ def create_session(count: int, topic: str | None = None) -> dict[str, Any]:
                 "pinyin": row["pinyin"],
                 "meaning": row["meaning"],
                 "topic": row["topic"],
+                "hsk_level": row["hsk_level"],
+                "difficulty": row["difficulty"],
                 "tokens": pieces,
             }
         )
@@ -145,6 +180,7 @@ def complete_session(
             """,
             (utc_now(), total_items, correct_items, incorrect_items, session_id),
         )
+    streak_service.record_session_result(correct_items, incorrect_items)
     return {"message": "Đã hoàn tất phiên luyện câu.", "session_id": session_id}
 
 

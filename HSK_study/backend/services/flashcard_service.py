@@ -7,6 +7,7 @@ from typing import Any
 from backend.database import get_connection, utc_now
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.vocabulary_service import get_random_vocabulary
+from backend.services import streak_service
 
 
 def create_session(count: int, include_mastered: bool) -> dict[str, Any]:
@@ -118,5 +119,6 @@ def complete_session(
             """,
             (now, total_items, correct_items, incorrect_items, session_id),
         )
+    streak_service.record_session_result(correct_items, incorrect_items)
     return {"message": "Đã hoàn tất phiên Flashcard.", "session_id": session_id}
 

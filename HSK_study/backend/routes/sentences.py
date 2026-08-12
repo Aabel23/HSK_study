@@ -18,10 +18,20 @@ def get_sentence_stats():
     return sentence_service.get_stats()
 
 
+@router.get("/levels")
+def get_sentence_levels():
+    return {"items": sentence_service.list_levels()}
+
+
 @router.post("/session", status_code=201)
 def create_sentence_session(payload: SentenceSessionCreate):
     try:
-        return sentence_service.create_session(payload.count, payload.topic)
+        return sentence_service.create_session(
+            payload.count,
+            payload.topic,
+            payload.hsk_level.value if payload.hsk_level else None,
+            payload.max_tokens,
+        )
     except Exception as error:
         raise_http_error(error)
 

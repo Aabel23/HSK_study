@@ -8,6 +8,7 @@ from typing import Any
 from backend.database import get_connection, utc_now
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.vocabulary_service import get_random_vocabulary
+from backend.services import streak_service
 
 
 OPTION_COUNT = 4
@@ -117,6 +118,7 @@ def complete_session(
             """,
             (now, total_items, correct_items, incorrect_items, session_id),
         )
+    streak_service.record_session_result(correct_items, incorrect_items)
     return {"message": "Đã hoàn tất bài luyện nghe.", "session_id": session_id}
 
 

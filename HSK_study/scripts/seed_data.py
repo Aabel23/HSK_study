@@ -220,6 +220,170 @@ ON CONFLICT(hanzi) DO NOTHING
 """
 
 
+FULL_LEVEL_FILES = ["hsk_1.json", "hsk_2.json", "hsk_3.json", "hsk_4.json", "hsk_5.json", "hsk_6.json", "hsk_7_9.json"]
+
+
+def _full_data_dir() -> Path:
+    """Locate the HSK 1-9 JSON dataset in both source and packaged builds.
+
+    PyInstaller unpacks bundled data under ``sys._MEIPASS`` rather than next to
+    the script, so resolving this relative to ``__file__`` alone made the
+    packaged app silently fall back to the 150 curated HSK1 words.
+    """
+    candidates = [Path(__file__).resolve().parent / "data"]
+    bundle_dir = getattr(sys, "_MEIPASS", None)
+    if bundle_dir:
+        candidates.insert(0, Path(bundle_dir) / "scripts" / "data")
+        candidates.insert(1, Path(bundle_dir) / "data")
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    return candidates[-1]
+
+
+FULL_DATA_DIR = _full_data_dir()
+
+FULL_UPSERT_SQL = """
+INSERT INTO vocabulary (
+    hanzi, pinyin, meaning, meaning_en, traditional, pos, pos_vi,
+    classifiers, frequency, hsk_level, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(hanzi) DO UPDATE SET
+    meaning = CASE
+        WHEN vocabulary.meaning IS NULL OR vocabulary.meaning = vocabulary.meaning_en
+        THEN excluded.meaning
+        ELSE vocabulary.meaning
+    END,
+    meaning_en = excluded.meaning_en,
+    traditional = excluded.traditional,
+    pos = excluded.pos,
+    pos_vi = excluded.pos_vi,
+    classifiers = excluded.classifiers,
+    frequency = excluded.frequency,
+    hsk_level = excluded.hsk_level,
+    updated_at = excluded.updated_at
+"""
+
+
+def _load_full_level_records() -> list[dict]:
+    records: list[dict] = []
+    for filename in FULL_LEVEL_FILES:
+        path = FULL_DATA_DIR / filename
+        if not path.exists():
+            continue
+        with open(path, encoding="utf-8") as handle:
+            records.extend(json.load(handle))
+    return records
+
+
+def seed_full_vocabulary(return_details: bool = False) -> int | dict[str, int]:
+    """Insert/refresh the full HSK 1-9 dataset without touching curated meanings."""
+    initialize_database()
+    now = utc_now()
+    records = _load_full_level_records()
+    added = 0
+    with get_connection() as connection:
+        for record in records:
+            cursor = connection.execute(
+                FULL_UPSERT_SQL,
+                (
+                    record["hanzi"],
+                    record["pinyin"],
+                    record["meaning"],
+                    record["meaning_en"],
+                    record.get("traditional"),
+                    json.dumps(record.get("pos") or [], ensure_ascii=False),
+                    json.dumps(record.get("pos_vi") or [], ensure_ascii=False),
+                    json.dumps(record.get("classifiers") or [], ensure_ascii=False),
+                    record.get("frequency"),
+                    record["hsk_level"],
+                    now,
+                    now,
+                ),
+            )
+            added += max(cursor.rowcount, 0)
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO learning_progress (
+                vocabulary_id, status, review_count, correct_count,
+                incorrect_count, created_at, updated_at
+            )
+            SELECT id, 'new', 0, 0, 0, ?, ? FROM vocabulary
+            """,
+            (now, now),
+        )
+    if return_details:
+        return {"vocabulary_upserted": added, "total_records": len(records)}
+    return added
+
+
+LEVELED_SENTENCE_FILE = "sentences.json"
+
+LEVELED_SENTENCE_SQL = """
+INSERT INTO sentences (
+    hanzi, pinyin, meaning, topic, tokens_json, pinyin_tokens_json,
+    hsk_level, difficulty, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(hanzi) DO UPDATE SET
+    hsk_level = excluded.hsk_level,
+    difficulty = excluded.difficulty,
+    updated_at = excluded.updated_at
+"""
+
+
+def seed_leveled_sentences() -> int:
+    """Load the HSK-tagged sentence corpus used by the rearrange exercise.
+
+    Sentences arrive pre-segmented as ``[hanzi, pinyin]`` token pairs, so the
+    exercise never has to guess word boundaries -- a wrong split would make a
+    correct answer look wrong.
+    """
+    path = FULL_DATA_DIR / LEVELED_SENTENCE_FILE
+    if not path.exists():
+        return 0
+    with open(path, encoding="utf-8") as handle:
+        payload = json.load(handle)
+
+    now = utc_now()
+    added = 0
+    with get_connection() as connection:
+        for entry in payload.get("sentences", []):
+            tokens = entry.get("tokens") or []
+            if not tokens:
+                continue
+            hanzi_tokens = [pair[0] for pair in tokens]
+            pinyin_tokens = [pair[1] for pair in tokens]
+            hanzi = "".join(hanzi_tokens)
+            # Punctuation attaches to the preceding syllable rather than taking
+            # its own space, so the rendered pinyin reads naturally.
+            pinyin_parts: list[str] = []
+            for token, reading in zip(hanzi_tokens, pinyin_tokens):
+                if token in "，。？！、；：":
+                    if pinyin_parts:
+                        pinyin_parts[-1] += reading
+                    else:
+                        pinyin_parts.append(reading)
+                else:
+                    pinyin_parts.append(reading)
+            cursor = connection.execute(
+                LEVELED_SENTENCE_SQL,
+                (
+                    hanzi,
+                    " ".join(pinyin_parts),
+                    entry["meaning"],
+                    entry.get("topic"),
+                    json.dumps(hanzi_tokens, ensure_ascii=False),
+                    json.dumps(pinyin_tokens, ensure_ascii=False),
+                    str(entry.get("level", "1")),
+                    len(hanzi_tokens),
+                    now,
+                    now,
+                ),
+            )
+            added += max(cursor.rowcount, 0)
+    return added
+
+
 def seed_database(return_details: bool = False) -> int | dict[str, int]:
     """Insert missing vocabulary and progress rows, preserving existing data."""
     initialize_database()
@@ -255,17 +419,25 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
                 ),
             )
             sentence_added += max(cursor.rowcount, 0)
+    full_result = seed_full_vocabulary(return_details=True)
+    leveled_sentences = seed_leveled_sentences()
     if return_details:
-        return {"vocabulary_added": added, "sentences_added": sentence_added}
+        return {
+            "vocabulary_added": added,
+            "sentences_added": sentence_added,
+            "full_vocabulary_upserted": full_result["vocabulary_upserted"],
+            "leveled_sentences_added": leveled_sentences,
+        }
     return added
 
 
 def main() -> None:
     result = seed_database(return_details=True)
     print(
-        f"Added {result['vocabulary_added']} vocabulary records and "
+        f"Added {result['vocabulary_added']} curated vocabulary records and "
         f"{result['sentences_added']} sentence records. "
-        f"Seed totals: {len(HSK1_VOCABULARY)} words, {len(HSK1_SENTENCES)} sentences."
+        f"Upserted {result['full_vocabulary_upserted']} full HSK 1-9 vocabulary records. "
+        f"Seed totals: {len(HSK1_VOCABULARY)} curated words, {len(HSK1_SENTENCES)} sentences."
     )
 
 

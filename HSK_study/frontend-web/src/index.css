@@ -1,0 +1,307 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   Fonts are a pure system stack: the app ships as an offline desktop build, so
+   a webfont CDN would block first paint (or fail outright) with no network.
+   Windows/macOS both ship capable CJK faces, listed ahead of the generic ones.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, -apple-system,
+    "Helvetica Neue", Arial, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-hanzi: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB",
+    "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", Inter, system-ui,
+    "Noto Serif SC", serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", monospace;
+
+  --color-base: var(--c-base);
+  --color-base-2: var(--c-base-2);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
+  --color-border: var(--c-border);
+  --color-border-soft: var(--c-border-soft);
+  --color-border-strong: var(--c-border-strong);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-ink-faint: var(--c-ink-faint);
+
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-gold: var(--c-gold);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-jade: var(--c-jade);
+  --color-jade-soft: var(--c-jade-soft);
+  --color-sky: var(--c-sky);
+  --color-sky-soft: var(--c-sky-soft);
+  --color-violet: var(--c-violet);
+  --color-violet-soft: var(--c-violet-soft);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+
+  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px -8px rgba(0, 0, 0, 0.28);
+  --shadow-lift: 0 4px 12px rgba(0, 0, 0, 0.12), 0 24px 48px -16px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 8px 20px rgba(0, 0, 0, 0.18), 0 32px 64px -24px rgba(0, 0, 0, 0.55);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark is the default surface. Contrast targets: body text >= 7:1 on --c-base,
+   muted text >= 4.5:1, accents >= 3:1 against their own soft background. */
+:root {
+  color-scheme: dark;
+  --c-base: #0a0b0f;
+  --c-base-2: #0f1116;
+  --c-surface: #14161d;
+  --c-surface-2: #1b1e28;
+  --c-surface-3: #232733;
+  --c-border: #2a2e3b;
+  --c-border-soft: #1d202a;
+  --c-border-strong: #3a3f50;
+  --c-ink: #f5f2ec;
+  --c-ink-soft: #b0b4c2;
+  --c-ink-faint: #7c8191;
+
+  --c-accent: #e2483b;
+  --c-accent-hover: #ef5c4e;
+  --c-accent-soft: rgba(226, 72, 59, 0.16);
+  --c-accent-ink: #ffffff;
+  --c-gold: #ecc25b;
+  --c-gold-soft: rgba(236, 194, 91, 0.16);
+  --c-jade: #45d69a;
+  --c-jade-soft: rgba(69, 214, 154, 0.16);
+  --c-sky: #6bb4ff;
+  --c-sky-soft: rgba(107, 180, 255, 0.16);
+  --c-violet: #b197ff;
+  --c-violet-soft: rgba(177, 151, 255, 0.16);
+  --c-danger: #f7776f;
+  --c-danger-soft: rgba(247, 119, 111, 0.16);
+}
+
+/* Light mode darkens every accent so text on the paper background clears
+   4.5:1 -- the bright dark-mode values only pass on a dark ground. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --c-base: #faf8f4;
+  --c-base-2: #f3f0e9;
+  --c-surface: #ffffff;
+  --c-surface-2: #f4f1ea;
+  --c-surface-3: #eae5da;
+  --c-border: #ddd6c8;
+  --c-border-soft: #ebe5d9;
+  --c-border-strong: #c5bcaa;
+  --c-ink: #16151a;
+  --c-ink-soft: #4c4b55;
+  --c-ink-faint: #6f6d79;
+
+  --c-accent: #c2352a;
+  --c-accent-hover: #a92c22;
+  --c-accent-soft: rgba(194, 53, 42, 0.1);
+  --c-accent-ink: #ffffff;
+  --c-gold: #8a5d0c;
+  --c-gold-soft: rgba(138, 93, 12, 0.12);
+  --c-jade: #0f7a55;
+  --c-jade-soft: rgba(15, 122, 85, 0.12);
+  --c-sky: #1f5fbd;
+  --c-sky-soft: rgba(31, 95, 189, 0.12);
+  --c-violet: #5f43cc;
+  --c-violet-soft: rgba(95, 67, 204, 0.12);
+  --c-danger: #c0362c;
+  --c-danger-soft: rgba(192, 54, 44, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-base);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Anything interactive gets a pointer and a visible keyboard ring. Focus is
+   scoped to :focus-visible so mouse users never see a stray outline. */
+button,
+[role="button"],
+a,
+summary,
+label[for],
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
+}
+
+.hanzi {
+  font-family: var(--font-hanzi);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keyboard-only escape hatch to the main region. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 0.75rem 0;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-float-in {
+  animation: float-in 0.4s var(--ease-out-expo) both;
+}
+.animate-toast-in {
+  animation: toast-in 0.28s var(--ease-out-expo) both;
+}
+.animate-pop-in {
+  animation: pop-in 0.18s var(--ease-out-expo) both;
+}
+
+/* Skeletons carry the shimmer so a loading screen keeps the final layout. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-2);
+  border-radius: 0.5rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-ink) 7%, transparent),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+/* Honour the OS setting and the in-app "reduced motion" preference alike. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

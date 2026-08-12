@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Học HSK 1-9 toàn diện: từ vựng, lặp lại ngắt quãng, luyện nghe, luyện viết chữ Hán và kiểm tra." />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0a0b0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>HSK Master · Học tiếng Trung toàn diện</title>
+    <!-- Blocking on purpose: sets the theme attribute before the first paint.
+         External file (not inline) so the CSP can stay script-src 'self'. -->
+    <script src="./theme-boot.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: system-ui">
+        Ứng dụng cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

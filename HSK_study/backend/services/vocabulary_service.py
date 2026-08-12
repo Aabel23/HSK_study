@@ -17,8 +17,27 @@ SELECT_FIELDS = """
     COALESCE(p.review_count, 0) AS review_count,
     COALESCE(p.correct_count, 0) AS correct_count,
     COALESCE(p.incorrect_count, 0) AS incorrect_count,
-    p.last_reviewed_at
+    p.last_reviewed_at,
+    COALESCE(p.ease_factor, 2.5) AS ease_factor,
+    COALESCE(p.interval_days, 0) AS interval_days,
+    COALESCE(p.repetitions, 0) AS repetitions,
+    COALESCE(p.lapses, 0) AS lapses,
+    COALESCE(p.is_favorite, 0) AS is_favorite,
+    p.due_at,
+    p.note
 """
+
+# Whitelisted sort orders. The value is interpolated into SQL, so it must never
+# come straight from the request — callers pass a key, not an expression.
+SORT_OPTIONS: dict[str, str] = {
+    "id": "v.id",
+    "hanzi": "v.hanzi",
+    "pinyin": "v.pinyin COLLATE NOCASE",
+    "level": "v.hsk_level, v.id",
+    "frequency": "v.frequency IS NULL, v.frequency ASC",
+    "recent": "p.last_reviewed_at IS NULL, p.last_reviewed_at DESC",
+    "due": "p.due_at IS NULL, p.due_at ASC",
+}
 
 
 def list_vocabulary(
@@ -28,6 +47,8 @@ def list_vocabulary(
     hsk_level: str | None = None,
     limit: int = 20,
     offset: int = 0,
+    favorites_only: bool = False,
+    sort: str = "id",
 ) -> dict[str, Any]:
     conditions: list[str] = []
     parameters: list[Any] = []
@@ -47,7 +68,10 @@ def list_vocabulary(
     if hsk_level:
         conditions.append("v.hsk_level = ?")
         parameters.append(hsk_level)
+    if favorites_only:
+        conditions.append("COALESCE(p.is_favorite, 0) = 1")
 
+    order_clause = SORT_OPTIONS.get(sort, SORT_OPTIONS["id"])
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     with get_connection() as connection:
         total = connection.execute(
@@ -65,7 +89,7 @@ def list_vocabulary(
             FROM vocabulary v
             LEFT JOIN learning_progress p ON p.vocabulary_id = v.id
             {where_clause}
-            ORDER BY v.id
+            ORDER BY {order_clause}
             LIMIT ? OFFSET ?
             """,
             [*parameters, limit, offset],

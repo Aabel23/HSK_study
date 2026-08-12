@@ -9,6 +9,7 @@ from backend.database import get_connection, utc_now
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.flashcard_service import _validate_session
 from backend.services.vocabulary_service import get_random_vocabulary
+from backend.services import streak_service
 
 
 def _shuffle_different(items: list[dict[str, Any]], original_ids: list[int]) -> None:
@@ -96,5 +97,6 @@ def complete_session(
             """,
             (now, total_items, correct_items, incorrect_items, session_id),
         )
+    streak_service.record_session_result(correct_items, incorrect_items)
     return {"message": "Đã hoàn tất vòng nối từ.", "session_id": session_id}
 

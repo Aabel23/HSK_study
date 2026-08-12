@@ -2,15 +2,15 @@ def test_list_vocabulary(client):
     response = client.get("/api/vocabulary", params={"limit": 20})
     assert response.status_code == 200
     data = response.json()
-    assert data["total"] == 150
+    assert data["total"] > 10000
     assert len(data["items"]) == 20
     assert data["limit"] == 20
 
 
 def test_search_hanzi(client):
     data = client.get("/api/vocabulary", params={"search": "中国"}).json()
-    assert data["total"] == 1
-    assert data["items"][0]["hanzi"] == "中国"
+    assert data["total"] >= 1
+    assert any(item["hanzi"] == "中国" for item in data["items"])
 
 
 def test_search_pinyin(client):
@@ -20,8 +20,8 @@ def test_search_pinyin(client):
 
 def test_search_vietnamese_meaning(client):
     data = client.get("/api/vocabulary", params={"search": "cảm ơn"}).json()
-    assert data["total"] == 1
-    assert data["items"][0]["hanzi"] == "谢谢"
+    assert data["total"] >= 1
+    assert any(item["hanzi"] == "谢谢" for item in data["items"])
 
 
 def test_filter_topic(client):
