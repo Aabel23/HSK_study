@@ -90,7 +90,9 @@ export default function Vocabulary() {
                 {isOpen && (
                   <div className="mt-3 space-y-2 border-t border-border-soft pt-3 text-sm">
                     {item.meaning_en && item.meaning_en !== item.meaning && (
-                      <p className="text-ink-faint">EN: {item.meaning_en}</p>
+                      <p className="text-ink-faint">
+                        <span className="font-medium">Nghĩa tiếng Anh:</span> {item.meaning_en}
+                      </p>
                     )}
                     {item.example && (
                       <div className="flex items-start justify-between gap-2 rounded-lg bg-surface-2 p-3">

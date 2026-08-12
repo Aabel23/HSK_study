@@ -10,8 +10,14 @@ from backend.services.vocabulary_service import get_random_vocabulary
 from backend.services import streak_service
 
 
-def create_session(count: int, include_mastered: bool) -> dict[str, Any]:
-    items = get_random_vocabulary(count, include_mastered=include_mastered)
+def create_session(
+    count: int,
+    include_mastered: bool,
+    hsk_level: str | None = None,
+) -> dict[str, Any]:
+    items = get_random_vocabulary(
+        count, include_mastered=include_mastered, hsk_level=hsk_level
+    )
     if not items:
         raise InvalidOperationError("Không có từ phù hợp để tạo phiên Flashcard.")
     now = utc_now()
@@ -21,9 +27,11 @@ def create_session(count: int, include_mastered: bool) -> dict[str, Any]:
             (now, len(items)),
         )
         session_id = cursor.lastrowid
+    # hsk_level is part of the payload because the card shows it as a badge;
+    # without it the badge rendered "HSK undefined".
     fields = (
         "id", "hanzi", "pinyin", "meaning", "example",
-        "example_pinyin", "example_meaning", "topic", "status",
+        "example_pinyin", "example_meaning", "topic", "status", "hsk_level",
     )
     return {
         "session_id": session_id,

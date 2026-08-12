@@ -23,11 +23,13 @@ Lỗi validation trả HTTP `422`; tài nguyên không tồn tại trả `404`; 
 
 ## Flashcard
 
-- `POST /flashcard/session` — body `{ "count": 10, "include_mastered": false }`.
+- `POST /flashcard/session` — body `{ "count": 10, "include_mastered": false, "hsk_level": null }`.
 - `POST /flashcard/review` — body `{ "session_id": 1, "vocabulary_id": 1, "result": "remembered" }`.
 - `POST /flashcard/session/{session_id}/complete` — body `{ "total_items": 10, "correct_items": 6, "incorrect_items": 4 }`.
 
-`result` chỉ nhận `forgot`, `hard`, `remembered`.
+`result` chỉ nhận `forgot`, `hard`, `remembered`. `count` nhận 1–200 để hỗ trợ
+những phiên dài liên tục; phiên chỉ chứa tối đa số từ thực có sau khi lọc.
+`hsk_level` nhận `1`–`6`, `7-9` hoặc `null` (mọi cấp độ).
 
 ## Matching
 
@@ -45,10 +47,12 @@ Lỗi validation trả HTTP `422`; tài nguyên không tồn tại trả `404`; 
 
 - `GET /sentences/topics` — danh sách chủ đề câu.
 - `GET /sentences/stats` — số phiên, lần đúng/sai và độ chính xác.
-- `POST /sentences/session` — body `{ "count": 10, "topic": null }`; trả câu và các token Hán ngữ đã xáo trộn.
+- `GET /sentences/levels` — số câu và độ dài theo từng cấp độ HSK.
+- `POST /sentences/session` — body `{ "count": 10, "topic": null, "hsk_level": null, "max_tokens": null }`; trả câu và các token Hán ngữ đã xáo trộn.
 - `POST /sentences/attempt` — body `{ "session_id": 1, "sentence_id": 1, "ordered_positions": [0, 1, 2] }`.
 - `POST /sentences/session/{session_id}/complete` — body `{ "total_items": 10, "correct_items": 10, "incorrect_items": 2 }`.
 
 Frontend gửi thứ tự `position`; backend tự quyết định kết quả đúng/sai. Mỗi vị trí phải xuất hiện đúng một lần.
+`count` nhận 1–200; nếu bộ lọc không còn câu nào, endpoint trả `409` thay vì một phiên rỗng.
 
 OpenAPI tương tác có tại `/docs` khi server đang chạy.

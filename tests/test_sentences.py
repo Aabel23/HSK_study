@@ -89,6 +89,14 @@ def test_complete_sentence_session_and_stats(client):
 
 
 def test_invalid_sentence_count(client):
-    response = client.post("/api/sentences/session", json={"count": 21})
+    response = client.post("/api/sentences/session", json={"count": 201})
     assert response.status_code == 422
+
+
+def test_long_sentence_session_is_allowed(client):
+    """A 100-sentence run is a supported study style, not a rejected request."""
+    response = client.post("/api/sentences/session", json={"count": 100})
+    assert response.status_code == 201
+    # The corpus is smaller than the request, so the session holds what exists.
+    assert 0 < len(response.json()["items"]) <= 100
 

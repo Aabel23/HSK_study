@@ -43,6 +43,10 @@ logs/
 # --- Vendored helper skill (not part of the application) --------------------
 ui-ux-pro-max-skill/
 
+# --- Source dictionary downloaded by scripts/translate_meanings.py ----------
+# 10 MB, only needed to rebuild scripts/data/; the rebuilt JSON is committed.
+scripts/_cvdict_cache/
+
 # --- OS / editors -----------------------------------------------------------
 .DS_Store
 Thumbs.db

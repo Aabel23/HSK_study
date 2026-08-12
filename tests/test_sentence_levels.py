@@ -1,9 +1,10 @@
 import pytest
 
-LEVELS_WITH_SENTENCES = ["1", "2", "3", "4", "5"]
+LEVELS_WITH_SENTENCES = ["1", "2", "3", "4", "5", "6", "7-9"]
 
 
-def test_sentence_levels_cover_hsk_1_to_5(client):
+def test_sentence_levels_cover_every_hsk_level(client):
+    """No level may be a dead end -- picking it must never leave nothing to do."""
     items = client.get("/api/sentences/levels").json()["items"]
     by_level = {entry["level"]: entry for entry in items}
     for level in LEVELS_WITH_SENTENCES:
@@ -58,6 +59,9 @@ def test_correct_order_is_accepted_for_a_higher_level_sentence(client):
     assert result["answer"]["hanzi"] == item["hanzi"]
 
 
-def test_unknown_level_has_no_sentences(client):
-    response = client.post("/api/sentences/session", json={"count": 5, "hsk_level": "6"})
+def test_no_matching_sentence_is_reported_as_a_conflict(client):
+    """An impossible filter must fail loudly rather than return an empty session."""
+    response = client.post(
+        "/api/sentences/session", json={"count": 5, "hsk_level": "7-9", "topic": "Không tồn tại"}
+    )
     assert response.status_code == 409

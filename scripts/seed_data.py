@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from backend.database import get_connection, initialize_database, utc_now
+from scripts.meaning_quality import is_english_gloss, repair_mojibake
 
 
 # hanzi, pinyin, meaning, example, example_pinyin, example_meaning, topic
@@ -276,12 +277,53 @@ def _load_full_level_records() -> list[dict]:
     return records
 
 
+def _repair_legacy_meanings(connection, records: list[dict], now: str) -> int:
+    """Replace stored meanings that older builds left in English.
+
+    Until the CVDICT import, roughly 7.000 words carried their English gloss in
+    the Vietnamese ``meaning`` column. `FULL_UPSERT_SQL` only overwrites the
+    exact case where ``meaning`` equals ``meaning_en``; the many rows holding a
+    *slice* of the English text ("you" against "you (informal, as opposed to
+    courteous 您)"), mojibake, or the headword echoed back would otherwise keep
+    showing English forever in a database that already exists.
+
+    Hand-written Vietnamese is preserved: a row is only rewritten when it fails
+    `is_english_gloss`, the same rule the shipped dataset was built with.
+    """
+    replacements = {
+        record["hanzi"]: record["meaning"]
+        for record in records
+        if record.get("meaning_is_vietnamese") and record.get("meaning")
+    }
+    if not replacements:
+        return 0
+
+    rows = connection.execute(
+        "SELECT id, hanzi, meaning, meaning_en FROM vocabulary"
+    ).fetchall()
+    repaired = 0
+    for row in rows:
+        replacement = replacements.get(row["hanzi"])
+        if not replacement or replacement == row["meaning"]:
+            continue
+        stored = repair_mojibake(row["meaning"] or "")
+        if not is_english_gloss(stored, row["meaning_en"], row["hanzi"]):
+            continue
+        connection.execute(
+            "UPDATE vocabulary SET meaning = ?, updated_at = ? WHERE id = ?",
+            (replacement, now, row["id"]),
+        )
+        repaired += 1
+    return repaired
+
+
 def seed_full_vocabulary(return_details: bool = False) -> int | dict[str, int]:
     """Insert/refresh the full HSK 1-9 dataset without touching curated meanings."""
     initialize_database()
     now = utc_now()
     records = _load_full_level_records()
     added = 0
+    repaired = 0
     with get_connection() as connection:
         for record in records:
             cursor = connection.execute(
@@ -302,6 +344,7 @@ def seed_full_vocabulary(return_details: bool = False) -> int | dict[str, int]:
                 ),
             )
             added += max(cursor.rowcount, 0)
+        repaired = _repair_legacy_meanings(connection, records, now)
         connection.execute(
             """
             INSERT OR IGNORE INTO learning_progress (
@@ -313,7 +356,11 @@ def seed_full_vocabulary(return_details: bool = False) -> int | dict[str, int]:
             (now, now),
         )
     if return_details:
-        return {"vocabulary_upserted": added, "total_records": len(records)}
+        return {
+            "vocabulary_upserted": added,
+            "meanings_repaired": repaired,
+            "total_records": len(records),
+        }
     return added
 
 
@@ -426,6 +473,7 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
             "vocabulary_added": added,
             "sentences_added": sentence_added,
             "full_vocabulary_upserted": full_result["vocabulary_upserted"],
+            "meanings_repaired": full_result["meanings_repaired"],
             "leveled_sentences_added": leveled_sentences,
         }
     return added
@@ -436,7 +484,8 @@ def main() -> None:
     print(
         f"Added {result['vocabulary_added']} curated vocabulary records and "
         f"{result['sentences_added']} sentence records. "
-        f"Upserted {result['full_vocabulary_upserted']} full HSK 1-9 vocabulary records. "
+        f"Upserted {result['full_vocabulary_upserted']} full HSK 1-9 vocabulary records "
+        f"and repaired {result['meanings_repaired']} English/mojibake meanings. "
         f"Seed totals: {len(HSK1_VOCABULARY)} curated words, {len(HSK1_SENTENCES)} sentences."
     )
 

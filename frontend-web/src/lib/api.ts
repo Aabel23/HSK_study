@@ -102,10 +102,14 @@ export const api = {
   },
 
   flashcard: {
-    createSession: (count: number, includeMastered: boolean) =>
+    createSession: (count: number, includeMastered: boolean, hskLevel?: HskLevel | null) =>
       request<FlashcardSession>("/api/flashcard/session", {
         method: "POST",
-        body: JSON.stringify({ count, include_mastered: includeMastered }),
+        body: JSON.stringify({
+          count,
+          include_mastered: includeMastered,
+          hsk_level: hskLevel ?? null,
+        }),
       }),
     review: (sessionId: number, vocabularyId: number, result: "forgot" | "hard" | "remembered") =>
       request("/api/flashcard/review", {

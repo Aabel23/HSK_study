@@ -11,7 +11,11 @@ router = APIRouter(prefix="/api/flashcard", tags=["flashcard"])
 @router.post("/session", status_code=201)
 def create_flashcard_session(payload: FlashcardSessionCreate):
     try:
-        return flashcard_service.create_session(payload.count, payload.include_mastered)
+        return flashcard_service.create_session(
+            payload.count,
+            payload.include_mastered,
+            payload.hsk_level.value if payload.hsk_level else None,
+        )
     except Exception as error:
         raise_http_error(error)
 

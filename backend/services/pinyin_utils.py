@@ -70,8 +70,18 @@ def _fold_tone_marks(text: str) -> tuple[str, list[int]]:
 
 
 def _extract_tone_digits(text: str) -> tuple[str, list[int]]:
-    """Pull trailing tone numbers out of `ni3hao3`-style input."""
-    tones = [int(match.group(2)) for match in _TONE_DIGIT_PATTERN.finditer(text)]
+    """Pull trailing tone numbers out of `ni3hao3`-style input.
+
+    A trailing 5 marks the neutral tone, which carries no diacritic and so
+    contributes nothing on the tone-mark path either. Dropping it here is what
+    makes "hao3 chu5" and "hǎo chu" grade as the same tones -- otherwise
+    spelling the neutral tone out counted against the learner.
+    """
+    tones = [
+        int(match.group(2))
+        for match in _TONE_DIGIT_PATTERN.finditer(text)
+        if match.group(2) != "5"
+    ]
     return _TONE_DIGIT_PATTERN.sub(r"\1", text), tones
 
 

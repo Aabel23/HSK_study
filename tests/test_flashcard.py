@@ -10,6 +10,32 @@ def test_create_flashcard_session_with_unique_items(client):
     assert len({item["id"] for item in data["items"]}) == 10
 
 
+def test_flashcard_session_honours_hsk_level(client):
+    """The level picker has to reach the session, not just the page header."""
+    response = client.post(
+        "/api/flashcard/session",
+        json={"count": 15, "include_mastered": True, "hsk_level": "3"},
+    )
+    assert response.status_code == 201
+    items = response.json()["items"]
+    assert items
+    assert all(item["hsk_level"] == "3" for item in items)
+
+
+def test_long_flashcard_session_is_allowed(client):
+    """A 100-card run in one sitting is a supported study style."""
+    response = client.post(
+        "/api/flashcard/session", json={"count": 100, "include_mastered": True}
+    )
+    assert response.status_code == 201
+    assert len(response.json()["items"]) == 100
+
+
+def test_flashcard_count_above_ceiling_is_rejected(client):
+    response = client.post("/api/flashcard/session", json={"count": 201})
+    assert response.status_code == 422
+
+
 def test_review_forgot(client):
     session = create_session(client, 1)
     item_id = session["items"][0]["id"]

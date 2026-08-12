@@ -1,78 +1,194 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../lib/api";
 import { useLevel } from "../lib/levelContext";
-import type { VocabularyItem } from "../lib/types";
-import { AudioButton, Badge, Button, Card, PageHeader } from "../components/ui";
+import { useSettings } from "../lib/settings";
+import { useToast } from "../lib/toast";
+import { useApi } from "../lib/useApi";
+import { formatNumber } from "../lib/format";
+import type { HskLevel, VocabularyItem } from "../lib/types";
+import {
+  AudioButton,
+  Badge,
+  Button,
+  Card,
+  InlineSwitch,
+  Kbd,
+  PageHeader,
+  SessionSizePicker,
+  Switch,
+} from "../components/ui";
 import { IconCheck, IconRefresh, IconX } from "../components/icons";
 
 type Result = "forgot" | "hard" | "remembered";
 
 export default function Flashcards() {
   const { level } = useLevel();
+  const { settings, update } = useSettings();
+  const toast = useToast();
+
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [items, setItems] = useState<VocabularyItem[]>([]);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(settings.session_size);
+  const [includeMastered, setIncludeMastered] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [finished, setFinished] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const levels = useApi(() => api.vocabulary.levels(), []);
+
+  // Offering more cards than the chosen level holds would silently produce a
+  // shorter session, so the picker is capped by the real pool.
+  const available =
+    level === "all"
+      ? (levels.data?.items ?? []).reduce((sum, entry) => sum + entry.total, 0)
+      : (levels.data?.items ?? []).find((entry) => entry.level === level)?.total ?? 0;
+  const maxCount = Math.min(200, available || 200);
 
   async function start() {
-    const session = await api.flashcard.createSession(count, false);
-    setSessionId(session.session_id);
-    setItems(session.items);
-    setIndex(0);
-    setFlipped(false);
-    setResults([]);
-    setFinished(false);
-  }
-
-  async function rate(result: Result) {
-    if (!sessionId) return;
-    const item = items[index];
-    await api.flashcard.review(sessionId, item.id, result);
-    const nextResults = [...results, result];
-    setResults(nextResults);
-    if (index + 1 >= items.length) {
-      const correct = nextResults.filter((r) => r === "remembered").length;
-      await api.flashcard.complete(sessionId, items.length, correct, items.length - correct);
-      setFinished(true);
-    } else {
-      setIndex(index + 1);
+    setBusy(true);
+    try {
+      const session = await api.flashcard.createSession(
+        Math.min(count, maxCount),
+        includeMastered,
+        level === "all" ? null : (level as HskLevel)
+      );
+      setSessionId(session.session_id);
+      setItems(session.items);
+      setIndex(0);
       setFlipped(false);
+      setResults([]);
+      setFinished(false);
+    } catch (error) {
+      toast.error(
+        "Không tạo được phiên Flashcard",
+        error instanceof Error ? error.message : undefined
+      );
+    } finally {
+      setBusy(false);
     }
   }
+
+  /** Close the session on the server and show the summary. */
+  const wrapUp = useCallback(
+    async (finalResults: Result[]) => {
+      if (!sessionId) return;
+      const correct = finalResults.filter((entry) => entry === "remembered").length;
+      try {
+        await api.flashcard.complete(
+          sessionId,
+          finalResults.length,
+          correct,
+          finalResults.length - correct
+        );
+      } catch {
+        // The cards were already graded one by one; a failed summary call must
+        // not cost the learner the session they just finished.
+      }
+      setFinished(true);
+    },
+    [sessionId]
+  );
+
+  const rate = useCallback(
+    async (result: Result) => {
+      if (!sessionId || busy || finished) return;
+      const item = items[index];
+      if (!item) return;
+      setBusy(true);
+      try {
+        await api.flashcard.review(sessionId, item.id, result);
+        const nextResults = [...results, result];
+        setResults(nextResults);
+        if (index + 1 >= items.length) {
+          await wrapUp(nextResults);
+        } else {
+          setIndex(index + 1);
+          setFlipped(false);
+        }
+      } catch (error) {
+        toast.error("Không lưu được kết quả", error instanceof Error ? error.message : undefined);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, finished, index, items, results, sessionId, toast, wrapUp]
+  );
+
+  // Rating a long run of cards with the mouse gets tiring fast, so space flips
+  // and 1/2/3 grade. Fields are never hijacked -- there are none on this page,
+  // but the guard keeps the behaviour true if one is ever added.
+  useEffect(() => {
+    if (!sessionId || finished) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable) {
+        return;
+      }
+      if (event.key === " " || event.key === "Enter") {
+        event.preventDefault();
+        setFlipped((value) => !value);
+        return;
+      }
+      if (!flipped) return;
+      if (event.key === "1") void rate("forgot");
+      if (event.key === "2") void rate("hard");
+      if (event.key === "3") void rate("remembered");
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [sessionId, finished, flipped, rate]);
 
   if (!sessionId) {
     return (
       <div className="animate-float-in">
-        <PageHeader eyebrow="Ôn tập" title="Flashcard" description="Lật thẻ, tự đánh giá mức độ nhớ của bạn cho từng từ." />
+        <PageHeader
+          eyebrow="Ôn tập"
+          title="Flashcard"
+          description="Lật thẻ, tự đánh giá mức độ nhớ của bạn cho từng từ."
+        />
         <Card className="max-w-md p-6">
-          <label className="text-sm font-semibold text-ink">Số lượng thẻ: {count}</label>
-          <input
-            type="range"
-            min={5}
-            max={30}
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            className="mt-3 w-full accent-[var(--c-accent)]"
+          <SessionSizePicker
+            value={Math.min(count, maxCount)}
+            onChange={setCount}
+            max={maxCount}
+            unit="thẻ"
           />
-          <Button className="mt-5 w-full" size="lg" onClick={start}>
-            Bắt đầu phiên học ({level === "all" ? "mọi cấp độ" : `HSK ${level}`})
+          <div className="mt-2 border-t border-border-soft">
+            <Switch
+              checked={includeMastered}
+              onChange={setIncludeMastered}
+              label="Gồm cả từ đã thuộc"
+              description="Tắt để chỉ ôn những từ bạn chưa nắm chắc."
+            />
+          </div>
+          <Button className="mt-4 w-full" size="lg" disabled={busy} onClick={start}>
+            {busy
+              ? "Đang chuẩn bị..."
+              : `Bắt đầu ${Math.min(count, maxCount)} thẻ (${
+                  level === "all" ? "mọi cấp độ" : `HSK ${level}`
+                })`}
           </Button>
+          {available > 0 && (
+            <p className="mt-3 text-center text-xs text-ink-faint">
+              {formatNumber(available)} từ khả dụng ở cấp độ đang chọn.
+            </p>
+          )}
         </Card>
       </div>
     );
   }
 
   if (finished) {
-    const correct = results.filter((r) => r === "remembered").length;
+    const correct = results.filter((entry) => entry === "remembered").length;
+    const total = Math.max(1, results.length);
     return (
       <div className="animate-float-in flex flex-col items-center py-12 text-center">
         <p className="font-display text-4xl font-bold text-ink">Hoàn thành!</p>
         <p className="mt-2 text-ink-soft">
-          Bạn nhớ đúng {correct}/{items.length} thẻ ({Math.round((correct / items.length) * 100)}%)
+          Bạn nhớ đúng {correct}/{results.length} thẻ ({Math.round((correct / total) * 100)}%)
         </p>
         <Button className="mt-6" onClick={() => setSessionId(null)}>
           <IconRefresh className="h-4 w-4" /> Học phiên mới
@@ -85,15 +201,26 @@ export default function Flashcards() {
 
   return (
     <div className="animate-float-in mx-auto max-w-xl">
-      <div className="mb-4 flex items-center justify-between text-sm text-ink-soft">
-        <span>
+      <div className="mb-4 flex items-center justify-between gap-3 text-sm text-ink-soft">
+        <span className="tnum">
           Thẻ {index + 1}/{items.length}
         </span>
-        <Badge tone="neutral">HSK {item.hsk_level}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge tone="neutral">HSK {item.hsk_level}</Badge>
+          <InlineSwitch
+            checked={settings.show_pinyin}
+            onChange={(next) => void update({ show_pinyin: next })}
+            label="Pinyin"
+            title="Bật/tắt phiên âm pinyin trên thẻ"
+          />
+        </div>
       </div>
 
       <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
-        <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(index / items.length) * 100}%` }} />
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${(index / items.length) * 100}%` }}
+        />
       </div>
 
       <div className="perspective-1000 mt-8" style={{ perspective: 1200 }}>
@@ -109,7 +236,7 @@ export default function Flashcards() {
             style={{ backfaceVisibility: "hidden" }}
           >
             <span className="hanzi text-6xl font-bold text-ink">{item.hanzi}</span>
-            <span className="text-lg text-gold">{item.pinyin}</span>
+            {settings.show_pinyin && <span className="text-lg text-gold">{item.pinyin}</span>}
             <AudioButton text={item.hanzi} />
             <p className="absolute bottom-4 text-xs text-ink-faint">Nhấn để xem nghĩa</p>
           </Card>
@@ -118,11 +245,12 @@ export default function Flashcards() {
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
             <span className="hanzi text-3xl font-bold text-ink">{item.hanzi}</span>
+            {settings.show_pinyin && <span className="text-sm text-gold">{item.pinyin}</span>}
             <span className="text-lg font-semibold text-accent">{item.meaning}</span>
             {item.example && (
               <div className="mt-2 text-center text-sm text-ink-soft">
                 <p className="hanzi">{item.example}</p>
-                <p className="text-gold">{item.example_pinyin}</p>
+                {settings.show_pinyin && <p className="text-gold">{item.example_pinyin}</p>}
                 <p>{item.example_meaning}</p>
               </div>
             )}
@@ -138,18 +266,27 @@ export default function Flashcards() {
             exit={{ opacity: 0 }}
             className="mt-6 grid grid-cols-3 gap-3"
           >
-            <Button variant="danger" onClick={() => rate("forgot")}>
+            <Button variant="danger" disabled={busy} onClick={() => void rate("forgot")}>
               <IconX className="h-4 w-4" /> Quên
             </Button>
-            <Button variant="secondary" onClick={() => rate("hard")}>
+            <Button variant="secondary" disabled={busy} onClick={() => void rate("hard")}>
               Khó
             </Button>
-            <Button onClick={() => rate("remembered")}>
+            <Button disabled={busy} onClick={() => void rate("remembered")}>
               <IconCheck className="h-4 w-4" /> Đã nhớ
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-faint">
+        <span className="flex flex-wrap items-center gap-1.5">
+          <Kbd>Space</Kbd> lật thẻ · <Kbd>1</Kbd> quên · <Kbd>2</Kbd> khó · <Kbd>3</Kbd> đã nhớ
+        </span>
+        <Button variant="ghost" size="sm" onClick={() => void wrapUp(results)}>
+          Kết thúc sớm
+        </Button>
+      </div>
     </div>
   );
 }

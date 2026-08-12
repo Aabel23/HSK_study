@@ -455,6 +455,129 @@ export function SliderField({
   );
 }
 
+/** Compact on/off switch for a single option inside an exercise toolbar.
+ *
+ * `Switch` above is a full settings row with its own label column; this one is
+ * meant to sit in a corner of a running session, where the only thing there is
+ * room for is the word and the toggle.
+ */
+export function InlineSwitch({
+  checked,
+  onChange,
+  label,
+  title,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+  title?: string;
+}) {
+  return (
+    <label
+      title={title}
+      className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1"
+    >
+      <span className={clsx("text-xs font-semibold", checked ? "text-accent" : "text-ink-faint")}>
+        {label}
+      </span>
+      <span className="relative inline-block">
+        <input
+          type="checkbox"
+          role="switch"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
+          className={clsx(
+            "block h-4 w-7 rounded-full transition-colors duration-200 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent",
+            checked ? "bg-accent" : "bg-surface-3"
+          )}
+        />
+        <span
+          aria-hidden="true"
+          className={clsx(
+            "pointer-events-none absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform duration-200",
+            checked && "translate-x-3"
+          )}
+        />
+      </span>
+    </label>
+  );
+}
+
+/** Choose how many items a practice session holds.
+ *
+ * Presets cover the common cases in one tap, and the number field is there for
+ * the exact figure someone has in mind ("I want to do 100 in a row"). Both are
+ * clamped to `max`, because promising more items than the filtered pool holds
+ * would only produce a session that ends early without explanation.
+ */
+export function SessionSizePicker({
+  value,
+  onChange,
+  max,
+  unit,
+  presets = [10, 20, 50, 100],
+  label = "Số lượng mỗi phiên",
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  max: number;
+  unit: string;
+  presets?: number[];
+  label?: string;
+}) {
+  const ceiling = Math.max(1, max);
+  const clamp = (next: number) => Math.min(ceiling, Math.max(1, Math.round(next || 1)));
+  const options = [...new Set(presets.filter((preset) => preset < ceiling)), ceiling];
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor="session-size" className="text-sm font-semibold text-ink">
+          {label}
+        </label>
+        <span className="text-xs text-ink-faint">tối đa {ceiling.toLocaleString("vi-VN")}</span>
+      </div>
+
+      <div role="group" aria-label={label} className="mt-3 flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={value === option}
+            onClick={() => onChange(option)}
+            className={clsx(
+              "tnum rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-200",
+              value === option
+                ? "border-accent bg-accent-soft text-accent"
+                : "border-border text-ink-soft hover:border-border-strong hover:text-ink"
+            )}
+          >
+            {option === ceiling && !presets.includes(option) ? `Tất cả (${option})` : option}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          id="session-size"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={ceiling}
+          value={value}
+          onChange={(event) => onChange(clamp(Number(event.target.value)))}
+          className="tnum w-24 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent"
+        />
+        <span className="text-sm text-ink-soft">{unit}</span>
+      </div>
+    </div>
+  );
+}
+
 /** Keyboard hint chip. */
 export function Kbd({ children }: { children: ReactNode }) {
   return (

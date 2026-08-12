@@ -12,14 +12,26 @@ Phiên bản hiện tại là baseline di sản của dự án. Các phiên bả
 
 1. **Tổng quan**: thống kê từ vựng, trạng thái học, kết quả nối từ và từ vừa học.
 2. **Từ vựng HSK1**: danh sách có phân trang, tìm kiếm, lọc, chi tiết và cập nhật trạng thái.
-3. **Flashcard**: tạo phiên 1–30 thẻ, lật thẻ, đánh giá và tổng kết.
+3. **Flashcard**: tạo phiên 1–200 thẻ (chọn nhanh hoặc nhập số cụ thể), lọc theo cấp độ HSK đang chọn, lật thẻ, bật/tắt pinyin ngay trong phiên, đánh giá và tổng kết.
 4. **Nối từ**: sáu cặp mỗi vòng, hai chế độ `meaning` và `pinyin`, hai cột xáo độc lập.
-5. **Luyện câu**: sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt Pinyin và nghĩa tiếng Việt, lưu số lần đúng/sai.
+5. **Luyện câu**: chọn số câu mỗi phiên (1–200), sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt Pinyin và nghĩa tiếng Việt, lưu số lần đúng/sai.
 6. **Tiến độ**: mức hoàn thành, từ cần ôn, từ đã thuộc và lịch sử phiên gần đây.
+
+## Ngôn ngữ hiển thị
+
+Toàn bộ nội dung người học đọc phải bằng tiếng Việt. Trường `meaning` của mỗi từ
+vựng là nghĩa tiếng Việt; `meaning_en` chỉ là tham chiếu phụ, hiển thị trong
+phần chi tiết với nhãn rõ ràng và không bao giờ thay thế nghĩa tiếng Việt.
+
+Bộ dữ liệu gốc lấy từ CC-CEDICT nên từng để lại ba loại lỗi: nghĩa tiếng Anh nằm
+trong cột tiếng Việt, chuỗi mojibake, và mã từ loại thô (`g`, `cc`, `Mg`, `Rg`).
+`scripts/translate_meanings.py` sửa cả ba từ CVDICT, và `scripts/seed_data.py`
+lặp lại việc sửa trên các database đã tồn tại. Quy tắc nhận biết nằm ở
+`scripts/meaning_quality.py` — chỉ một nơi duy nhất, để hai bên không lệch nhau.
 
 ## Luyện câu
 
-- Dữ liệu câu nằm trong SQLite và chỉ sử dụng cấu trúc cơ bản phù hợp HSK1.
+- Dữ liệu câu nằm trong SQLite, phủ đủ bảy cấp độ HSK 1–9.
 - Mỗi cụm từ có `position` riêng; backend kiểm tra danh sách vị trí thay vì so sánh nội dung hiển thị.
 - Một câu sai không bị khóa và không lộ đáp án, người dùng có thể sắp xếp lại.
 - Khi câu đúng, giao diện hiển thị câu hoàn chỉnh, Pinyin và bản dịch theo tùy chọn phụ đề.

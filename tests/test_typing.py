@@ -16,6 +16,9 @@ from backend.services import pinyin_utils
         ("lǜ", "lv4", True, True),              # ü typed as v
         ("lǜ", "lu:4", True, True),             # ü typed as u:
         ("xiè xie", "xiexie", True, False),     # spacing ignored
+        ("xiè xie", "xie4 xie5", True, True),   # neutral tone spelled out as 5
+        ("xiè xie", "xie4xie", True, True),     # neutral tone simply left off
+        ("xiè xie", "xie4 xie2", True, False),  # neutral tone given a real tone
     ],
 )
 def test_pinyin_grading(expected, answer, correct, tones):

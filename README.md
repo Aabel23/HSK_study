@@ -10,7 +10,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
-[![Tests](https://img.shields.io/badge/tests-100%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen)](tests/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 <!--
@@ -37,9 +37,9 @@ Toàn bộ giao diện và dữ liệu nghĩa đều bằng tiếng Việt.
 | **Tổng quan** | Bảng điều khiển: thống kê từ vựng, chuỗi ngày học, hoạt động gần đây. |
 | **Ôn tập thông minh** | Lặp lại ngắt quãng (SRS) — hệ thống tự xếp lịch từ cần ôn. |
 | **Từ vựng** | Tra cứu, tìm kiếm, lọc theo cấp độ HSK / chủ đề / trạng thái học. |
-| **Flashcard** | Phiên ôn nhanh, lật thẻ và tự đánh giá (`forgot` / `hard` / `remembered`). |
+| **Flashcard** | Chọn số thẻ mỗi phiên (tới 200), lật thẻ, bật/tắt pinyin, tự đánh giá (`forgot` / `hard` / `remembered`). |
 | **Nối từ** | Ghép Hán tự với nghĩa hoặc pinyin, hai chế độ chơi. |
-| **Luyện câu** | Sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt pinyin và bản dịch. |
+| **Luyện câu** | Chọn số câu mỗi phiên (tới 200), sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt pinyin và bản dịch. |
 | **Luyện nghe** | Nghe phát âm (text-to-speech) rồi chọn đáp án đúng. |
 | **Kiểm tra** | Trắc nghiệm tổng hợp nhiều dạng câu hỏi. |
 | **Luyện viết** | Tập viết chữ Hán đúng thứ tự nét (hanzi-writer). |
@@ -48,7 +48,7 @@ Toàn bộ giao diện và dữ liệu nghĩa đều bằng tiếng Việt.
 | **Thành tích** | Huy hiệu và cột mốc theo quá trình học. |
 | **Cài đặt** | Tuỳ chọn hiển thị, sao lưu và khôi phục dữ liệu. |
 
-Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** cùng kho câu luyện tập, nằm trong [scripts/data/](scripts/data/) và được nạp vào SQLite khi khởi động lần đầu.
+Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** (10.969 từ) cùng kho **218 câu luyện tập** phủ đủ bảy cấp độ, nằm trong [scripts/data/](scripts/data/) và được nạp vào SQLite khi khởi động lần đầu. Toàn bộ nghĩa của từ đều bằng tiếng Việt — xem [Nguồn dữ liệu](#nguồn-dữ-liệu).
 
 ## Công nghệ
 
@@ -119,7 +119,7 @@ Mọi biến môi trường đều là tuỳ chọn và có mặc định an to�
 ```bash
 pip install -r requirements-dev.txt
 
-pytest                              # 100 test, dùng database tạm — không đụng dữ liệu thật
+pytest                              # 123 test, dùng database tạm — không đụng dữ liệu thật
 ruff check .                        # lint Python
 cd frontend-web && npm run lint     # lint TypeScript/React
 ```
@@ -149,6 +149,28 @@ tests/              pytest cho toàn bộ backend
 docs/               Đặc tả, tài liệu API và database
 data/               Database SQLite và cache audio (không commit)
 ```
+
+## Nguồn dữ liệu
+
+| Nguồn | Dùng cho | Giấy phép |
+| --- | --- | --- |
+| [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) | Chữ Hán, pinyin, nghĩa tiếng Anh tham chiếu | CC BY-SA 4.0 |
+| [CVDICT](https://github.com/ph0ngp/CVDICT) của Phong Phan | Nghĩa tiếng Việt của từ vựng HSK | CC BY-SA 4.0 |
+
+Bộ dữ liệu HSK trong `scripts/data/` là tác phẩm phái sinh từ hai nguồn trên và
+vì vậy được chia sẻ theo **CC BY-SA 4.0**; mã nguồn của ứng dụng vẫn theo giấy
+phép MIT.
+
+Muốn dựng lại bộ dữ liệu (ví dụ khi CVDICT có bản mới):
+
+```bash
+python scripts/translate_meanings.py --download          # cập nhật nghĩa tiếng Việt
+python scripts/translate_meanings.py --download --check  # chỉ kiểm tra, không ghi
+```
+
+Script tự dịch những mục còn tiếng Anh, sửa chuỗi mojibake, dịch mã từ loại và
+hạ chữ hoa ở các cách đọc bị CC-CEDICT viết hoa như danh từ riêng — nhưng không
+bao giờ ghi đè nghĩa tiếng Việt đã được viết tay.
 
 ## Tài liệu
 

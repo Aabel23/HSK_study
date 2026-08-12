@@ -48,8 +48,12 @@ class ListeningMode(str, Enum):
 
 
 class FlashcardSessionCreate(BaseModel):
-    count: int = Field(default=10, ge=1, le=30)
+    # The ceiling is generous on purpose: a long unbroken run (100 cards or
+    # more) is a study style people ask for, and the session only ever holds as
+    # many cards as the filtered pool actually contains.
+    count: int = Field(default=10, ge=1, le=200)
     include_mastered: bool = False
+    hsk_level: HskLevel | None = None
 
 
 class FlashcardReviewCreate(BaseModel):
@@ -82,7 +86,7 @@ class ProgressStatusUpdate(BaseModel):
 
 
 class SentenceSessionCreate(BaseModel):
-    count: int = Field(default=10, ge=1, le=20)
+    count: int = Field(default=10, ge=1, le=200)
     topic: str | None = Field(default=None, max_length=80)
     hsk_level: HskLevel | None = None
     max_tokens: int | None = Field(default=None, ge=2, le=30)
