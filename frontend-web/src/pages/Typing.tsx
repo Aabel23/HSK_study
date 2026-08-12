@@ -28,7 +28,6 @@ import {
   IconPlay,
   IconRefresh,
   IconTarget,
-  IconVolume,
   IconX,
 } from "../components/icons";
 

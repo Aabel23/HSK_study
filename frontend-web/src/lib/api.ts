@@ -7,6 +7,7 @@ import type {
   HskLevel,
   ListeningMode,
   ListeningSession,
+  ListeningStats,
   MatchingSession,
   ProgressSummary,
   QuestionType,
@@ -197,7 +198,7 @@ export const api = {
   },
 
   listening: {
-    stats: () => request("/api/listening/stats"),
+    stats: () => request<ListeningStats>("/api/listening/stats"),
     createSession: (hskLevel: HskLevel | null, mode: ListeningMode, count: number) =>
       request<ListeningSession>("/api/listening/session", {
         method: "POST",

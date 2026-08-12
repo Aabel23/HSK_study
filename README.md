@@ -57,7 +57,6 @@ Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** 
 | Backend | Python 3.11+, FastAPI, Uvicorn, Pydantic v2, SQLite (chuẩn thư viện) |
 | Phát âm | `edge-tts`, có cache audio trên đĩa |
 | Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router, Recharts, Framer Motion |
-| Giao diện cũ | HTML/CSS/JS thuần trong [frontend/](frontend/), vẫn phục vụ tại `/legacy` |
 | Đóng gói | PyInstaller (file `.exe` một tệp cho Windows) |
 | Chất lượng | pytest, ruff, oxlint |
 
@@ -86,7 +85,7 @@ python scripts/app_entry.py
 
 Trình duyệt sẽ tự mở tại <http://127.0.0.1:8000>. Lần chạy đầu tiên mất vài giây để nạp dữ liệu HSK vào `data/chinese_study.db`.
 
-> Nếu chưa build `frontend-web`, backend sẽ chuyển hướng sang giao diện cũ tại `/legacy`.
+> `frontend-web/dist` đã được commit sẵn nên bước build ở trên là tuỳ chọn — chỉ cần chạy lại khi bạn sửa code trong `frontend-web/src`. Nếu thư mục `dist` bị thiếu, backend trả lỗi 503 kèm hướng dẫn thay vì phục vụ giao diện rỗng.
 
 ### Chế độ phát triển
 
@@ -144,8 +143,7 @@ backend/            FastAPI: route (HTTP) và service (business logic + SQL)
   routes/           Một module cho mỗi nhóm endpoint
   services/         Toàn bộ SQL và quy tắc nghiệp vụ
   database.py       Kết nối và schema SQLite
-frontend-web/       Giao diện chính: React 19 + TypeScript + Vite
-frontend/           Giao diện cũ (HTML/CSS/JS thuần), phục vụ tại /legacy
+frontend-web/       Giao diện: React 19 + TypeScript + Vite (dist/ được commit sẵn)
 scripts/            Điểm chạy, nạp dữ liệu, build .exe, dữ liệu HSK gốc
 tests/              pytest cho toàn bộ backend
 docs/               Đặc tả, tài liệu API và database

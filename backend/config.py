@@ -10,7 +10,6 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent
 IS_FROZEN = bool(getattr(sys, "frozen", False))
 BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", ROOT_DIR))
-FRONTEND_DIR = (BUNDLE_DIR if IS_FROZEN else ROOT_DIR) / "frontend"
 WEB_DIST_DIR = (BUNDLE_DIR if IS_FROZEN else ROOT_DIR) / "frontend-web" / "dist"
 
 

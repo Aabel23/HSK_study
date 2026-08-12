@@ -383,6 +383,13 @@ export interface DictationSession {
   items: DictationItem[];
 }
 
+export interface ListeningStats {
+  sessions: number;
+  correct: number;
+  incorrect: number;
+  accuracy: number;
+}
+
 export interface DictationStats {
   sessions: number;
   attempts: number;

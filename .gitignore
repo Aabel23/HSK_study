@@ -11,8 +11,10 @@ env/
 .mypy_cache/
 
 # --- Node / web frontend ----------------------------------------------------
+# frontend-web/dist/ IS committed: Render's deploy environment has no Node,
+# so the built SPA ships as tracked static files. Rebuild + commit after
+# changing frontend-web/src.
 node_modules/
-frontend-web/dist/
 *.local
 npm-debug.log*
 yarn-debug.log*

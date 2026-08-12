@@ -107,7 +107,6 @@ def main() -> None:
         "--noconfirm",
         f"--paths={ROOT_DIR}",
         f"--version-file={version_file}",
-        f"--add-data={ROOT_DIR / 'frontend'}{os.pathsep}frontend",
         f"--add-data={web_dist}{os.pathsep}frontend-web/dist",
         # The HSK 1-9 dataset. Without this the packaged app only seeds the 150
         # curated HSK1 words instead of the full ~11k vocabulary.

@@ -1,4 +1,4 @@
-"""FastAPI application that serves the API, the React SPA and the vanilla frontend."""
+"""FastAPI application that serves the API and the React SPA."""
 
 from __future__ import annotations
 
@@ -9,12 +9,12 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend import __version__
-from backend.config import FRONTEND_DIR, WEB_DIST_DIR
+from backend.config import WEB_DIST_DIR
 from backend.database import initialize_database
 from backend.logging_config import configure_logging, get_logger
 from backend.middleware import (
@@ -163,18 +163,16 @@ def create_app() -> FastAPI:
     application.include_router(backup.router)
     application.include_router(typing.router)
     application.include_router(dictation.router)
-    application.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
-
-    @application.get("/legacy", include_in_schema=False)
-    def legacy_frontend_shell():
-        return FileResponse(FRONTEND_DIR / "index.html")
 
     if WEB_DIST_DIR.exists():
         application.mount("/", StaticFiles(directory=WEB_DIST_DIR, html=True), name="web")
     else:
         @application.get("/", include_in_schema=False)
         def frontend_not_built():
-            return RedirectResponse("/legacy")
+            return JSONResponse(
+                {"detail": "frontend-web chưa được build. Chạy 'npm run build' trong frontend-web/."},
+                status_code=503,
+            )
 
     return application
 
