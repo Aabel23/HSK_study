@@ -1,0 +1,8 @@
+# Dependencies needed to package the Windows executable.
+#
+#   pip install -r requirements-build.txt
+#   python scripts/build_exe.py
+
+-r requirements.txt
+
+pyinstaller>=6.0
