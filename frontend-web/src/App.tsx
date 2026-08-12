@@ -22,6 +22,7 @@ const Writing = lazy(() => import("./pages/Writing"));
 const Progress = lazy(() => import("./pages/Progress"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Donate = lazy(() => import("./pages/Donate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
                     <Route path="/progress" element={<Progress />} />
                     <Route path="/achievements" element={<Achievements />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/donate" element={<Donate />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

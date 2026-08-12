@@ -111,6 +111,12 @@ def main() -> None:
         # The HSK 1-9 dataset. Without this the packaged app only seeds the 150
         # curated HSK1 words instead of the full ~11k vocabulary.
         f"--add-data={ROOT_DIR / 'scripts' / 'data'}{os.pathsep}scripts/data",
+        # Both are imported lazily inside functions so a missing install cannot
+        # stop the app from booting; naming them here makes sure PyInstaller
+        # still bundles them, otherwise the donate tab would be permanently
+        # "chưa cấu hình" in the packaged build.
+        "--hidden-import=payos",
+        "--hidden-import=dotenv",
         f"--distpath={ROOT_DIR}",
         f"--workpath={BUILD_DIR / 'pyinstaller'}",
         f"--specpath={BUILD_DIR}",

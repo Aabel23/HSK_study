@@ -27,6 +27,7 @@ from backend.routes import (
     backup,
     dashboard,
     dictation,
+    donate,
     flashcard,
     health,
     listening,
@@ -163,6 +164,7 @@ def create_app() -> FastAPI:
     application.include_router(backup.router)
     application.include_router(typing.router)
     application.include_router(dictation.router)
+    application.include_router(donate.router)
 
     if WEB_DIST_DIR.exists():
         application.mount("/", StaticFiles(directory=WEB_DIST_DIR, html=True), name="web")

@@ -416,3 +416,35 @@ export interface SentenceLevelSummary {
   min_tokens: number;
   max_tokens: number;
 }
+
+export type DonationStatus = "pending" | "paid" | "cancelled" | "expired";
+
+export interface DonateConfig {
+  /** False when the server has no PayOS credentials; the page explains instead. */
+  enabled: boolean;
+  recipient: string;
+  min_amount: number;
+  max_amount: number;
+  suggested_amounts: number[];
+  currency: string;
+}
+
+export interface Donation {
+  order_code: number;
+  amount: number;
+  message: string;
+  donor_name: string;
+  status: DonationStatus;
+  /** PayOS hosted checkout page, for donors who would rather not scan. */
+  checkout_url: string | null;
+  /** Raw VietQR payload; the page renders it to a canvas locally. */
+  qr_code: string | null;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export interface DonateSummary {
+  paid_count: number;
+  paid_total: number;
+  last_paid_at: string | null;
+}

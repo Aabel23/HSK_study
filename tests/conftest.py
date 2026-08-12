@@ -34,6 +34,20 @@ def seeded_template(tmp_path_factory) -> Path:
     return template_path
 
 
+@pytest.fixture(autouse=True)
+def _no_live_payment_credentials(monkeypatch):
+    """Keep the test suite away from the real PayOS account.
+
+    A developer's `.env` holds working keys, and `backend.settings` loads it on
+    import. Without this the donation tests would create real payment links
+    against a real bank account. Tests that need the feature switched on set
+    their own fake keys on top of this.
+    """
+    for name in ("PAYOS_CLIENT_ID", "PAYOS_API_KEY", "PAYOS_CHECKSUM_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    reset_settings_cache()
+
+
 @pytest.fixture()
 def client(tmp_path, monkeypatch, seeded_template):
     database_path = tmp_path / "chinese_study_test.db"

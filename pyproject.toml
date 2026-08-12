@@ -9,6 +9,8 @@ dependencies = [
     "uvicorn>=0.27",
     "pydantic>=2.6",
     "edge-tts>=7.0",
+    "payos>=1.1",
+    "python-dotenv>=1.0",
     "gunicorn>=21; sys_platform != 'win32'",
     "uvicorn-worker>=0.2; sys_platform != 'win32'",
 ]

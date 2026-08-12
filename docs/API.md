@@ -55,4 +55,19 @@ những phiên dài liên tục; phiên chỉ chứa tối đa số từ thực 
 Frontend gửi thứ tự `position`; backend tự quyết định kết quả đúng/sai. Mỗi vị trí phải xuất hiện đúng một lần.
 `count` nhận 1–200; nếu bộ lọc không còn câu nào, endpoint trả `409` thay vì một phiên rỗng.
 
+## Donate (PayOS)
+
+- `GET /donate/config` — `{ enabled, recipient, min_amount, max_amount, suggested_amounts, currency }`. `enabled` là `false` khi chưa có khoá PayOS; endpoint này **không bao giờ** trả khoá.
+- `GET /donate/summary` — tổng số tiền đã nhận, số lượt và thời điểm gần nhất.
+- `GET /donate/recent?limit=10` — các lượt ủng hộ gần đây.
+- `POST /donate/session` — body `{ "amount": 50000, "message": "", "donor_name": "" }`; trả `qr_code` (chuỗi VietQR) và `checkout_url`.
+- `GET /donate/status/{order_code}` — hỏi PayOS trạng thái và lưu lại. Đơn đã kết thúc không hỏi lại.
+- `POST /donate/cancel/{order_code}` — huỷ một đơn còn `pending`.
+- `POST /donate/webhook` — PayOS gọi khi chuyển khoản thành công; chữ ký được xác thực bằng checksum key.
+
+Khi thiếu khoá PayOS, mọi endpoint cần gọi ra ngoài trả `409` kèm hướng dẫn cấu
+hình; `config`, `summary` và `recent` vẫn hoạt động bình thường. Ứng dụng thường
+chạy ở `127.0.0.1` nên PayOS không gọi webhook tới được — giao diện chủ động poll
+`status` mỗi 3 giây, webhook chỉ là đường dự phòng khi deploy công khai.
+
 OpenAPI tương tác có tại `/docs` khi server đang chạy.

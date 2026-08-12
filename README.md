@@ -10,7 +10,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
-[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-140%20passed-brightgreen)](tests/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 <!--
@@ -47,6 +47,7 @@ Toàn bộ giao diện và dữ liệu nghĩa đều bằng tiếng Việt.
 | **Tiến độ** | Mức hoàn thành, từ cần ôn, từ đã thuộc, lịch sử phiên học. |
 | **Thành tích** | Huy hiệu và cột mốc theo quá trình học. |
 | **Cài đặt** | Tuỳ chọn hiển thị, sao lưu và khôi phục dữ liệu. |
+| **Donate cho anh Ba** | Ủng hộ tác giả bằng mã VietQR qua PayOS (tuỳ chọn, cần cấu hình khoá). |
 
 Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** (10.969 từ) cùng kho **218 câu luyện tập** phủ đủ bảy cấp độ, nằm trong [scripts/data/](scripts/data/) và được nạp vào SQLite khi khởi động lần đầu. Toàn bộ nghĩa của từ đều bằng tiếng Việt — xem [Nguồn dữ liệu](#nguồn-dữ-liệu).
 
@@ -119,7 +120,7 @@ Mọi biến môi trường đều là tuỳ chọn và có mặc định an to�
 ```bash
 pip install -r requirements-dev.txt
 
-pytest                              # 123 test, dùng database tạm — không đụng dữ liệu thật
+pytest                              # 140 test, dùng database tạm — không đụng dữ liệu thật
 ruff check .                        # lint Python
 cd frontend-web && npm run lint     # lint TypeScript/React
 ```
@@ -149,6 +150,30 @@ tests/              pytest cho toàn bộ backend
 docs/               Đặc tả, tài liệu API và database
 data/               Database SQLite và cache audio (không commit)
 ```
+
+## Ủng hộ qua PayOS (tuỳ chọn)
+
+Tab **Donate cho anh Ba** tạo mã VietQR qua [PayOS](https://my.payos.vn): người
+ủng hộ quét bằng app ngân hàng, trang tự nhận biết khi tiền về. Tính năng tắt sẵn
+và ứng dụng chạy bình thường khi không bật.
+
+Để bật, tạo file `.env` ở thư mục gốc (file này nằm trong `.gitignore`):
+
+```bash
+PAYOS_CLIENT_ID=...
+PAYOS_API_KEY=...
+PAYOS_CHECKSUM_KEY=...
+CHINESE_STUDY_DONATE_NAME=anh Ba
+```
+
+> **Không bao giờ đặt khoá PayOS vào mã nguồn.** Ba khoá này cho phép tạo lệnh
+> thanh toán vào tài khoản ngân hàng thật và xác thực chữ ký webhook — commit lên
+> GitHub hoặc đóng gói vào file `.exe` phát hành đồng nghĩa với việc trao chúng
+> cho bất kỳ ai. Backend chỉ đọc khoá từ biến môi trường, và endpoint
+> `/api/donate/config` không trả khoá ra ngoài.
+
+Mã QR được sinh ngay trên trình duyệt từ chuỗi VietQR, không gọi dịch vụ ảnh QR
+bên ngoài, nên tab này vẫn đúng tinh thần offline-first của ứng dụng.
 
 ## Nguồn dữ liệu
 

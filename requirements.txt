@@ -8,6 +8,11 @@ uvicorn>=0.27
 pydantic>=2.6
 edge-tts>=7.0
 
+# Donations. Both are optional at runtime: without them the donate tab shows
+# its "chưa cấu hình" state and the rest of the app is unaffected.
+payos>=1.1
+python-dotenv>=1.0
+
 # Only required by the Render deploy, which runs gunicorn+uvicorn worker
 # (see gunicorn.conf.py / hsk_study/wsgi.py). Not used by the desktop app.
 gunicorn>=21; sys_platform != "win32"

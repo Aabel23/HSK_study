@@ -293,3 +293,24 @@ export const IconEye = ({ className }: IconProps) => (
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
+
+export const IconHeart = ({ className }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M12 20s-7.5-4.6-7.5-9.6A4.4 4.4 0 0 1 12 7.6a4.4 4.4 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20Z" />
+  </svg>
+);
+
+export const IconHeartFilled = ({ className }: IconProps) => (
+  <svg {...base} fill="currentColor" stroke="none" className={className}>
+    <path d="M12 20s-7.5-4.6-7.5-9.6A4.4 4.4 0 0 1 12 7.6a4.4 4.4 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20Z" />
+  </svg>
+);
+
+export const IconQr = ({ className }: IconProps) => (
+  <svg {...base} className={className}>
+    <rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5" />
+    <rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5" />
+    <rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5" />
+    <path d="M14 14h3v3h-3zM20.5 14v3M14 20.5h6.5" />
+  </svg>
+);

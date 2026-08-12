@@ -20,6 +20,9 @@ import type {
   DictationMode,
   DictationSession,
   DictationStats,
+  DonateConfig,
+  DonateSummary,
+  Donation,
   SentenceLevelSummary,
   SentenceSession,
   TypingMode,
@@ -343,6 +346,20 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ total_items: total, correct_items: correct, incorrect_items: incorrect }),
       }),
+  },
+
+  donate: {
+    config: () => request<DonateConfig>("/api/donate/config"),
+    summary: () => request<DonateSummary>("/api/donate/summary"),
+    recent: (limit = 10) => request<{ items: Donation[] }>(`/api/donate/recent${qs({ limit })}`),
+    create: (amount: number, message: string, donorName: string) =>
+      request<Donation>("/api/donate/session", {
+        method: "POST",
+        body: JSON.stringify({ amount, message, donor_name: donorName }),
+      }),
+    status: (orderCode: number) => request<Donation>(`/api/donate/status/${orderCode}`),
+    cancel: (orderCode: number) =>
+      request<Donation>(`/api/donate/cancel/${orderCode}`, { method: "POST" }),
   },
 
   health: () => request<{ status: string; service: string; version: string }>("/api/health"),

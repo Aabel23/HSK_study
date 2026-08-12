@@ -4,6 +4,7 @@ import {
   IconChart,
   IconCheckSquare,
   IconHeadphones,
+  IconHeart,
   IconHome,
   IconLayers,
   IconMessage,
@@ -41,6 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/progress", label: "Tiến độ", description: "Thống kê và lịch sử học", icon: IconChart, section: "tiến độ" },
   { to: "/achievements", label: "Thành tích", description: "Huy hiệu và cột mốc", icon: IconTrophy, section: "tiến độ" },
   { to: "/settings", label: "Cài đặt", description: "Tuỳ chọn, sao lưu và khôi phục", icon: IconSettings, section: "tiến độ" },
+  { to: "/donate", label: "Donate cho anh Ba", description: "Ủng hộ tác giả qua QR ngân hàng", icon: IconHeart, section: "tiến độ" },
 ];
 
 /** Condensed set shown in the mobile bottom bar. */

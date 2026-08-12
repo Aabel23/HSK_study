@@ -47,6 +47,11 @@ ui-ux-pro-max-skill/
 # 10 MB, only needed to rebuild scripts/data/; the rebuilt JSON is committed.
 scripts/_cvdict_cache/
 
+# --- Standalone PayOS demo kept for reference -------------------------------
+# Not part of the application, and it holds live API keys in plain text.
+# The real integration lives in backend/services/donate_service.py.
+payos/
+
 # --- OS / editors -----------------------------------------------------------
 .DS_Store
 Thumbs.db

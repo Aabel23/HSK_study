@@ -13,6 +13,12 @@
   seeder — sửa ở đó, đừng sao chép sang nơi khác.
 - Dữ liệu nghĩa tiếng Việt lấy từ CVDICT (CC BY-SA 4.0); giữ nguyên phần ghi
   công trong `README.md` khi cập nhật lại dữ liệu.
+- Không đưa khoá bí mật vào mã nguồn. Khoá PayOS (`PAYOS_CLIENT_ID`,
+  `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`) chỉ đọc từ biến môi trường / `.env`;
+  repo GitHub là công khai và ứng dụng còn được đóng gói thành `.exe` phát hành.
+  Endpoint `/api/donate/config` không được trả khoá ra ngoài.
+- Test không bao giờ được gọi API thanh toán thật — fixture `_no_live_payment_credentials`
+  trong `tests/conftest.py` xoá khoá PayOS; test nào cần thì tự stub client.
 - Frontend là React 19 + TypeScript + Vite trong `frontend-web/`; không còn giao diện vanilla JS.
 - `frontend-web/dist/` được commit vào git vì môi trường deploy (Render) không có Node — build lại và commit `dist/` sau khi sửa `frontend-web/src`.
 - Không viết SQL trong route; business logic đặt trong service.

@@ -13,6 +13,27 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 
 from backend import __version__
+from backend.config import ROOT_DIR
+
+
+def _load_dotenv_once() -> None:
+    """Read `.env` next to the project, if python-dotenv is available.
+
+    Secrets such as the PayOS keys must never live in the source tree, so the
+    donate feature is configured through the environment. Loading `.env` here
+    means a developer only has to write the file once instead of exporting the
+    variables in every shell. Real environment variables always win, and the
+    whole thing is optional: without python-dotenv the app simply runs on
+    whatever the environment already provides.
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    load_dotenv(ROOT_DIR / ".env", override=False)
+
+
+_load_dotenv_once()
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -75,9 +96,36 @@ class Settings:
         default_factory=lambda: not _env_bool("CHINESE_STUDY_NO_BROWSER", False)
     )
 
+    # --- Donations (PayOS) --------------------------------------------------
+    # Deliberately unset by default. The keys authorise creating payment links
+    # against a real bank account and verifying webhook signatures, so they are
+    # read from the environment and never committed or bundled into the .exe.
+    payos_client_id: str = field(default_factory=lambda: os.getenv("PAYOS_CLIENT_ID", ""))
+    payos_api_key: str = field(default_factory=lambda: os.getenv("PAYOS_API_KEY", ""))
+    payos_checksum_key: str = field(
+        default_factory=lambda: os.getenv("PAYOS_CHECKSUM_KEY", "")
+    )
+    donate_recipient: str = field(
+        default_factory=lambda: os.getenv("CHINESE_STUDY_DONATE_NAME", "anh Ba")
+    )
+    donate_min_amount: int = field(
+        default_factory=lambda: _env_int("CHINESE_STUDY_DONATE_MIN", 2_000, minimum=1_000)
+    )
+    donate_max_amount: int = field(
+        default_factory=lambda: _env_int("CHINESE_STUDY_DONATE_MAX", 10_000_000, minimum=1_000)
+    )
+    donate_base_url: str = field(
+        default_factory=lambda: os.getenv("CHINESE_STUDY_DONATE_BASE_URL", "").rstrip("/")
+    )
+
     @property
     def is_development(self) -> bool:
         return self.environment.lower() in {"dev", "development", "local"}
+
+    @property
+    def payos_configured(self) -> bool:
+        """True only when all three PayOS credentials are present."""
+        return bool(self.payos_client_id and self.payos_api_key and self.payos_checksum_key)
 
 
 @lru_cache(maxsize=1)

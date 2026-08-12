@@ -213,3 +213,11 @@ class DictationAnswerCheck(BaseModel):
     answer: str = Field(default="", max_length=500)
     replays: int = Field(default=0, ge=0, le=99)
 
+
+class DonationCreate(BaseModel):
+    # The real bounds live in Settings so they stay configurable; these are the
+    # outer limits PayOS itself accepts.
+    amount: int = Field(ge=1_000, le=500_000_000)
+    message: str = Field(default="", max_length=200)
+    donor_name: str = Field(default="", max_length=80)
+

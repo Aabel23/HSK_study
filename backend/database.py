@@ -278,6 +278,23 @@ CREATE TABLE IF NOT EXISTS dictation_attempts (
     FOREIGN KEY (session_id) REFERENCES dictation_sessions(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS donations (
+    order_code INTEGER PRIMARY KEY,
+    amount INTEGER NOT NULL,
+    message TEXT NOT NULL DEFAULT '',
+    donor_name TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'paid', 'cancelled', 'expired')),
+    checkout_url TEXT,
+    qr_code TEXT,
+    payment_link_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    paid_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_donations_created ON donations(created_at);
+CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status);
 CREATE INDEX IF NOT EXISTS idx_daily_activity_date ON daily_activity(activity_date);
 CREATE INDEX IF NOT EXISTS idx_review_log_created ON review_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_review_log_vocabulary ON review_log(vocabulary_id);
