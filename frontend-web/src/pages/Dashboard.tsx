@@ -1,6 +1,8 @@
 import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import clsx from "clsx";
+import { HIDDEN_ROUTES } from "../components/navigation";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import { formatNumber, formatPercent } from "../lib/format";
@@ -32,6 +34,8 @@ import {
   IconTarget,
 } from "../components/icons";
 
+// Same hidden-route list the menus use, so a tile can never offer a page the
+// sidebar is deliberately not showing.
 const FEATURES = [
   { to: "/review", label: "Ôn tập thông minh", desc: "Đúng từ, đúng lúc", icon: IconRefresh, accent: "accent" as const },
   { to: "/vocabulary", label: "Từ vựng", desc: "Tra cứu & lọc theo cấp độ", icon: IconBook, accent: "sky" as const },
@@ -41,7 +45,9 @@ const FEATURES = [
   { to: "/listening", label: "Luyện nghe", desc: "Nghe phát âm, chọn đáp án", icon: IconHeadphones, accent: "violet" as const },
   { to: "/quiz", label: "Kiểm tra", desc: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, accent: "accent" as const },
   { to: "/writing", label: "Luyện viết", desc: "Tập viết chữ Hán đúng nét", icon: IconPencil, accent: "gold" as const },
-];
+].filter((feature) => !HIDDEN_ROUTES.has(feature.to));
+
+const WRITING_VISIBLE = !HIDDEN_ROUTES.has("/writing");
 
 const LEVEL_LABEL: Record<string, string> = {
   "1": "HSK 1", "2": "HSK 2", "3": "HSK 3", "4": "HSK 4",
@@ -141,12 +147,20 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div
+        className={clsx(
+          "mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3",
+          WRITING_VISIBLE ? "lg:grid-cols-5" : "lg:grid-cols-4"
+        )}
+      >
         <StatTile label="Tổng từ vựng" value={formatNumber(data.total_vocabulary)} accent="accent" icon={<IconBook className="h-4 w-4" />} />
         <StatTile label="Đã thuộc" value={formatNumber(data.mastered_vocabulary)} hint={formatPercent(masteredPct, 1) + " tổng số"} accent="jade" />
         <StatTile label="Đang học" value={formatNumber(data.learning_vocabulary)} accent="gold" />
         <StatTile label="Cần ôn" value={formatNumber(data.review_vocabulary)} accent="sky" icon={<IconTarget className="h-4 w-4" />} />
-        <StatTile label="Chữ đã luyện viết" value={formatNumber(data.writing_practiced)} hint={`${formatNumber(data.writing_mastered)} thành thạo`} accent="violet" />
+        {/* A writing statistic is only meaningful while the writing page is offered. */}
+        {WRITING_VISIBLE && (
+          <StatTile label="Chữ đã luyện viết" value={formatNumber(data.writing_practiced)} hint={`${formatNumber(data.writing_mastered)} thành thạo`} accent="violet" />
+        )}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">

@@ -23,6 +23,14 @@ export interface NavItem {
   end?: boolean;
   /** Grouping used by the sidebar; the command palette ignores it. */
   section: "chính" | "luyện tập" | "tiến độ";
+  /**
+   * Temporarily kept out of every menu.
+   *
+   * The page, its route and its API stay in place — this only stops the entry
+   * being offered, so switching the flag back is the whole of the undo. Set on
+   * pages that are not ready to be shown yet rather than deleting them.
+   */
+  hidden?: boolean;
 }
 
 /**
@@ -38,12 +46,23 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/sentences", label: "Luyện câu", description: "Sắp xếp cụm từ đúng thứ tự", icon: IconMessage, section: "luyện tập" },
   { to: "/listening", label: "Luyện nghe", description: "Nghe phát âm và chọn đáp án", icon: IconHeadphones, section: "luyện tập" },
   { to: "/quiz", label: "Kiểm tra", description: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, section: "luyện tập" },
-  { to: "/writing", label: "Luyện viết", description: "Tập viết chữ Hán đúng nét", icon: IconPencil, section: "luyện tập" },
+  { to: "/writing", label: "Luyện viết", description: "Tập viết chữ Hán đúng nét", icon: IconPencil, section: "luyện tập", hidden: true },
   { to: "/progress", label: "Tiến độ", description: "Thống kê và lịch sử học", icon: IconChart, section: "tiến độ" },
-  { to: "/achievements", label: "Thành tích", description: "Huy hiệu và cột mốc", icon: IconTrophy, section: "tiến độ" },
+  { to: "/achievements", label: "Thành tích", description: "Huy hiệu và cột mốc", icon: IconTrophy, section: "tiến độ", hidden: true },
   { to: "/settings", label: "Cài đặt", description: "Tuỳ chọn, sao lưu và khôi phục", icon: IconSettings, section: "tiến độ" },
   { to: "/donate", label: "Donate cho anh Ba", description: "Ủng hộ tác giả qua QR ngân hàng", icon: IconHeart, section: "tiến độ" },
 ];
+
+/**
+ * Everything the user is actually offered. Menus and shortcuts read this, never
+ * `NAV_ITEMS`, so a hidden page cannot leak back in through one of them.
+ */
+export const VISIBLE_NAV_ITEMS: NavItem[] = NAV_ITEMS.filter((item) => !item.hidden);
+
+/** Routes currently hidden, for surfaces outside the menus (dashboard tiles). */
+export const HIDDEN_ROUTES: ReadonlySet<string> = new Set(
+  NAV_ITEMS.filter((item) => item.hidden).map((item) => item.to)
+);
 
 /** Condensed set shown in the mobile bottom bar. */
 export const MOBILE_NAV = ["/", "/review", "/vocabulary", "/quiz", "/progress"];

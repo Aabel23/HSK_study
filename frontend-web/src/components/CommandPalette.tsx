@@ -7,7 +7,7 @@ import { useSettings } from "../lib/settings";
 import type { VocabularyItem } from "../lib/types";
 import { Kbd } from "./ui";
 import { IconArrowRight, IconSearch, IconVolume } from "./icons";
-import { NAV_ITEMS } from "./navigation";
+import { VISIBLE_NAV_ITEMS } from "./navigation";
 
 interface Command {
   id: string;
@@ -76,7 +76,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   );
 
   const commands = useMemo<Command[]>(() => {
-    const navigation: Command[] = NAV_ITEMS.map((item) => ({
+    const navigation: Command[] = VISIBLE_NAV_ITEMS.map((item) => ({
       id: `nav:${item.to}`,
       label: item.label,
       hint: item.description,

@@ -8,7 +8,7 @@ import { formatNumber } from "../lib/format";
 import { LevelPicker } from "./LevelPicker";
 import { CommandPalette } from "./CommandPalette";
 import { Kbd } from "./ui";
-import { MOBILE_NAV, NAV_ITEMS, SECTION_LABELS, type NavItem } from "./navigation";
+import { MOBILE_NAV, SECTION_LABELS, VISIBLE_NAV_ITEMS, type NavItem } from "./navigation";
 import { IconBolt, IconFlame, IconMenu, IconMoon, IconSearch, IconSun, IconX } from "./icons";
 
 const SECTION_ORDER: NavItem["section"][] = ["chính", "luyện tập", "tiến độ"];
@@ -109,7 +109,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   {SECTION_LABELS[section]}
                 </p>
                 <div className="flex flex-col gap-0.5">
-                  {NAV_ITEMS.filter((item) => item.section === section).map(
+                  {VISIBLE_NAV_ITEMS.filter((item) => item.section === section).map(
                     ({ to, label, icon: Icon, end }) => (
                       <NavLink
                         key={to}
@@ -252,9 +252,9 @@ function HeaderStat({
 
 /** Thumb-reachable navigation for small screens. */
 function MobileTabBar({ dueCount }: { dueCount: number }) {
-  const items = MOBILE_NAV.map((path) => NAV_ITEMS.find((item) => item.to === path)).filter(
-    (item): item is NavItem => Boolean(item)
-  );
+  const items = MOBILE_NAV.map((path) =>
+    VISIBLE_NAV_ITEMS.find((item) => item.to === path)
+  ).filter((item): item is NavItem => Boolean(item));
   return (
     <nav
       aria-label="Điều hướng nhanh"
