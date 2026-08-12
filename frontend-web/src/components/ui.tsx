@@ -641,17 +641,23 @@ export function Modal({
       if (event.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
+    // Lock the page behind the dialog without letting the layout jump sideways
+    // when the scrollbar disappears.
     const previousOverflow = document.body.style.overflow;
+    const previousPadding = document.body.style.paddingRight;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPadding;
     };
   }, [open, onClose]);
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto overscroll-contain p-4">
       <button
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
@@ -662,9 +668,9 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-pop-in relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface shadow-pop"
+        className="animate-pop-in relative z-10 my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col rounded-2xl border border-border bg-surface shadow-pop"
       >
-        <div className="flex items-center justify-between border-b border-border-soft px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-border-soft px-5 py-4">
           <h2 className="font-display text-base font-bold text-ink">{title}</h2>
           <button
             onClick={onClose}
@@ -674,8 +680,10 @@ export function Modal({
             <IconX className="h-4 w-4" />
           </button>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-border-soft px-5 py-3.5">{footer}</div>}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
+        {footer && (
+          <div className="flex shrink-0 justify-end gap-2 border-t border-border-soft px-5 py-3.5">{footer}</div>
+        )}
       </div>
     </div>
   );

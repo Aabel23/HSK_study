@@ -65,7 +65,7 @@ export function Shell({ children }: { children: ReactNode }) {
           id="app-sidebar"
           aria-label="Điều hướng chính"
           className={clsx(
-            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto border-r border-border bg-surface p-5 transition-transform duration-200 lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border bg-surface p-5 transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:self-start",
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >

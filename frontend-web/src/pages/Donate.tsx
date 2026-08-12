@@ -330,7 +330,7 @@ PAYOS_CHECKSUM_KEY=...`}
               {formatDong(donation?.amount ?? 0)}
             </p>
             <div className="rounded-2xl border border-border bg-white p-3">
-              <canvas ref={canvasRef} className="block h-[240px] w-[240px]" />
+              <canvas ref={canvasRef} className="block h-auto w-[240px] max-w-full" />
             </div>
             <p className="flex items-center gap-2 text-sm text-ink-soft">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-gold" />
