@@ -76,6 +76,7 @@ def grade_hskk_answer(payload: HskkGradeRequest):
             payload.part,
             payload.question_index,
             payload.question_id,
+            payload.transcript,
             payload.audio_base64,
             payload.audio_mime_type,
             payload.spoken_seconds,

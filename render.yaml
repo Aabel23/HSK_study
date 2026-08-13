@@ -17,5 +17,7 @@ services:
       # Bỏ trống thì bài thi tự chuyển sang chế độ tự chấm, app vẫn chạy.
       - key: GEMINI_API_KEY
         sync: false
+      # Alias, không ghim số phiên bản: Google đã gỡ gemini-2.0-flash và mọi lần
+      # chấm trả 404. Alias tự trỏ sang bản flash mới nhất còn phục vụ.
       - key: GEMINI_MODEL
-        value: gemini-2.0-flash
+        value: gemini-flash-latest

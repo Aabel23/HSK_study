@@ -35,17 +35,42 @@ def is_configured() -> bool:
     return get_settings().gemini_configured
 
 
+def _auth_header(use_bearer: bool, credential: str) -> dict[str, str]:
+    if use_bearer:
+        return {"Authorization": f"Bearer {credential}"}
+    return {"x-goog-api-key": credential}
+
+
 def _request(payload: dict[str, Any]) -> dict[str, Any]:
     settings = get_settings()
     if not settings.gemini_configured:
         raise InvalidOperationError(NOT_CONFIGURED_MESSAGE)
 
+    use_bearer = settings.gemini_uses_bearer_token
+    try:
+        return _post(payload, use_bearer)
+    except _Unauthorized:
+        # The credential shape is only a guess. Rather than tell the user their
+        # working key is invalid, try the other header once before giving up.
+        logger.info("Retrying Gemini with the alternate auth header")
+        try:
+            return _post(payload, not use_bearer)
+        except _Unauthorized as error:
+            raise InvalidOperationError(
+                "Khoá Gemini bị từ chối hoặc đã hết hạn. Hãy tạo khoá mới ở "
+                "https://aistudio.google.com/apikey rồi cập nhật GEMINI_API_KEY."
+            ) from error
+
+
+class _Unauthorized(Exception):
+    """Internal signal that the credential was rejected, so the header can flip."""
+
+
+def _post(payload: dict[str, Any], use_bearer: bool) -> dict[str, Any]:
+    settings = get_settings()
     url = f"{API_ROOT}/{settings.gemini_model}:generateContent"
     headers = {"Content-Type": "application/json"}
-    if settings.gemini_uses_bearer_token:
-        headers["Authorization"] = f"Bearer {settings.gemini_api_key}"
-    else:
-        headers["x-goog-api-key"] = settings.gemini_api_key
+    headers.update(_auth_header(use_bearer, settings.gemini_api_key))
 
     request = urllib.request.Request(
         url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
@@ -65,9 +90,13 @@ def _request(payload: dict[str, Any]) -> dict[str, Any]:
             detail = ""
         logger.warning("Gemini rejected the request: %s %s", error.code, detail)
         if error.code in {401, 403}:
+            raise _Unauthorized(detail) from error
+        if error.code == 404:
+            # Google retires numbered models; say which one so the fix is obvious.
             raise InvalidOperationError(
-                "Khoá Gemini bị từ chối hoặc đã hết hạn. Hãy tạo khoá mới rồi cập nhật "
-                "biến môi trường GEMINI_API_KEY."
+                f"Model '{get_settings().gemini_model}' không còn dùng được. "
+                "Đặt biến môi trường GEMINI_MODEL sang model khác "
+                "(ví dụ gemini-flash-latest)."
             ) from error
         if error.code == 429:
             raise InvalidOperationError(

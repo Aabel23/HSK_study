@@ -7,6 +7,7 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { usePlayAudio } from "../lib/useAudio";
 import { useRecorder } from "../lib/useRecorder";
+import { useSpeechLog } from "../lib/useSpeechLog";
 import { blobToWavBase64 } from "../lib/wav";
 import { formatNumber, formatPercent } from "../lib/format";
 import type {
@@ -93,6 +94,7 @@ export default function Hskk() {
   const toast = useToast();
   const { play, playingText } = usePlayAudio();
   const recorder = useRecorder();
+  const speech = useSpeechLog();
 
   const [examLevel, setExamLevel] = useState<HskkExamLevel>("beginner");
   const [stage, setStage] = useState<Stage>("intro");
@@ -109,6 +111,16 @@ export default function Hskk() {
   const [grading, setGrading] = useState(false);
   const [result, setResult] = useState<HskkResult | null>(null);
   const [busy, setBusy] = useState(false);
+  /**
+   * The server forgot this exam — its database was reset while the paper was
+   * open (Render's free tier has no persistent disk, so every redeploy wipes
+   * it). Nothing the learner does can save the paper, so the runner stops and
+   * offers a fresh one instead of firing an identical toast on every answer.
+   */
+  const [lostSession, setLostSession] = useState(false);
+
+  const isLostSession = (error: unknown) =>
+    error instanceof Error && error.message.includes("Không tìm thấy bài thi");
 
   const levels = useApi(() => api.hskk.levels(), []);
   const stats = useApi(() => api.hskk.stats(), []);
@@ -121,24 +133,28 @@ export default function Hskk() {
   // Countdown mirroring the exam's fixed answer window; it stops the recording
   // when the window closes.
   const stopRecorder = recorder.stop;
+  const stopSpeech = speech.stop;
   useEffect(() => {
     if (remaining === null) return;
     if (remaining <= 0) {
       stopRecorder();
+      stopSpeech();
       setRemaining(null);
       return;
     }
     const timer = window.setTimeout(() => setRemaining((value) => (value === null ? null : value - 1)), 1000);
     return () => window.clearTimeout(timer);
-  }, [remaining, stopRecorder]);
+  }, [remaining, stopRecorder, stopSpeech]);
 
   // A new speaking question starts clean, and the heard parts play themselves
   // once so the learner never reads the prompt first.
   const audioText = slot?.item.audio_text ?? null;
   const resetRecorder = recorder.reset;
+  const resetSpeech = speech.reset;
   useEffect(() => {
     if (stage !== "speaking" || !slot) return;
     resetRecorder();
+    resetSpeech();
     setRevealed(false);
     setRemaining(null);
     setGrade(null);
@@ -160,6 +176,7 @@ export default function Hskk() {
       const next = await api.hskk.createSession(examLevel);
       setPaper(next);
       setStage("written");
+      setLostSession(false);
       setWrittenIndex(0);
       setWrittenCorrect(0);
       setPicked(null);
@@ -200,8 +217,9 @@ export default function Hskk() {
         writtenQuestion.target_vocabulary_id,
         isCorrect
       );
-    } catch {
-      toast.error("Không lưu được câu trả lời");
+    } catch (error) {
+      if (isLostSession(error)) setLostSession(true);
+      else toast.error("Không lưu được câu trả lời");
     }
   }
 
@@ -214,15 +232,27 @@ export default function Hskk() {
 
   // --------------------------------------------------------------- speaking --
   async function requestGrade() {
-    if (!paper || !slot || !recorder.clipBlob || grading) return;
+    if (!paper || !slot || grading) return;
+    const transcript = (speech.text || "").trim();
+    if (!transcript && !recorder.clipBlob) return;
     setGrading(true);
     try {
-      const audio = await blobToWavBase64(recorder.clipBlob);
+      // The transcript is what gets graded; the clip goes along only when it is
+      // small enough to be worth the upload, so pronunciation can also be judged.
+      let audio: string | null = null;
+      if (recorder.clipBlob && recorder.seconds <= 150) {
+        try {
+          audio = await blobToWavBase64(recorder.clipBlob);
+        } catch {
+          audio = null; // Grading from the text alone is still useful.
+        }
+      }
       const graded = await api.hskk.grade(
         paper.session_id,
         slot.part.part,
         slot.item.question_index,
         slot.item.question_id,
+        transcript,
         audio,
         recorder.seconds
       );
@@ -248,6 +278,7 @@ export default function Hskk() {
     if (!paper || !slot || busy) return;
     setBusy(true);
     recorder.stop();
+    speech.stop();
     setRemaining(null);
     try {
       await api.hskk.answer(
@@ -260,7 +291,8 @@ export default function Hskk() {
       );
       await advance();
     } catch (error) {
-      toast.error("Không lưu được câu trả lời", error instanceof Error ? error.message : undefined);
+      if (isLostSession(error)) setLostSession(true);
+      else toast.error("Không lưu được câu trả lời", error instanceof Error ? error.message : undefined);
     } finally {
       setBusy(false);
     }
@@ -270,12 +302,16 @@ export default function Hskk() {
     if (!slot) return;
     if (recorder.recording) {
       recorder.stop();
+      speech.stop();
       setRemaining(null);
       return;
     }
     // The countdown only runs if the microphone actually opened; otherwise the
     // clock would tick down against a recording that never started.
     if (!(await recorder.start())) return;
+    // Transcribing in parallel with recording: the clip is for listening back,
+    // the log is what gets sent for grading.
+    if (speech.supported) speech.start();
     setGrade(null);
     setRemaining(slot.part.answer_seconds);
     // Once you have spoken there is no reason to hide the prompt any more.
@@ -299,6 +335,26 @@ export default function Hskk() {
 
   if (levels.error) return <ErrorState message={levels.error} onRetry={levels.reload} />;
   if (levels.loading && !levels.data) return <PageSkeleton tiles={4} rows={2} />;
+
+  if (lostSession) {
+    return (
+      <Card className="animate-float-in mx-auto mt-6 flex max-w-md flex-col items-center gap-4 px-6 py-12 text-center">
+        <p className="font-display text-xl font-bold text-ink">Bài thi này không còn trên máy chủ</p>
+        <p className="text-sm text-ink-soft">
+          Máy chủ đã khởi động lại giữa chừng nên phiên thi bị mất. Không cứu được bài đang làm, hãy
+          bắt đầu một đề mới.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button onClick={startExam} disabled={busy}>
+            <IconRefresh className="h-4 w-4" /> Bắt đầu đề mới
+          </Button>
+          <Button variant="secondary" onClick={() => { setLostSession(false); setPaper(null); setStage("intro"); }}>
+            Về trang thi thử
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
   // ---------------------------------------------------------------- result --
   if (stage === "result" && result) {
@@ -634,10 +690,42 @@ export default function Hskk() {
           </span>
         </div>
         {recorder.error && <p className="text-center text-xs text-danger">{recorder.error}</p>}
+
+        {/* Live speech-to-text log: what the grader will actually read. */}
+        {(speech.listening || speech.text || speech.interim) && (
+          <div className="w-full rounded-xl border border-border-soft bg-surface-2 p-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-ink-soft">Log lời nói</span>
+              {speech.listening && (
+                <span className="flex items-center gap-1.5 text-[11px] text-danger">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" /> đang nghe
+                </span>
+              )}
+              {speech.text && (
+                <span className="tnum ml-auto text-[11px] text-ink-faint">{speech.text.length} chữ</span>
+              )}
+            </div>
+            <p className="hanzi mt-2 text-lg leading-relaxed text-ink">
+              {speech.text}
+              {speech.interim && <span className="text-ink-faint">{speech.interim}</span>}
+              {!speech.text && !speech.interim && (
+                <span className="text-sm text-ink-faint">Hãy nói to và rõ, chữ sẽ hiện ở đây...</span>
+              )}
+            </p>
+          </div>
+        )}
+        {speech.error && <p className="text-center text-xs text-gold">{speech.error}</p>}
+        {!speech.supported && recorder.recording && (
+          <p className="text-center text-xs text-gold">
+            Trình duyệt này không chuyển lời nói thành chữ được (cần Chrome hoặc Edge) — AI sẽ chấm
+            trực tiếp từ đoạn ghi âm.
+          </p>
+        )}
+
         {recorder.clipUrl && (
           <audio controls src={recorder.clipUrl} className="w-full max-w-sm" aria-label="Nghe lại bài nói của bạn" />
         )}
-        {paper.ai_grading && recorder.clipBlob && !recorder.recording && !grade && (
+        {paper.ai_grading && (recorder.clipBlob || speech.text) && !recorder.recording && !grade && (
           <Button onClick={() => void requestGrade()} disabled={grading}>
             <IconSpark className="h-4 w-4" /> {grading ? "AI đang chấm..." : "Chấm bằng AI"}
           </Button>

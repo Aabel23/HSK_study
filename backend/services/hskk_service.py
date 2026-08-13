@@ -75,9 +75,11 @@ GRADER_SYSTEM_INSTRUCTION = """\
 Bạn là giám khảo kỳ thi khẩu ngữ HSKK (汉语水平口语考试) của Hanban, đã chấm thi \
 nhiều năm và rất quen với lỗi phát âm của người Việt học tiếng Trung.
 
-Bạn nhận một đoạn ghi âm của thí sinh và thông tin về câu hỏi. Nhiệm vụ của bạn:
-1. Nghe và ghi lại chính xác những gì thí sinh nói (chữ Hán giản thể). Nếu không \
-nghe được gì rõ ràng, để transcript là chuỗi rỗng.
+Bạn nhận bài làm của thí sinh — gồm bản gỡ băng (do phần nhận dạng giọng nói của \
+trình duyệt ghi lại) và/hoặc đoạn ghi âm — cùng thông tin về câu hỏi. Nhiệm vụ:
+1. Xác định thí sinh đã nói gì. Nếu có ghi âm thì nghe và tự gỡ lại cho chính \
+xác; nếu chỉ có bản gỡ băng thì dùng nguyên văn bản đó. Không nhận được nội dung \
+nào thì để transcript là chuỗi rỗng.
 2. Chấm điểm theo đúng tiêu chí của phần thi được nêu trong yêu cầu.
 3. Nhận xét bằng TIẾNG VIỆT, ngắn gọn, cụ thể, chỉ rõ chỗ sai và cách sửa. \
 Không khen chung chung. Khi nhắc tới lỗi thanh điệu, ghi rõ chữ nào và đọc \
@@ -85,8 +87,14 @@ thành thanh mấy thay vì thanh mấy.
 
 Nguyên tắc chấm:
 - Chấm đúng thực tế, không nới tay. Nói sai nội dung thì không thể trên 50 điểm.
-- Không nghe được tiếng nói nào thì score_percent = 0 và nói rõ là không nhận \
-được âm thanh.
+- Không nhận được nội dung nào thì score_percent = 0 và nói rõ là không nghe \
+được thí sinh nói gì.
+- KHI CHỈ CÓ BẢN GỠ BĂNG, KHÔNG CÓ GHI ÂM: máy nhận dạng giọng nói đã chuẩn hoá \
+âm thanh thành chữ, nên bạn KHÔNG thể đánh giá thanh điệu hay chất giọng. Khi đó \
+hãy chấm nội dung, ngữ pháp, độ đầy đủ và độ dài; đặt pronunciation_percent bằng \
+mức tin cậy của việc máy nhận ra đúng chữ, và nói rõ trong nhận xét rằng phần \
+phát âm chưa được chấm trực tiếp. Tuyệt đối không bịa ra lỗi thanh điệu cụ thể \
+khi không nghe được âm thanh.
 - Người Việt hay mắc: nhầm thanh 2 với thanh 3, bỏ mất thanh nhẹ, phát âm \
 zh/ch/sh thành z/c/s, thiếu âm cuối -ng. Ưu tiên chỉ ra các lỗi này nếu có.
 
@@ -523,19 +531,19 @@ def _clean_list(value: Any, limit: int) -> list[str]:
     return [str(entry).strip() for entry in value[:limit] if str(entry).strip()]
 
 
-def grade_answer(
-    session_id: int,
+def build_grading_prompt(
+    exam_level: str,
     part: int,
-    question_index: int,
     question_id: str,
-    audio_base64: str,
-    audio_mime_type: str,
+    transcript: str,
     spoken_seconds: int,
-) -> dict[str, Any]:
-    """Send one spoken answer to Gemini and store the score it comes back with."""
-    with get_connection() as connection:
-        session = _get_open_session(connection, session_id)
-        exam_level = session["exam_level"]
+    has_audio: bool,
+) -> str:
+    """Assemble the rubric, the question and the learner's answer into a prompt.
+
+    Kept public and side-effect free so the exact text sent to Gemini can be
+    asserted in tests rather than only observed through a live call.
+    """
     config = _part_config(exam_level, part)
     item = _find_item(exam_level, part, question_id)
 
@@ -549,9 +557,47 @@ def grade_answer(
         vi=item["vi"],
         min_sentences=config.get("min_sentences") or 5,
     )
-    prompt += (
-        f"\n\nThí sinh đã nói trong {spoken_seconds} giây. "
-        "Đoạn ghi âm được gửi kèm ngay sau đây."
+
+    prompt += f"\n\nBÀI LÀM CỦA THÍ SINH (nói trong {spoken_seconds} giây):\n"
+    if transcript:
+        prompt += f'Bản gỡ băng do trình duyệt ghi lại: "{transcript}"\n'
+    else:
+        prompt += "Phần nhận dạng giọng nói không ghi được chữ nào.\n"
+    if has_audio:
+        prompt += "Đoạn ghi âm gốc được gửi kèm ngay sau đây — hãy nghe để chấm phát âm và thanh điệu."
+    else:
+        prompt += (
+            "KHÔNG có file ghi âm kèm theo, chỉ có bản gỡ băng ở trên. "
+            "Đừng chấm thanh điệu như thể đã nghe được giọng thí sinh."
+        )
+    return prompt
+
+
+def grade_answer(
+    session_id: int,
+    part: int,
+    question_index: int,
+    question_id: str,
+    transcript: str,
+    audio_base64: str | None,
+    audio_mime_type: str,
+    spoken_seconds: int,
+) -> dict[str, Any]:
+    """Send one spoken answer to Gemini and store the score it comes back with."""
+    transcript = (transcript or "").strip()
+    if not transcript and not audio_base64:
+        raise InvalidOperationError(
+            "Chưa có nội dung nào để chấm. Hãy ghi âm lại và nói to, rõ hơn."
+        )
+
+    with get_connection() as connection:
+        session = _get_open_session(connection, session_id)
+        exam_level = session["exam_level"]
+    config = _part_config(exam_level, part)
+    item = _find_item(exam_level, part, question_id)
+
+    prompt = build_grading_prompt(
+        exam_level, part, question_id, transcript, spoken_seconds, bool(audio_base64)
     )
 
     result = gemini_service.generate_json(
@@ -567,7 +613,9 @@ def grade_answer(
     verdict = str(result.get("verdict", "")).strip()
     strengths = _clean_list(result.get("strengths"), 3)
     fixes = _clean_list(result.get("fixes"), 4)
-    transcript = str(result.get("transcript", "")).strip()
+    # Prefer the model's own transcription when it had the audio to work from;
+    # otherwise keep what the browser heard.
+    transcript = str(result.get("transcript", "")).strip() or transcript
 
     feedback = {
         "verdict": verdict,

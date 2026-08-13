@@ -378,7 +378,8 @@ export const api = {
       part: number,
       questionIndex: number,
       questionId: string,
-      audioBase64: string,
+      transcript: string,
+      audioBase64: string | null,
       spokenSeconds: number
     ) =>
       request<HskkGrade>("/api/hskk/grade", {
@@ -388,6 +389,7 @@ export const api = {
           part,
           question_index: questionIndex,
           question_id: questionId,
+          transcript,
           audio_base64: audioBase64,
           audio_mime_type: "audio/wav",
           spoken_seconds: spokenSeconds,

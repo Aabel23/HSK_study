@@ -145,6 +145,7 @@ def test_ai_grading_scores_and_stores_the_feedback(client, fake_gemini):
             "part": first["part"],
             "question_index": item["question_index"],
             "question_id": item["question_id"],
+            "transcript": "我很高兴认识你",
             "audio_base64": base64.b64encode(b"\x00" * 64).decode(),
             "audio_mime_type": "audio/wav",
             "spoken_seconds": 7,
@@ -171,6 +172,51 @@ def test_ai_grading_scores_and_stores_the_feedback(client, fake_gemini):
     assert summary["score"] == round(first["points_per_item"] * 0.82, 1)
 
 
+def test_grading_works_from_the_speech_log_alone(client, fake_gemini):
+    """No audio upload: the browser's transcript is enough to be graded."""
+    paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
+    item = paper["parts"][0]["items"][0]
+
+    response = client.post(
+        "/api/hskk/grade",
+        json={
+            "session_id": paper["session_id"],
+            "part": 1,
+            "question_index": item["question_index"],
+            "question_id": item["question_id"],
+            "transcript": "我很高兴认识你",
+            "spoken_seconds": 6,
+        },
+    )
+    assert response.status_code == 201
+
+    prompt = fake_gemini[0]["prompt"]
+    assert "我很高兴认识你" in prompt
+    assert "Bản gỡ băng" in prompt
+    # Without audio the model must be told not to invent tone mistakes.
+    assert "KHÔNG có file ghi âm" in prompt
+    assert fake_gemini[0]["audio_base64"] is None
+
+
+def test_grading_needs_either_a_transcript_or_audio(client, fake_gemini):
+    paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
+    item = paper["parts"][0]["items"][0]
+
+    response = client.post(
+        "/api/hskk/grade",
+        json={
+            "session_id": paper["session_id"],
+            "part": 1,
+            "question_index": item["question_index"],
+            "question_id": item["question_id"],
+            "transcript": "   ",
+        },
+    )
+    assert response.status_code == 409
+    assert "ghi âm lại" in response.json()["detail"]
+    assert fake_gemini == []
+
+
 def test_each_part_kind_gets_its_own_rubric(client, fake_gemini):
     paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
     for part in paper["parts"]:
@@ -182,6 +228,7 @@ def test_each_part_kind_gets_its_own_rubric(client, fake_gemini):
                 "part": part["part"],
                 "question_index": item["question_index"],
                 "question_id": item["question_id"],
+                "transcript": "我说了一些话",
                 "audio_base64": base64.b64encode(b"\x00" * 64).decode(),
                 "spoken_seconds": 20,
             },
@@ -207,7 +254,7 @@ def test_ai_grading_is_refused_cleanly_without_a_key(client, monkeypatch):
             "part": 1,
             "question_index": item["question_index"],
             "question_id": item["question_id"],
-            "audio_base64": base64.b64encode(b"\x00" * 64).decode(),
+            "transcript": "我很高兴认识你",
         },
     )
     assert response.status_code == 409
@@ -223,15 +270,39 @@ def test_gemini_reply_wrapped_in_a_code_fence_is_still_read():
 
 
 def test_credentials_pick_the_right_auth_header(monkeypatch):
-    """API keys go in x-goog-api-key; OAuth tokens must use Bearer."""
-    monkeypatch.setenv("GEMINI_API_KEY", "AIzaSyFakeKeyForTests")
-    reset_settings_cache()
+    """Only OAuth tokens use Bearer; AI Studio keys come in several shapes.
+
+    Treating everything that was not `AIza…` as OAuth made valid `AQ.…` API keys
+    fail with a 401, which is what this guards against.
+    """
     from backend.settings import get_settings
 
-    assert get_settings().gemini_uses_bearer_token is False
-    monkeypatch.setenv("GEMINI_API_KEY", "AQ.Ab8RNfakeoauthtoken")
+    for api_key in ("AIzaSyFakeKeyForTests", "AQ.Ab8RNfakeapikeyfortests"):
+        monkeypatch.setenv("GEMINI_API_KEY", api_key)
+        reset_settings_cache()
+        assert get_settings().gemini_uses_bearer_token is False
+
+    monkeypatch.setenv("GEMINI_API_KEY", "ya29.fake-oauth-access-token")
     reset_settings_cache()
     assert get_settings().gemini_uses_bearer_token is True
+
+
+def test_a_retired_model_reports_how_to_fix_it(monkeypatch):
+    """Google withdrew gemini-2.0-flash; a 404 must name the model and the knob."""
+    import urllib.error
+
+    monkeypatch.setenv("GEMINI_API_KEY", "AIzaSyFakeKeyForTests")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-2.0-flash")
+    reset_settings_cache()
+
+    def _boom(*args, **kwargs):
+        raise urllib.error.HTTPError("url", 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(gemini_service.urllib.request, "urlopen", _boom)
+    with pytest.raises(Exception) as caught:
+        gemini_service.generate_json(system_instruction="x", prompt="y")
+    assert "gemini-2.0-flash" in str(caught.value)
+    assert "GEMINI_MODEL" in str(caught.value)
 
 
 def test_rerating_the_same_question_replaces_it(client):

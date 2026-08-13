@@ -253,15 +253,18 @@ class HskkWrittenAnswer(BaseModel):
 class HskkGradeRequest(BaseModel):
     """A spoken answer sent to Gemini for scoring.
 
-    ``audio_base64`` holds a WAV clip; the 12 MB ceiling is well under Gemini's
-    inline-data limit and comfortably fits the longest 2-minute answer.
+    Either half can be supplied and the service rejects a request carrying
+    neither: ``transcript`` is what the browser's speech recognition heard, and
+    ``audio_base64`` an optional WAV clip (the 12 MB ceiling sits well under
+    Gemini's inline-data limit and fits the longest 2-minute answer).
     """
 
     session_id: int = Field(gt=0)
     part: int = Field(ge=1, le=3)
     question_index: int = Field(ge=0, le=99)
     question_id: str = Field(min_length=1, max_length=32)
-    audio_base64: str = Field(min_length=32, max_length=12_000_000)
+    transcript: str = Field(default="", max_length=4000)
+    audio_base64: str | None = Field(default=None, max_length=12_000_000)
     audio_mime_type: str = Field(default="audio/wav", pattern="^audio/(wav|webm|ogg|mp3|mpeg|aac|flac)$")
     spoken_seconds: int = Field(default=0, ge=0, le=600)
 

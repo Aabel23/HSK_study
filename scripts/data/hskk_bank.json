@@ -151,6 +151,62 @@
             "pinyin": "Nǐ zuì xǐhuan de jìjié shì shénme? Wèishénme?",
             "vi": "Mùa bạn thích nhất là mùa nào? Vì sao?",
             "hints": ["我最喜欢…", "因为那时候天气…", "我可以…", "我常常和家人…"]
+          },
+          {
+            "id": "b3-09",
+            "hanzi": "你的生日是怎么过的？请说一说。",
+            "pinyin": "Nǐ de shēngrì shì zěnme guò de? Qǐng shuō yi shuō.",
+            "vi": "Sinh nhật của bạn diễn ra thế nào? Hãy kể lại.",
+            "hints": ["我的生日是…月…号", "那天我…", "朋友们请我去…", "我收到了…", "我觉得那天很…"]
+          },
+          {
+            "id": "b3-10",
+            "hanzi": "说一说你最难忘的一次旅行。",
+            "pinyin": "Shuō yi shuō nǐ zuì nánwàng de yí cì lǚxíng.",
+            "vi": "Kể về chuyến đi đáng nhớ nhất của bạn.",
+            "hints": ["去年我去了…", "我和…一起去的", "在那儿我们…", "我最喜欢的是…", "以后我还想…"]
+          },
+          {
+            "id": "b3-11",
+            "hanzi": "你今天吃了什么？请说一说你的三顿饭。",
+            "pinyin": "Nǐ jīntiān chī le shénme? Qǐng shuō yi shuō nǐ de sān dùn fàn.",
+            "vi": "Hôm nay bạn đã ăn gì? Kể về ba bữa ăn của bạn.",
+            "hints": ["早上我吃了…", "中午我和…一起…", "晚上…", "我最喜欢吃…", "因为…"]
+          },
+          {
+            "id": "b3-12",
+            "hanzi": "请介绍一下你的房间。",
+            "pinyin": "Qǐng jièshào yíxià nǐ de fángjiān.",
+            "vi": "Hãy giới thiệu về căn phòng của bạn.",
+            "hints": ["我的房间不大", "里面有…", "窗户旁边是…", "我常常在房间里…", "我很喜欢这里，因为…"]
+          },
+          {
+            "id": "b3-13",
+            "hanzi": "说一说上个周末你做了什么。",
+            "pinyin": "Shuō yi shuō shàng ge zhōumò nǐ zuò le shénme.",
+            "vi": "Kể về việc bạn đã làm cuối tuần trước.",
+            "hints": ["上个周末我…", "早上先…", "然后我和…", "下午…", "晚上我…，觉得很…"]
+          },
+          {
+            "id": "b3-14",
+            "hanzi": "请说一说你怎么学习汉语。",
+            "pinyin": "Qǐng shuō yi shuō nǐ zěnme xuéxí Hànyǔ.",
+            "vi": "Hãy kể bạn học tiếng Hán như thế nào.",
+            "hints": ["我每天…", "我用…学习", "最难的是…", "我的老师说…", "我希望…"]
+          },
+          {
+            "id": "b3-15",
+            "hanzi": "说一说你养过的宠物，或者你想养什么宠物。",
+            "pinyin": "Shuō yi shuō nǐ yǎng guo de chǒngwù, huòzhě nǐ xiǎng yǎng shénme chǒngwù.",
+            "vi": "Kể về con vật bạn từng nuôi, hoặc con vật bạn muốn nuôi.",
+            "hints": ["我家有一只…", "它叫…", "它很喜欢…", "每天我…", "我觉得…"]
+          },
+          {
+            "id": "b3-16",
+            "hanzi": "请说一说你最好的一天是什么样的。",
+            "pinyin": "Qǐng shuō yi shuō nǐ zuì hǎo de yì tiān shì shénme yàng de.",
+            "vi": "Hãy kể về ngày tuyệt vời nhất của bạn.",
+            "hints": ["那天早上…", "因为…", "我和…一起…", "我们去了…", "到现在我还记得…"]
           }
         ]
       }

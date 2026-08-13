@@ -123,8 +123,12 @@ class Settings:
     # without a key the exam falls back to self-assessment, exactly like the
     # donate tab falls back when PayOS is not configured.
     gemini_api_key: str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", "").strip())
+    # An alias rather than a pinned version: Google retires numbered models
+    # (gemini-2.0-flash was withdrawn and started returning 404), and a mock exam
+    # that stops grading because of that is worse than one on a slightly
+    # different model. Pin a version through the env var if ever needed.
     gemini_model: str = field(
-        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash").strip()
+        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip()
     )
     gemini_timeout_seconds: int = field(
         default_factory=lambda: _env_int("GEMINI_TIMEOUT", 60, minimum=5)
@@ -136,14 +140,17 @@ class Settings:
 
     @property
     def gemini_uses_bearer_token(self) -> bool:
-        """Tell an API key apart from an OAuth access token.
+        """Tell an OAuth access token apart from an API key.
 
-        Google AI Studio hands out keys that start with ``AIza`` and are sent in
-        the ``x-goog-api-key`` header, while tokens minted by OAuth (``ya29.``,
-        ``AQ.``) must go in ``Authorization: Bearer``. Sending the wrong one
-        gets a 401, so the shape of the credential picks the header.
+        Only real OAuth tokens go in ``Authorization: Bearer``; API keys use the
+        ``x-goog-api-key`` header. AI Studio issues keys in more than one shape
+        (``AIza…`` and ``AQ.…`` are both API keys), so the check is for the OAuth
+        prefixes rather than for a single key prefix — assuming anything that was
+        not ``AIza…`` had to be OAuth made valid ``AQ.…`` keys fail with a 401.
+        The client also retries with the other header on a 401, so a credential
+        this guess gets wrong still works.
         """
-        return not self.gemini_api_key.startswith("AIza")
+        return self.gemini_api_key.startswith(("ya29.", "Bearer "))
 
     @property
     def is_development(self) -> bool:
