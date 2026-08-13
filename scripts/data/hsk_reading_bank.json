@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "note": "Ngân hàng phần ĐỌC của đề thi thử HSK, theo cấu trúc đề thật. Mỗi lượt thi bốc ngẫu nhiên một tập con của từng pool. Trường `answer` KHÔNG bao giờ được gửi ra client — backend tự chấm.",
+  "levels": {
+    "beginner": {
+      "hsk_level": 2,
+      "section_name_zh": "阅读",
+      "section_name_vi": "Đọc hiểu",
+      "time_minutes": 22,
+      "parts": [
+        {
+          "part_id": "b-read-1",
+          "part_number": 1,
+          "question_type": "judge_true_false",
+          "instruction_zh": "判断对错",
+          "instruction_vi": "Đọc câu rồi xét nhận định có dấu ★ là đúng hay sai.",
+          "count": 5,
+          "pool": [
+            { "id": "br1-01", "passage_zh": "我家有三口人：爸爸、妈妈和我。", "statement_zh": "★ 他家有四口人。", "answer": false, "explanation_vi": "Câu gốc nói ba người (爸爸、妈妈和我), không phải bốn." },
+            { "id": "br1-02", "passage_zh": "这个饭馆的菜很好吃，也不贵。", "statement_zh": "★ 这个饭馆的菜很便宜。", "answer": true, "explanation_vi": "不贵 (không đắt) đồng nghĩa với 便宜 (rẻ)." },
+            { "id": "br1-03", "passage_zh": "明天是星期六，我们不用上班。", "statement_zh": "★ 明天要上班。", "answer": false, "explanation_vi": "不用上班 nghĩa là không phải đi làm." },
+            { "id": "br1-04", "passage_zh": "妹妹今年五岁，还没上学。", "statement_zh": "★ 妹妹是学生。", "answer": false, "explanation_vi": "还没上学 = chưa đi học, nên chưa phải học sinh." },
+            { "id": "br1-05", "passage_zh": "我每天早上六点起床，然后去跑步。", "statement_zh": "★ 他早上跑步。", "answer": true, "explanation_vi": "早上六点起床 rồi 去跑步 — đúng là chạy bộ buổi sáng." },
+            { "id": "br1-06", "passage_zh": "外面下雨了，你出去的时候带上伞吧。", "statement_zh": "★ 今天天气很好。", "answer": false, "explanation_vi": "下雨了 nghĩa là trời đang mưa." },
+            { "id": "br1-07", "passage_zh": "我昨天买了一件新衣服，红色的，很漂亮。", "statement_zh": "★ 他买的衣服是红色的。", "answer": true, "explanation_vi": "Câu gốc nói rõ 红色的." },
+            { "id": "br1-08", "passage_zh": "医院离我家很远，坐公共汽车要一个小时。", "statement_zh": "★ 医院离他家很近。", "answer": false, "explanation_vi": "很远 (rất xa) trái nghĩa với 很近." },
+            { "id": "br1-09", "passage_zh": "我不会开车，每天坐地铁去公司。", "statement_zh": "★ 他每天开车上班。", "answer": false, "explanation_vi": "不会开车 và 坐地铁 — đi tàu điện ngầm chứ không lái xe." },
+            { "id": "br1-10", "passage_zh": "这本书很有意思，我看了两遍。", "statement_zh": "★ 他看过这本书。", "answer": true, "explanation_vi": "看了两遍 = đã đọc hai lần." }
+          ]
+        },
+        {
+          "part_id": "b-read-2",
+          "part_number": 2,
+          "question_type": "fill_in_blank_sentence",
+          "instruction_zh": "选词填空",
+          "instruction_vi": "Chọn từ thích hợp trong bảng điền vào chỗ trống. Có một từ thừa không dùng đến.",
+          "count": 5,
+          "pool": [
+            { "id": "br2-01", "sentence_zh": "我们(  )去看电影吧。", "answer": "一起", "explanation_vi": "一起 = cùng nhau, hợp với lời rủ 吧." },
+            { "id": "br2-02", "sentence_zh": "他(  )回家了，你明天再来吧。", "answer": "已经", "explanation_vi": "已经 = đã, diễn tả việc đã xảy ra." },
+            { "id": "br2-03", "sentence_zh": "我(  )这本书很有意思。", "answer": "觉得", "explanation_vi": "觉得 = cảm thấy/thấy rằng, dẫn vào một nhận xét." },
+            { "id": "br2-04", "sentence_zh": "(  )下雨，所以我没去公园。", "answer": "因为", "explanation_vi": "Cặp 因为…所以… là kết cấu nhân quả." },
+            { "id": "br2-05", "sentence_zh": "你(  )在这儿吃饭，也可以带回家。", "answer": "可以", "explanation_vi": "可以 = có thể, chỉ sự cho phép." },
+            { "id": "br2-06", "sentence_zh": "他(  )去图书馆看书。", "answer": "常常", "explanation_vi": "常常 = thường xuyên, chỉ tần suất." },
+            { "id": "br2-07", "sentence_zh": "这个问题我不(  )回答。", "answer": "知道", "explanation_vi": "不知道 = không biết." },
+            { "id": "br2-08", "sentence_zh": "外面很冷，你(  )穿点儿衣服。", "answer": "多", "explanation_vi": "多穿点儿 = mặc thêm chút nữa." },
+            { "id": "br2-09", "sentence_zh": "今天的作业(  )难，我做了两个小时。", "answer": "很", "explanation_vi": "很 đứng trước tính từ làm vị ngữ." },
+            { "id": "br2-10", "sentence_zh": "请(  )一下，我马上就来。", "answer": "等", "explanation_vi": "等一下 = đợi một chút." }
+          ],
+          "distractors": ["旅游", "帮助", "开始", "希望", "介绍"]
+        },
+        {
+          "part_id": "b-read-3",
+          "part_number": 3,
+          "question_type": "multiple_choice_dialogue",
+          "instruction_zh": "请选出正确答案",
+          "instruction_vi": "Đọc đoạn hội thoại rồi chọn đáp án đúng.",
+          "count": 5,
+          "options_per_question": 3,
+          "pool": [
+            { "id": "br3-01", "passage_zh": "男：你想喝点儿什么？\n女：我要一杯茶，谢谢。", "question_zh": "女的要什么？", "options": ["咖啡", "茶", "牛奶"], "answer": "茶", "explanation_vi": "Người nữ nói 我要一杯茶." },
+            { "id": "br3-02", "passage_zh": "女：这件衣服多少钱？\n男：三百块，现在买还能便宜二十。", "question_zh": "这件衣服原来多少钱？", "options": ["二百块", "三百块", "三百二十块"], "answer": "三百块", "explanation_vi": "Giá gốc là 三百块, giảm 20 là giá sau khi bớt." },
+            { "id": "br3-03", "passage_zh": "男：明天我们几点见面？\n女：早上九点，在学校门口。", "question_zh": "他们明天几点见面？", "options": ["八点", "九点", "十点"], "answer": "九点", "explanation_vi": "Người nữ hẹn 早上九点." },
+            { "id": "br3-04", "passage_zh": "女：你姐姐做什么工作？\n男：她是医生，在医院工作。", "question_zh": "他姐姐是做什么的？", "options": ["老师", "医生", "学生"], "answer": "医生", "explanation_vi": "Câu trả lời nói rõ 她是医生." },
+            { "id": "br3-05", "passage_zh": "男：外面冷吗？\n女：很冷，你要多穿点儿衣服。", "question_zh": "外面天气怎么样？", "options": ["很热", "很冷", "在下雨"], "answer": "很冷", "explanation_vi": "Người nữ đáp 很冷." },
+            { "id": "br3-06", "passage_zh": "女：你昨天怎么没来上课？\n男：我生病了，去医院了。", "question_zh": "男的昨天为什么没来？", "options": ["他去旅游了", "他生病了", "他睡觉了"], "answer": "他生病了", "explanation_vi": "Người nam nói 我生病了." },
+            { "id": "br3-07", "passage_zh": "男：这是你的书吗？\n女：不是，是我同学的，我帮她拿一下。", "question_zh": "这本书是谁的？", "options": ["女的的", "男的的", "女的同学的"], "answer": "女的同学的", "explanation_vi": "Người nữ nói 是我同学的." },
+            { "id": "br3-08", "passage_zh": "女：你家离公司远不远？\n男：不远，走路十分钟就到了。", "question_zh": "男的怎么去公司？", "options": ["走路", "坐车", "骑自行车"], "answer": "走路", "explanation_vi": "走路十分钟就到 — anh ấy đi bộ." },
+            { "id": "br3-09", "passage_zh": "男：周末你想做什么？\n女：我想在家休息，这个星期太累了。", "question_zh": "女的周末想做什么？", "options": ["去买东西", "在家休息", "去上班"], "answer": "在家休息", "explanation_vi": "Người nữ nói 我想在家休息." },
+            { "id": "br3-10", "passage_zh": "女：你会说汉语吗？\n男：会一点儿，我学了半年了。", "question_zh": "男的学汉语多长时间了？", "options": ["半年", "一年", "两年"], "answer": "半年", "explanation_vi": "Người nam nói 我学了半年了." }
+          ]
+        }
+      ]
+    },
+    "intermediate": {
+      "hsk_level": 4,
+      "section_name_zh": "阅读",
+      "section_name_vi": "Đọc hiểu",
+      "time_minutes": 40,
+      "parts": [
+        {
+          "part_id": "i-read-1",
+          "part_number": 1,
+          "question_type": "fill_in_blank_sentence",
+          "instruction_zh": "选词填空",
+          "instruction_vi": "Chọn từ thích hợp trong bảng điền vào chỗ trống. Có một từ thừa không dùng đến.",
+          "count": 5,
+          "pool": [
+            { "id": "ir1-01", "sentence_zh": "这里的(  )很安静，很适合看书学习。", "answer": "环境", "explanation_vi": "环境 = môi trường/không gian xung quanh." },
+            { "id": "ir1-02", "sentence_zh": "这个问题比我想象的还要(  )。", "answer": "复杂", "explanation_vi": "复杂 = phức tạp, đi với 比…还要…" },
+            { "id": "ir1-03", "sentence_zh": "昨天的(  )非常精彩，观众都站起来鼓掌了。", "answer": "表演", "explanation_vi": "表演 = buổi biểu diễn." },
+            { "id": "ir1-04", "sentence_zh": "只有多听多说，才能(  )口语水平。", "answer": "提高", "explanation_vi": "提高水平 là cách kết hợp cố định." },
+            { "id": "ir1-05", "sentence_zh": "你去超市的时候(  )帮我买瓶牛奶。", "answer": "顺便", "explanation_vi": "顺便 = tiện thể làm luôn." },
+            { "id": "ir1-06", "sentence_zh": "他做事很(  )，从来不迟到。", "answer": "认真", "explanation_vi": "认真 = nghiêm túc, cẩn thận." },
+            { "id": "ir1-07", "sentence_zh": "这份工作对我来说是个很好的(  )。", "answer": "机会", "explanation_vi": "机会 = cơ hội." },
+            { "id": "ir1-08", "sentence_zh": "医生(  )他每天至少走六千步。", "answer": "建议", "explanation_vi": "建议 = khuyên, đề nghị." },
+            { "id": "ir1-09", "sentence_zh": "会议(  )推迟到下午三点了。", "answer": "临时", "explanation_vi": "临时 = tạm thời, đột xuất." },
+            { "id": "ir1-10", "sentence_zh": "他的普通话说得很(  )，几乎听不出口音。", "answer": "标准", "explanation_vi": "标准 = chuẩn." }
+          ],
+          "distractors": ["积极", "严重", "详细", "礼貌", "普通"]
+        },
+        {
+          "part_id": "i-read-2",
+          "part_number": 2,
+          "question_type": "sentence_reordering",
+          "instruction_zh": "排列顺序",
+          "instruction_vi": "Sắp xếp các vế câu thành một đoạn có nghĩa và đúng logic.",
+          "count": 3,
+          "pool": [
+            { "id": "ir2-01", "words_zh": ["所以我决定坐地铁去", "今天路上特别堵", "这样能快一点儿"], "answer": "今天路上特别堵|所以我决定坐地铁去|这样能快一点儿", "explanation_vi": "Nguyên nhân (tắc đường) → quyết định (đi tàu điện) → lý do bổ sung (nhanh hơn)." },
+            { "id": "ir2-02", "words_zh": ["身体越来越好", "他每天都坚持跑步", "因此这几年"], "answer": "他每天都坚持跑步|因此这几年|身体越来越好", "explanation_vi": "因此 nối nguyên nhân với kết quả, cụm thời gian 这几年 đứng trước kết quả." },
+            { "id": "ir2-03", "words_zh": ["顺便看看老朋友", "我打算下个月去上海", "参加一个会议"], "answer": "我打算下个月去上海|参加一个会议|顺便看看老朋友", "explanation_vi": "Mục đích chính trước, việc tiện thể (顺便) sau cùng." },
+            { "id": "ir2-04", "words_zh": ["就再也没有联系过", "我们上大学时是同屋", "毕业以后"], "answer": "我们上大学时是同屋|毕业以后|就再也没有联系过", "explanation_vi": "Trình tự thời gian: thời đại học → sau tốt nghiệp → kết quả." },
+            { "id": "ir2-05", "words_zh": ["价格也比较便宜", "这家店的水果很新鲜", "所以来买的人特别多"], "answer": "这家店的水果很新鲜|价格也比较便宜|所以来买的人特别多", "explanation_vi": "Hai lý do (tươi, rẻ) rồi tới kết quả với 所以." },
+            { "id": "ir2-06", "words_zh": ["才发现忘记带钱包了", "我到了超市门口", "只好又回家一趟"], "answer": "我到了超市门口|才发现忘记带钱包了|只好又回家一趟", "explanation_vi": "到…才发现… rồi 只好 dẫn tới hành động bắt buộc." }
+          ]
+        },
+        {
+          "part_id": "i-read-3",
+          "part_number": 3,
+          "question_type": "reading_comprehension",
+          "instruction_zh": "请选出正确答案",
+          "instruction_vi": "Đọc đoạn văn rồi chọn đáp án đúng.",
+          "count": 4,
+          "options_per_question": 4,
+          "pool": [
+            {
+              "id": "ir3-01",
+              "passage_zh": "很多人认为，只要每天背很多单词，外语就一定学得好。其实不是这样。语言是用来交流的，如果只背单词而不开口说，遇到真正需要用的时候还是说不出来。所以，学外语最重要的不是背了多少，而是用了多少。",
+              "question_zh": "这段话主要想告诉我们什么？",
+              "options": ["背单词没有用", "学外语要多开口用", "外语很难学好", "每天都要学习"],
+              "answer": "学外语要多开口用",
+              "explanation_vi": "Câu cuối chốt ý: quan trọng không phải học thuộc bao nhiêu mà là dùng bao nhiêu."
+            },
+            {
+              "id": "ir3-02",
+              "passage_zh": "小李昨天本来打算去看电影，可是下班的时候突然接到公司的电话，说有个材料必须当天交。他只好又回办公室，一直忙到晚上十点。电影票就这样浪费了。",
+              "question_zh": "小李昨天为什么没去看电影？",
+              "options": ["电影票丢了", "他生病了", "他要加班", "他不想去"],
+              "answer": "他要加班",
+              "explanation_vi": "Anh ấy phải quay lại văn phòng làm tới 10 giờ tối — tức là tăng ca."
+            },
+            {
+              "id": "ir3-03",
+              "passage_zh": "研究发现，睡觉前看手机的人往往更难入睡。这是因为手机的光会让大脑以为现在还是白天，从而影响休息。因此专家建议，睡觉前半小时最好把手机放在离床远一点儿的地方。",
+              "question_zh": "专家建议睡觉前怎么做？",
+              "options": ["早点儿上床", "把手机放远一点儿", "看书代替看手机", "把灯关掉"],
+              "answer": "把手机放远一点儿",
+              "explanation_vi": "Câu cuối nêu đúng lời khuyên: để điện thoại xa giường."
+            },
+            {
+              "id": "ir3-04",
+              "passage_zh": "这家书店和别的书店不太一样。除了卖书以外，它还提供咖啡和安静的座位，客人可以在那儿坐一下午。老板说，他希望这里不只是买书的地方，更是一个能让人放松的空间。",
+              "question_zh": "关于这家书店，可以知道什么？",
+              "options": ["只卖旧书", "客人可以在那儿休息", "咖啡很便宜", "晚上不开门"],
+              "answer": "客人可以在那儿休息",
+              "explanation_vi": "Quán có cà phê và chỗ ngồi yên tĩnh, khách ngồi cả buổi chiều được."
+            },
+            {
+              "id": "ir3-05",
+              "passage_zh": "现在越来越多的年轻人选择在网上买菜。他们觉得这样能省下不少时间，而且价格和超市差不多。不过也有人担心，看不到东西就下单，收到的可能没有想象中新鲜。",
+              "question_zh": "有些人对网上买菜有什么担心？",
+              "options": ["价格太贵", "送得太慢", "东西可能不新鲜", "种类太少"],
+              "answer": "东西可能不新鲜",
+              "explanation_vi": "Câu cuối nói rõ lo ngại về độ tươi của hàng nhận được."
+            },
+            {
+              "id": "ir3-06",
+              "passage_zh": "小张刚到北京工作的时候，一个人也不认识，周末常常待在家里。后来他参加了一个跑步俱乐部，每周和大家一起跑两次。半年下来，他不但认识了很多朋友，身体也比以前好多了。",
+              "question_zh": "参加俱乐部以后，小张有什么变化？",
+              "options": ["工作更忙了", "搬到了新家", "朋友多了身体也好了", "不喜欢跑步了"],
+              "answer": "朋友多了身体也好了",
+              "explanation_vi": "不但…也… nêu hai thay đổi: quen nhiều bạn và khoẻ hơn."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

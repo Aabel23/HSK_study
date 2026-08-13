@@ -163,14 +163,22 @@ def complete_session(
 
 
 def get_stats() -> dict[str, Any]:
+    """Totals across every finished quiz, however the questions were asked.
+
+    Counted from the session rows rather than from `quiz_attempts`: the reading
+    half of the mock exam also runs through here, and its questions are passages
+    and clause-ordering tasks that have no single `vocabulary_id` to attach an
+    attempt row to. Both paths write the session totals, so this stays correct
+    for the older per-word quizzes too.
+    """
     with get_connection() as connection:
         row = connection.execute(
             """
-            SELECT COUNT(DISTINCT s.id) AS sessions,
-                   COALESCE(SUM(CASE WHEN a.is_correct = 1 THEN 1 ELSE 0 END), 0) AS correct,
-                   COALESCE(SUM(CASE WHEN a.is_correct = 0 THEN 1 ELSE 0 END), 0) AS incorrect
-            FROM quiz_sessions s
-            LEFT JOIN quiz_attempts a ON a.session_id = s.id
+            SELECT COUNT(*) AS sessions,
+                   COALESCE(SUM(correct_items), 0) AS correct,
+                   COALESCE(SUM(incorrect_items), 0) AS incorrect
+            FROM quiz_sessions
+            WHERE ended_at IS NOT NULL
             """
         ).fetchone()
     correct = row["correct"] or 0

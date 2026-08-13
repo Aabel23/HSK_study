@@ -4,8 +4,8 @@ from backend.routes.utils import raise_http_error
 from backend.schemas import (
     HskkAnswerCreate,
     HskkGradeRequest,
+    HskkReadingAnswer,
     HskkSessionCreate,
-    HskkWrittenAnswer,
 )
 from backend.services import gemini_service, hskk_service
 
@@ -40,14 +40,14 @@ def create_hskk_session(payload: HskkSessionCreate):
         raise_http_error(error)
 
 
-@router.post("/written", status_code=201)
-def record_hskk_written_answer(payload: HskkWrittenAnswer):
+@router.post("/reading", status_code=201)
+def record_hskk_reading_answer(payload: HskkReadingAnswer):
     try:
-        return hskk_service.record_written_answer(
+        return hskk_service.record_reading_answer(
             payload.session_id,
             payload.question_index,
-            payload.vocabulary_id,
-            payload.is_correct,
+            payload.question_id,
+            payload.answer,
         )
     except Exception as error:
         raise_http_error(error)

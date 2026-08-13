@@ -13,10 +13,10 @@ from backend.settings import reset_settings_cache
 
 EXPECTED_LAYOUT = {
     # Sơ cấp keeps all three official speaking parts.
-    "beginner": {"counts": [15, 10, 2], "points": [2, 3, 20], "written": 15},
+    "beginner": {"counts": [15, 10, 2], "points": [2, 3, 20], "reading": 15},
     # Trung cấp drops part 2 (nhìn tranh kể chuyện) — no picture bank — and its
     # points move to part 3 so the speaking half still totals 100.
-    "intermediate": {"counts": [10, 2], "points": [3, 35], "written": 20},
+    "intermediate": {"counts": [10, 2], "points": [3, 35], "reading": 12},
 }
 
 FAKE_GEMINI_REPLY = {
@@ -57,9 +57,9 @@ def test_levels_match_the_official_format(client):
         assert [part["points_per_item"] for part in level["parts"]] == expected["points"]
         # The speaking half keeps the exam's real 100-point scale.
         assert level["speaking_points"] == 100
-        assert level["written"]["count"] == expected["written"]
-        assert level["written"]["total_points"] == 100
-        assert level["total_items"] == expected["written"] + sum(expected["counts"])
+        assert level["reading"]["total_questions"] == expected["reading"]
+        assert level["reading"]["total_points"] == 100
+        assert level["total_items"] == expected["reading"] + sum(expected["counts"])
 
 
 def test_intermediate_explains_the_dropped_picture_part(client):
@@ -70,18 +70,18 @@ def test_intermediate_explains_the_dropped_picture_part(client):
     assert items["beginner"]["skipped_parts"] == []
 
 
-def test_session_bundles_a_written_section_and_the_speaking_parts(client):
+def test_session_bundles_a_reading_section_and_the_speaking_parts(client):
     paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
+    reading = paper["reading"]
 
-    assert paper["written"]["max_score"] == 100
-    assert len(paper["written"]["questions"]) == 15
+    assert reading["max_score"] == 100
+    assert reading["total_questions"] == 15
     assert paper["quiz_session_id"] > 0
-    for question in paper["written"]["questions"]:
-        assert len(question["options"]) == 4
-        assert any(
-            option["vocabulary_id"] == question["target_vocabulary_id"]
-            for option in question["options"]
-        )
+    assert [part["question_type"] for part in reading["parts"]] == [
+        "judge_true_false",
+        "fill_in_blank_sentence",
+        "multiple_choice_dialogue",
+    ]
 
     ids = []
     for part in paper["parts"]:
@@ -95,19 +95,105 @@ def test_session_bundles_a_written_section_and_the_speaking_parts(client):
     assert paper["total_items"] == 15 + 27
 
 
-def test_written_and_spoken_halves_are_scored_separately(client):
+def _reading_questions(paper):
+    for part in paper["reading"]["parts"]:
+        for question in part["questions"]:
+            yield part, question
+
+
+def test_the_paper_never_carries_the_reading_answer_key(client):
+    """A learner with devtools open must not be able to read the answers."""
+    paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
+    serialised = json.dumps(paper["reading"], ensure_ascii=False)
+    assert '"answer"' not in serialised
+    assert "explanation_vi" not in serialised
+
+    for part, question in _reading_questions(paper):
+        assert "answer" not in question
+        if part["question_type"] == "multiple_choice_dialogue":
+            assert [option["key"] for option in question["options"]] == ["A", "B", "C"]
+
+
+def test_fill_in_the_blank_offers_one_spare_word(client):
+    paper = client.post("/api/hskk/session", json={"exam_level": "intermediate"}).json()
+    part = next(
+        entry
+        for entry in paper["reading"]["parts"]
+        if entry["question_type"] == "fill_in_blank_sentence"
+    )
+    assert len(part["word_bank"]) == part["question_count"] + 1
+    assert [word["key"] for word in part["word_bank"]] == ["A", "B", "C", "D", "E", "F"]
+
+
+def test_reading_answers_are_graded_on_the_server(client):
+    paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
+    session_id = paper["session_id"]
+    part, question = next(
+        (part, question)
+        for part, question in _reading_questions(paper)
+        if part["question_type"] == "judge_true_false"
+    )
+
+    # Claiming an answer is right does not make it so: both values are tried and
+    # exactly one of them is accepted.
+    verdicts = []
+    for answer in (True, False):
+        response = client.post(
+            "/api/hskk/reading",
+            json={
+                "session_id": session_id,
+                "question_index": question["question_index"],
+                "question_id": question["id"],
+                "answer": answer,
+            },
+        )
+        assert response.status_code == 201
+        body = response.json()
+        verdicts.append(body["is_correct"])
+        assert body["explanation_vi"]
+    assert sorted(verdicts) == [False, True]
+
+
+def test_reordering_is_only_correct_in_the_right_order(client):
+    paper = client.post("/api/hskk/session", json={"exam_level": "intermediate"}).json()
+    part, question = next(
+        (part, question)
+        for part, question in _reading_questions(paper)
+        if part["question_type"] == "sentence_reordering"
+    )
+    body = {
+        "session_id": paper["session_id"],
+        "question_index": question["question_index"],
+        "question_id": question["id"],
+        "answer": question["words_zh"],
+    }
+    first = client.post("/api/hskk/reading", json=body).json()
+    body["answer"] = list(reversed(question["words_zh"]))
+    second = client.post("/api/hskk/reading", json=body).json()
+    # The clauses are shuffled per paper, so at most one of the two can be right.
+    assert not (first["is_correct"] and second["is_correct"])
+    assert " → " in first["correct_answer"]
+
+
+def test_reading_and_spoken_halves_are_scored_separately(client):
     paper = client.post("/api/hskk/session", json={"exam_level": "beginner"}).json()
     session_id = paper["session_id"]
 
-    # Half the written questions right.
-    for index, question in enumerate(paper["written"]["questions"]):
+    # Answer the reading half, alternating a real answer with a deliberate miss.
+    for index, (part, question) in enumerate(_reading_questions(paper)):
+        if part["question_type"] == "judge_true_false":
+            answer: object = index % 2 == 0
+        elif part["question_type"] == "fill_in_blank_sentence":
+            answer = part["word_bank"][index % len(part["word_bank"])]["word_zh"]
+        else:
+            answer = question["options"][index % len(question["options"])]["text_zh"]
         client.post(
-            "/api/hskk/written",
+            "/api/hskk/reading",
             json={
                 "session_id": session_id,
                 "question_index": index,
-                "vocabulary_id": question["target_vocabulary_id"],
-                "is_correct": index % 2 == 0,
+                "question_id": question["id"],
+                "answer": answer,
             },
         )
     # Every spoken answer graded "good".
@@ -127,9 +213,12 @@ def test_written_and_spoken_halves_are_scored_separately(client):
 
     summary = client.post(f"/api/hskk/session/{session_id}/complete").json()
     assert summary["percent"] == 100  # speaking
-    assert summary["written_percent"] == pytest.approx(53.3, abs=0.2)  # 8 of 15
-    assert summary["overall_percent"] == pytest.approx(76.7, abs=0.2)
-    assert summary["passed"] is True
+    # The reading marks depend on which answers happened to be right, so only the
+    # bookkeeping is asserted here — the grading itself is covered above.
+    assert 0 <= summary["written_percent"] <= 100
+    assert summary["overall_percent"] == pytest.approx(
+        (summary["percent"] + summary["written_percent"]) / 2, abs=0.1
+    )
     assert summary["answered_items"] == 15 + 27
 
 

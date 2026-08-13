@@ -241,13 +241,18 @@ class HskkAnswerCreate(BaseModel):
     spoken_seconds: int = Field(default=0, ge=0, le=600)
 
 
-class HskkWrittenAnswer(BaseModel):
-    """One multiple-choice answer from the written half of the exam."""
+class HskkReadingAnswer(BaseModel):
+    """One answer from the reading half.
+
+    The client sends what the learner picked — never whether it was right. For
+    an ordering question ``answer`` is the list of clauses in the chosen order;
+    everywhere else it is the option text, or a boolean for true/false.
+    """
 
     session_id: int = Field(gt=0)
     question_index: int = Field(ge=0, le=99)
-    vocabulary_id: int = Field(gt=0)
-    is_correct: bool
+    question_id: str = Field(min_length=1, max_length=32)
+    answer: bool | str | list[str] = Field(union_mode="left_to_right")
 
 
 class HskkGradeRequest(BaseModel):

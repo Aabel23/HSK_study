@@ -437,11 +437,72 @@ export interface HskkPartFormat {
   answer_seconds: number;
 }
 
-export interface HskkWrittenFormat {
-  title: string;
+export type ReadingQuestionType =
+  | "judge_true_false"
+  | "fill_in_blank_sentence"
+  | "multiple_choice_dialogue"
+  | "reading_comprehension"
+  | "sentence_reordering";
+
+export interface ReadingQuestion {
+  id: string;
+  question_index: number;
+  passage_zh?: string;
+  statement_zh?: string;
+  sentence_zh?: string;
+  question_zh?: string;
+  options?: Array<{ key: string; text_zh: string }>;
+  words_zh?: string[];
+}
+
+export interface ReadingPart {
+  part_id: string;
+  part_number: number;
+  question_type: ReadingQuestionType;
+  instruction_zh: string;
   instruction_vi: string;
-  count: number;
+  question_count: number;
+  word_bank?: Array<{ key: string; word_zh: string }>;
+  options_per_question?: number;
+  questions: ReadingQuestion[];
+}
+
+export interface ReadingSection {
+  section_id: "reading";
+  section_name_zh: string;
+  section_name_vi: string;
+  hsk_level: number;
+  time_minutes: number;
+  total_questions: number;
+  part: number;
+  points_per_item: number;
+  max_score: number;
+  parts: ReadingPart[];
+}
+
+export interface HskkReadingFormat {
+  hsk_level: number;
+  section_name_zh: string;
+  section_name_vi: string;
+  time_minutes: number;
+  total_questions: number;
   total_points: number;
+  parts: Array<{
+    part_number: number;
+    question_type: ReadingQuestionType;
+    instruction_zh: string;
+    instruction_vi: string;
+    count: number;
+  }>;
+}
+
+/** Server's verdict on one reading answer; the answer key never reaches the client. */
+export interface ReadingVerdict {
+  question_id: string;
+  is_correct: boolean;
+  correct_answer: string;
+  explanation_vi: string;
+  score: number;
 }
 
 export interface HskkLevelFormat {
@@ -454,7 +515,7 @@ export interface HskkLevelFormat {
   total_items: number;
   speaking_items: number;
   speaking_points: number;
-  written: HskkWrittenFormat;
+  reading: HskkReadingFormat;
   parts: HskkPartFormat[];
   /** Parts of the official format this paper leaves out, with the reason why. */
   skipped_parts: Array<{ part: number; title: string; reason: string }>;
@@ -484,16 +545,6 @@ export interface HskkPart {
   items: HskkItem[];
 }
 
-export interface HskkWrittenSection {
-  part: number;
-  kind: "written";
-  title: string;
-  instruction_vi: string;
-  points_per_item: number;
-  max_score: number;
-  questions: QuizQuestion[];
-}
-
 export interface HskkPaper {
   session_id: number;
   quiz_session_id: number;
@@ -504,7 +555,7 @@ export interface HskkPaper {
   total_items: number;
   max_score: number;
   ai_grading: boolean;
-  written: HskkWrittenSection;
+  reading: ReadingSection;
   parts: HskkPart[];
 }
 

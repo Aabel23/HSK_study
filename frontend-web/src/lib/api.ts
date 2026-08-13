@@ -27,6 +27,7 @@ import type {
   HskkResult,
   HskkSelfRating,
   HskkStats,
+  ReadingVerdict,
   DonateConfig,
   DonateSummary,
   Donation,
@@ -363,14 +364,20 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ exam_level: examLevel }),
       }),
-    written: (sessionId: number, questionIndex: number, vocabularyId: number, isCorrect: boolean) =>
-      request<{ is_correct: boolean; score: number }>("/api/hskk/written", {
+    /** Sends only what the learner picked; the server decides right or wrong. */
+    reading: (
+      sessionId: number,
+      questionIndex: number,
+      questionId: string,
+      answer: boolean | string | string[]
+    ) =>
+      request<ReadingVerdict>("/api/hskk/reading", {
         method: "POST",
         body: JSON.stringify({
           session_id: sessionId,
           question_index: questionIndex,
-          vocabulary_id: vocabularyId,
-          is_correct: isCorrect,
+          question_id: questionId,
+          answer,
         }),
       }),
     grade: (

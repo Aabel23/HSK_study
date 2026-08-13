@@ -15,10 +15,11 @@ Phiên bản hiện tại là baseline di sản của dự án. Các phiên bả
 3. **Flashcard**: tạo phiên 1–200 thẻ (chọn nhanh hoặc nhập số cụ thể), lọc theo cấp độ HSK đang chọn, lật thẻ, bật/tắt pinyin ngay trong phiên, đánh giá và tổng kết.
 4. **Nối từ**: sáu cặp mỗi vòng, hai chế độ `meaning` và `pinyin`, hai cột xáo độc lập.
 5. **Luyện câu**: chọn số câu mỗi phiên (1–200), sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt Pinyin và nghĩa tiếng Việt, lưu số lần đúng/sai.
-6. **Thi thử HSK**: một đề duy nhất chạy từ trắc nghiệm từ vựng tới phần thi
-   nói. Nửa trắc nghiệm dùng lại engine của trang Kiểm tra (trang đó đã gộp vào
-   đây và bị ẩn khỏi menu); nửa nói theo đúng số phần/số câu/thang điểm/thời
-   gian của HSKK Sơ cấp và Trung cấp. Phát đề bằng TTS, ghi âm trong trình
+6. **Thi thử HSK**: một đề duy nhất chạy từ phần đọc tới phần thi nói. Phần đọc
+   theo cấu trúc 阅读 của đề thật (判断对错, 选词填空, 排列顺序, 阅读理解) với
+   đáp án chấm ở server; nửa nói theo đúng số phần/số câu/thang điểm/thời gian
+   của HSKK Sơ cấp và Trung cấp. Trang Kiểm tra cũ đã gộp vào đây và bị ẩn khỏi
+   menu. Phát đề bằng TTS, ghi âm trong trình
    duyệt, chấm bằng Gemini khi có khoá và tự chấm khi không. Mỗi nửa thang 100,
    điểm cuối là trung bình. Xem `docs/API.md` mục Thi thử HSK cho thang điểm và
    phần cấu hình khoá.

@@ -27,7 +27,7 @@ from functools import lru_cache
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import gemini_service, quiz_service, streak_service
+from backend.services import gemini_service, quiz_service, reading_service, streak_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from scripts.seed_data import FULL_DATA_DIR
 
@@ -213,13 +213,13 @@ def _get_level(exam_level: str) -> dict[str, Any]:
 def _part_config(exam_level: str, part: int) -> dict[str, Any]:
     level = _get_level(exam_level)
     if part == WRITTEN_PART:
-        written = level["written"]
+        reading = reading_service.describe(exam_level)
         return {
             "part": WRITTEN_PART,
-            "kind": "written",
-            "title": written["title"],
-            "points_per_item": round(WRITTEN_MAX_SCORE / written["count"], 4),
-            "count": written["count"],
+            "kind": "reading",
+            "title": reading["section_name_vi"],
+            "points_per_item": round(WRITTEN_MAX_SCORE / reading["total_questions"], 4),
+            "count": reading["total_questions"],
         }
     for config in level["parts"]:
         if config["part"] == part:
@@ -245,7 +245,7 @@ def list_levels() -> dict[str, Any]:
             }
             for part in level["parts"]
         ]
-        written = level["written"]
+        reading = reading_service.describe(code)
         items.append(
             {
                 "code": code,
@@ -254,14 +254,10 @@ def list_levels() -> dict[str, Any]:
                 "blurb": level["blurb"],
                 "prep_seconds": level["prep_seconds"],
                 "pass_score": level["pass_score"],
-                "written": {
-                    "title": written["title"],
-                    "instruction_vi": written["instruction_vi"],
-                    "count": written["count"],
-                    "total_points": WRITTEN_MAX_SCORE,
-                },
+                "reading": {**reading, "total_points": WRITTEN_MAX_SCORE},
                 "speaking_items": sum(part["count"] for part in level["parts"]),
-                "total_items": written["count"] + sum(part["count"] for part in level["parts"]),
+                "total_items": reading["total_questions"]
+                + sum(part["count"] for part in level["parts"]),
                 "speaking_points": round(sum(part["total_points"] for part in parts), 1),
                 "parts": parts,
                 # Surfaced so the UI can explain the gap instead of quietly
@@ -311,15 +307,14 @@ def _build_speaking_parts(level: dict[str, Any]) -> list[dict[str, Any]]:
 def create_session(exam_level: str) -> dict[str, Any]:
     level = _get_level(exam_level)
     parts = _build_speaking_parts(level)
-    written_config = level["written"]
 
-    # The written half runs on the quiz engine and books a real quiz session, so
-    # answers keep feeding the existing quiz stats and achievements.
-    questions = quiz_service.generate_questions(
-        written_config["hsk_levels"], written_config["question_types"], written_config["count"]
-    )
+    # The reading half follows the real 阅读 section and keeps its answer key on
+    # the server; it still books a quiz session so the existing quiz statistics
+    # and achievements keep counting the results.
+    reading = reading_service.build_section(exam_level)
+    reading_count = reading["total_questions"]
     quiz_session = quiz_service.create_session(
-        None, written_config["question_types"], len(questions)
+        None, level["written"]["question_types"], reading_count
     )
 
     speaking_items = sum(len(part["items"]) for part in parts)
@@ -338,13 +333,17 @@ def create_session(exam_level: str) -> dict[str, Any]:
             (
                 exam_level,
                 utc_now(),
-                speaking_items + len(questions),
+                speaking_items + reading_count,
                 speaking_max,
                 quiz_session["session_id"],
                 WRITTEN_MAX_SCORE,
             ),
         )
         session_id = cursor.lastrowid
+
+    reading["part"] = WRITTEN_PART
+    reading["points_per_item"] = round(WRITTEN_MAX_SCORE / reading_count, 4)
+    reading["max_score"] = WRITTEN_MAX_SCORE
 
     return {
         "session_id": session_id,
@@ -353,18 +352,10 @@ def create_session(exam_level: str) -> dict[str, Any]:
         "label": level["label"],
         "prep_seconds": level["prep_seconds"],
         "pass_score": level["pass_score"],
-        "total_items": speaking_items + len(questions),
+        "total_items": speaking_items + reading_count,
         "max_score": speaking_max,
         "ai_grading": gemini_service.is_configured(),
-        "written": {
-            "part": WRITTEN_PART,
-            "kind": "written",
-            "title": written_config["title"],
-            "instruction_vi": written_config["instruction_vi"],
-            "points_per_item": round(WRITTEN_MAX_SCORE / len(questions), 4),
-            "max_score": WRITTEN_MAX_SCORE,
-            "questions": questions,
-        },
+        "reading": reading,
         "parts": parts,
     }
 
@@ -432,13 +423,22 @@ def _store_answer(
     )
 
 
-def record_written_answer(
-    session_id: int, question_index: int, vocabulary_id: int, is_correct: bool
+def record_reading_answer(
+    session_id: int, question_index: int, question_id: str, answer: Any
 ) -> dict[str, Any]:
-    """Score one multiple-choice question of the written section."""
+    """Grade one reading question. The client sends what was picked, not whether
+    it was right — the answer key stays on this side of the wire."""
     with get_connection() as connection:
         session = _get_open_session(connection, session_id)
-        config = _part_config(session["exam_level"], WRITTEN_PART)
+        exam_level = session["exam_level"]
+        quiz_session_id = session["quiz_session_id"]
+
+    outcome = reading_service.check_answer(exam_level, question_id, answer)
+    is_correct = outcome["is_correct"]
+
+    with get_connection() as connection:
+        _get_open_session(connection, session_id)
+        config = _part_config(exam_level, WRITTEN_PART)
         max_score = float(config["points_per_item"])
         score = max_score if is_correct else 0.0
         _store_answer(
@@ -446,31 +446,20 @@ def record_written_answer(
             session_id,
             WRITTEN_PART,
             question_index,
-            str(vocabulary_id),
+            question_id,
             "good" if is_correct else "bad",
             score,
             max_score,
             0,
             "auto",
         )
-        quiz_session_id = session["quiz_session_id"]
-
-    # Mirror the attempt into the quiz tables so the existing quiz statistics and
-    # achievements keep counting; a failure there must not lose the exam answer.
-    if quiz_session_id:
-        try:
-            quiz_service.record_attempt(
-                quiz_session_id, vocabulary_id, "mcq_meaning", is_correct
-            )
-        except (InvalidOperationError, ResourceNotFoundError):
-            pass
 
     return {
         "session_id": session_id,
         "question_index": question_index,
-        "is_correct": is_correct,
         "score": round(score, 2),
         "max_score": round(max_score, 4),
+        **outcome,
     }
 
 

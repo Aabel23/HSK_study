@@ -57,15 +57,35 @@ Frontend gửi thứ tự `position`; backend tự quyết định kết quả �
 
 ## Thi thử HSK (`/api/hskk`)
 
-Một đề gồm hai nửa: **trắc nghiệm** (chạy trên chính engine của `/api/quiz`) và
-**phần nói** theo cấu trúc HSKK. Mỗi nửa chấm riêng trên thang 100, điểm cuối là
-trung bình cộng hai nửa.
+Một đề gồm hai nửa: **phần đọc** (阅读, theo cấu trúc đề HSK thật) và **phần nói**
+(theo cấu trúc HSKK). Mỗi nửa chấm riêng trên thang 100, điểm cuối là trung bình
+cộng hai nửa.
+
+### Phần đọc
+
+Ngân hàng đề ở `scripts/data/hsk_reading_bank.json`, phục vụ bởi
+`backend/services/reading_service.py`. Dạng câu hỏi theo đúng đề thật:
+
+| Cấp | Phần 1 | Phần 2 | Phần 3 |
+|---|---|---|---|
+| Sơ cấp (HSK 2) | 判断对错 — xét đúng/sai | 选词填空 — chọn từ điền vào câu | 对话选择 — đọc hội thoại chọn đáp án |
+| Trung cấp (HSK 4) | 选词填空 | 排列顺序 — sắp xếp vế câu | 阅读理解 — đọc đoạn văn chọn đáp án |
+
+Hai quy tắc quan trọng:
+
+- **Đáp án không bao giờ rời khỏi server.** Đề gửi cho trình duyệt đã bị lược bỏ
+  `answer` và `explanation_vi`; client chỉ gửi lên thứ thí sinh chọn, còn
+  `reading_service.check_answer()` mới là nơi quyết định đúng/sai. Cách cũ gửi
+  kèm id đáp án đúng, tức là mở devtools là thấy bài giải.
+- **Bảng từ của 选词填空 luôn thừa đúng một từ**, như đề thật, để chỗ trống cuối
+  cùng vẫn là một lựa chọn thật sự. Các phương án và các vế câu cũng được xáo
+  lại mỗi lần tạo đề.
 
 - `GET /hskk/levels` — cấu trúc chính thức của `beginner` (Sơ cấp) và `intermediate` (Trung cấp): số câu, điểm mỗi câu, thời gian trả lời, thời gian chuẩn bị, phần trắc nghiệm và cờ `ai_grading`. Không kèm câu hỏi nên gọi được ở màn hình giới thiệu.
 - `GET /hskk/grading` — `{ "ai_grading": true|false }`, cho giao diện biết có chấm bằng AI được không.
 - `GET /hskk/stats` — số lượt đã nộp, điểm cao nhất/trung bình/gần nhất và các lượt gần đây.
 - `POST /hskk/session` — body `{ "exam_level": "beginner" }`; trả `written` (câu trắc nghiệm) và `parts` (phần nói). Câu của phần "nghe rồi nhắc lại"/"nghe rồi trả lời" có `audio_text`; phần đọc đề trả `null` để giao diện không lộ lời đề trước khi thí sinh nghe.
-- `POST /hskk/written` — body `{ "session_id": 1, "question_index": 0, "vocabulary_id": 42, "is_correct": true }`; mỗi câu đúng được `100 / số câu` điểm. Lượt trả lời được ghi sang bảng `quiz_attempts` nên thống kê trắc nghiệm ở Tổng quan vẫn chạy như cũ.
+- `POST /hskk/reading` — body `{ "session_id": 1, "question_index": 0, "question_id": "br1-03", "answer": … }`. `answer` là `true`/`false` với 判断对错, chuỗi chữ Hán với các dạng chọn đáp án, và **mảng các vế theo thứ tự đã sắp** với 排列顺序. Trả về `is_correct`, `correct_answer` và `explanation_vi`; mỗi câu đúng được `100 / số câu` điểm.
 - `POST /hskk/answer` — body `{ "session_id": 1, "part": 1, "question_index": 0, "question_id": "b1-01", "self_rating": "good", "spoken_seconds": 12 }`. Dùng khi tự chấm.
 - `POST /hskk/grade` — chấm bằng AI. Body gồm `transcript` (log lời nói do trình duyệt nhận dạng) và/hoặc `audio_base64` (WAV 16 kHz mono); thiếu cả hai thì trả `409`. Trả điểm, bản gỡ băng, nhận xét tiếng Việt và ba điểm thành phần (phát âm / nội dung / trôi chảy).
 - `POST /hskk/session/{session_id}/complete` — trả điểm hai nửa, `overall_percent`, đạt/chưa đạt và điểm từng phần.

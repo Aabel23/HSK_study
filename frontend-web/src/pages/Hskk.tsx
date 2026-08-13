@@ -9,6 +9,7 @@ import { usePlayAudio } from "../lib/useAudio";
 import { useRecorder } from "../lib/useRecorder";
 import { useSpeechLog } from "../lib/useSpeechLog";
 import { blobToWavBase64 } from "../lib/wav";
+import { ReadingRunner } from "../components/ReadingRunner";
 import { formatNumber, formatPercent } from "../lib/format";
 import type {
   HskkExamLevel,
@@ -19,7 +20,6 @@ import type {
   HskkPart,
   HskkResult,
   HskkSelfRating,
-  QuizOption,
 } from "../lib/types";
 import {
   Badge,
@@ -62,13 +62,6 @@ const RATINGS: Array<{ value: HskkSelfRating; label: string; hint: string; tone:
   { value: "bad", label: "Còn vấp", hint: "Nói được rất ít", tone: "danger" },
 ];
 
-const QUESTION_LABEL: Record<string, string> = {
-  mcq_meaning: "Chọn nghĩa đúng",
-  mcq_hanzi: "Chọn Hán tự đúng",
-  mcq_pinyin: "Chọn pinyin đúng",
-  mcq_audio: "Nghe và chọn nghĩa",
-};
-
 function flatten(paper: HskkPaper): Slot[] {
   const slots: Slot[] = [];
   for (const part of paper.parts) {
@@ -100,10 +93,6 @@ export default function Hskk() {
   const [stage, setStage] = useState<Stage>("intro");
   const [paper, setPaper] = useState<HskkPaper | null>(null);
 
-  const [writtenIndex, setWrittenIndex] = useState(0);
-  const [picked, setPicked] = useState<number | null>(null);
-  const [writtenCorrect, setWrittenCorrect] = useState(0);
-
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -128,7 +117,6 @@ export default function Hskk() {
   const slots = useMemo(() => (paper ? flatten(paper) : []), [paper]);
   const slot = slots[index];
   const format = levels.data?.items.find((entry) => entry.code === examLevel);
-  const writtenQuestion = paper?.written.questions[writtenIndex];
 
   // Countdown mirroring the exam's fixed answer window; it stops the recording
   // when the window closes.
@@ -162,14 +150,6 @@ export default function Hskk() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slot?.item.question_id, stage]);
 
-  // Autoplay the listening questions of the written section too.
-  const writtenAudio = writtenQuestion?.prompt.audio_text;
-  useEffect(() => {
-    if (stage !== "written" || !writtenAudio) return;
-    if (settings.autoplay_audio) play(writtenAudio, { voice: settings.audio_voice });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [writtenAudio, stage]);
-
   const startExam = useCallback(async () => {
     setBusy(true);
     try {
@@ -177,9 +157,6 @@ export default function Hskk() {
       setPaper(next);
       setStage("written");
       setLostSession(false);
-      setWrittenIndex(0);
-      setWrittenCorrect(0);
-      setPicked(null);
       setIndex(0);
       setGrade(null);
       setResult(null);
@@ -203,32 +180,6 @@ export default function Hskk() {
     },
     [recorder, stats, toast]
   );
-
-  // ---------------------------------------------------------------- written --
-  async function chooseWritten(option: QuizOption) {
-    if (!paper || !writtenQuestion || picked !== null) return;
-    setPicked(option.vocabulary_id);
-    const isCorrect = option.vocabulary_id === writtenQuestion.target_vocabulary_id;
-    if (isCorrect) setWrittenCorrect((value) => value + 1);
-    try {
-      await api.hskk.written(
-        paper.session_id,
-        writtenIndex,
-        writtenQuestion.target_vocabulary_id,
-        isCorrect
-      );
-    } catch (error) {
-      if (isLostSession(error)) setLostSession(true);
-      else toast.error("Không lưu được câu trả lời");
-    }
-  }
-
-  function nextWritten() {
-    if (!paper) return;
-    setPicked(null);
-    if (writtenIndex + 1 >= paper.written.questions.length) setStage("speaking");
-    else setWrittenIndex(writtenIndex + 1);
-  }
 
   // --------------------------------------------------------------- speaking --
   async function requestGrade() {
@@ -497,96 +448,15 @@ export default function Hskk() {
     );
   }
 
-  // ---------------------------------------------------------------- written --
-  if (stage === "written" && writtenQuestion) {
-    const total = paper.written.questions.length;
+  // ---------------------------------------------------------------- reading --
+  if (stage === "written") {
     return (
-      <div className="animate-float-in mx-auto max-w-2xl">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <Badge tone="sky">Phần trắc nghiệm · {paper.written.title}</Badge>
-          <span className="tnum text-xs font-semibold text-ink-soft">
-            Câu {writtenIndex + 1}/{total}
-          </span>
-          <span className="ml-auto tnum text-xs text-ink-faint">
-            Đúng {writtenCorrect}/{writtenIndex + (picked === null ? 0 : 1)}
-          </span>
-        </div>
-        <ProgressBar value={(writtenIndex / total) * 100} accent="sky" />
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={writtenIndex}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <Card className="mt-4 flex flex-col items-center gap-3 p-8 text-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                {QUESTION_LABEL[writtenQuestion.question_type]}
-              </p>
-              {writtenQuestion.prompt.audio_text ? (
-                <button
-                  onClick={() =>
-                    play(writtenQuestion.prompt.audio_text as string, { voice: settings.audio_voice })
-                  }
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lift transition-transform duration-200 active:scale-95"
-                  aria-label="Nghe lại"
-                >
-                  {playingText === writtenQuestion.prompt.audio_text ? (
-                    <IconPause className="h-8 w-8" />
-                  ) : (
-                    <IconPlay className="h-8 w-8" />
-                  )}
-                </button>
-              ) : (
-                <>
-                  {writtenQuestion.prompt.hanzi && (
-                    <p className="hanzi text-4xl font-bold text-ink">{writtenQuestion.prompt.hanzi}</p>
-                  )}
-                  {writtenQuestion.prompt.pinyin && (
-                    <p className="text-sm text-gold">{writtenQuestion.prompt.pinyin}</p>
-                  )}
-                  {writtenQuestion.prompt.meaning && (
-                    <p className="text-lg font-semibold text-ink">{writtenQuestion.prompt.meaning}</p>
-                  )}
-                </>
-              )}
-            </Card>
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {writtenQuestion.options.map((option) => {
-            const isTarget = option.vocabulary_id === writtenQuestion.target_vocabulary_id;
-            const isPicked = picked === option.vocabulary_id;
-            const done = picked !== null;
-            return (
-              <button
-                key={option.vocabulary_id}
-                onClick={() => void chooseWritten(option)}
-                disabled={done}
-                className={clsx(
-                  "rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-colors duration-200",
-                  writtenQuestion.question_type === "mcq_hanzi" && "hanzi text-lg",
-                  !done && "border-border bg-surface text-ink hover:border-accent/50",
-                  done && isTarget && "border-jade bg-jade-soft text-jade",
-                  done && isPicked && !isTarget && "border-danger bg-danger-soft text-danger",
-                  done && !isPicked && !isTarget && "border-border bg-surface text-ink-faint opacity-60"
-                )}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {picked !== null && (
-          <Button className="mt-6 w-full" size="lg" onClick={nextWritten}>
-            {writtenIndex + 1 >= total ? "Sang phần thi nói" : "Tiếp theo"}
-          </Button>
-        )}
-      </div>
+      <ReadingRunner
+        sessionId={paper.session_id}
+        section={paper.reading}
+        onFinish={() => setStage("speaking")}
+        onSessionLost={() => setLostSession(true)}
+      />
     );
   }
 
@@ -883,16 +753,22 @@ function FormatTable({ format }: { format: HskkLevelFormat }) {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-t border-border-soft">
-              <td className="px-6 py-3 font-semibold text-ink">TN</td>
-              <td className="px-3 py-3">
-                <p className="font-medium text-ink">{format.written.title}</p>
-                <p className="mt-0.5 text-xs text-ink-faint">{format.written.instruction_vi}</p>
-              </td>
-              <td className="tnum px-3 py-3 text-ink-soft">{format.written.count}</td>
-              <td className="px-3 py-3 text-ink-faint">—</td>
-              <td className="tnum px-6 py-3 text-right text-ink-soft">{format.written.total_points}</td>
-            </tr>
+            {format.reading.parts.map((part, position) => (
+              <tr key={part.part_number} className="border-t border-border-soft">
+                <td className="px-6 py-3 font-semibold text-ink">阅读 {part.part_number}</td>
+                <td className="px-3 py-3">
+                  <p className="font-medium text-ink">{part.instruction_zh}</p>
+                  <p className="mt-0.5 text-xs text-ink-faint">{part.instruction_vi}</p>
+                </td>
+                <td className="tnum px-3 py-3 text-ink-soft">{part.count}</td>
+                <td className="px-3 py-3 text-ink-faint">
+                  {position === 0 ? `${format.reading.time_minutes} phút` : "—"}
+                </td>
+                <td className="tnum px-6 py-3 text-right text-ink-soft">
+                  {position === 0 ? format.reading.total_points : "—"}
+                </td>
+              </tr>
+            ))}
             {format.parts.map((part) => (
               <tr key={part.part} className="border-t border-border-soft">
                 <td className="px-6 py-3 font-semibold text-ink">{part.part}</td>
