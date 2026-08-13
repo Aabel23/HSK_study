@@ -48,8 +48,11 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/sentences", label: "Luyện câu", description: "Sắp xếp cụm từ đúng thứ tự", icon: IconMessage, section: "luyện tập" },
   { to: "/listening", label: "Luyện nghe", description: "Nghe phát âm và chọn đáp án", icon: IconHeadphones, section: "luyện tập" },
   { to: "/typing", label: "Luyện gõ", description: "Gõ lại pinyin hoặc chữ Hán", icon: IconKeyboard, section: "luyện tập" },
-  { to: "/quiz", label: "Kiểm tra", description: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, section: "luyện tập" },
-  { to: "/hskk", label: "Thi thử HSKK", description: "Đề nói mô phỏng kỳ thi khẩu ngữ", icon: IconMic, section: "luyện tập" },
+  // Merged into the mock exam, which now opens with the same multiple-choice
+  // engine before the speaking parts. Route and API stay put so nothing that
+  // links to /quiz breaks.
+  { to: "/quiz", label: "Kiểm tra", description: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, section: "luyện tập", hidden: true },
+  { to: "/hskk", label: "Thi thử HSK", description: "Trắc nghiệm và phần thi nói theo format HSKK", icon: IconMic, section: "luyện tập" },
   { to: "/writing", label: "Luyện viết", description: "Tập viết chữ Hán đúng nét", icon: IconPencil, section: "luyện tập", hidden: true },
   { to: "/progress", label: "Tiến độ", description: "Thống kê và lịch sử học", icon: IconChart, section: "tiến độ" },
   { to: "/achievements", label: "Thành tích", description: "Huy hiệu, chuỗi ngày và cấp độ", icon: IconTrophy, section: "tiến độ" },
@@ -69,7 +72,7 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set(
 );
 
 /** Condensed set shown in the mobile bottom bar. */
-export const MOBILE_NAV = ["/", "/review", "/vocabulary", "/quiz", "/progress"];
+export const MOBILE_NAV = ["/", "/review", "/vocabulary", "/hskk", "/progress"];
 
 export const SECTION_LABELS: Record<NavItem["section"], string> = {
   "chính": "Học tập",

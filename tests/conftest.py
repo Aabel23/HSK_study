@@ -48,6 +48,18 @@ def _no_live_payment_credentials(monkeypatch):
     reset_settings_cache()
 
 
+@pytest.fixture(autouse=True)
+def _no_live_ai_credentials(monkeypatch):
+    """Keep the test suite away from the real Gemini account.
+
+    Same reasoning as the PayOS fixture above: a developer's `.env` holds a
+    working key, and grading a spoken answer costs a real API call. Tests that
+    exercise grading stub `gemini_service.generate_json` instead.
+    """
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    reset_settings_cache()
+
+
 @pytest.fixture()
 def client(tmp_path, monkeypatch, seeded_template):
     database_path = tmp_path / "chinese_study_test.db"

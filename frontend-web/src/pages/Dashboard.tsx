@@ -26,8 +26,10 @@ import {
   IconCheckSquare,
   IconFlame,
   IconHeadphones,
+  IconKeyboard,
   IconLayers,
   IconMessage,
+  IconMic,
   IconPencil,
   IconRefresh,
   IconShuffle,
@@ -44,6 +46,8 @@ const FEATURES = [
   { to: "/sentences", label: "Luyện câu", desc: "Sắp xếp cụm từ đúng thứ tự", icon: IconMessage, accent: "sky" as const },
   { to: "/listening", label: "Luyện nghe", desc: "Nghe phát âm, chọn đáp án", icon: IconHeadphones, accent: "violet" as const },
   { to: "/quiz", label: "Kiểm tra", desc: "Trắc nghiệm tổng hợp", icon: IconCheckSquare, accent: "accent" as const },
+  { to: "/typing", label: "Luyện gõ", desc: "Gõ lại pinyin hoặc chữ Hán", icon: IconKeyboard, accent: "sky" as const },
+  { to: "/hskk", label: "Thi thử HSK", desc: "Trắc nghiệm và phần thi nói", icon: IconMic, accent: "accent" as const },
   { to: "/writing", label: "Luyện viết", desc: "Tập viết chữ Hán đúng nét", icon: IconPencil, accent: "gold" as const },
 ].filter((feature) => !HIDDEN_ROUTES.has(feature.to));
 
@@ -190,7 +194,8 @@ export default function Dashboard() {
             <ResultRow label="Nối từ" correct={data.matching_correct} incorrect={data.matching_incorrect} accuracy={data.matching_accuracy} />
             <ResultRow label="Luyện câu" correct={data.sentence_correct} incorrect={data.sentence_incorrect} accuracy={data.sentence_accuracy} />
             <ResultRow label="Luyện nghe" correct={data.listening_correct} incorrect={data.listening_incorrect} accuracy={data.listening_accuracy} />
-            <ResultRow label="Kiểm tra" correct={data.quiz_correct} incorrect={data.quiz_incorrect} accuracy={data.quiz_accuracy} />
+            {/* Fed by the mock exam's written half, which runs on the quiz engine. */}
+            <ResultRow label="Trắc nghiệm" correct={data.quiz_correct} incorrect={data.quiz_incorrect} accuracy={data.quiz_accuracy} />
           </div>
         </Card>
       </div>

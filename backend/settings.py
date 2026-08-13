@@ -118,6 +118,33 @@ class Settings:
         default_factory=lambda: os.getenv("CHINESE_STUDY_DONATE_BASE_URL", "").rstrip("/")
     )
 
+    # --- AI grading (Google Gemini) -----------------------------------------
+    # Used to score the spoken parts of the HSKK mock exam. Unset by default:
+    # without a key the exam falls back to self-assessment, exactly like the
+    # donate tab falls back when PayOS is not configured.
+    gemini_api_key: str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", "").strip())
+    gemini_model: str = field(
+        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash").strip()
+    )
+    gemini_timeout_seconds: int = field(
+        default_factory=lambda: _env_int("GEMINI_TIMEOUT", 60, minimum=5)
+    )
+
+    @property
+    def gemini_configured(self) -> bool:
+        return bool(self.gemini_api_key)
+
+    @property
+    def gemini_uses_bearer_token(self) -> bool:
+        """Tell an API key apart from an OAuth access token.
+
+        Google AI Studio hands out keys that start with ``AIza`` and are sent in
+        the ``x-goog-api-key`` header, while tokens minted by OAuth (``ya29.``,
+        ``AQ.``) must go in ``Authorization: Bearer``. Sending the wrong one
+        gets a 401, so the shape of the credential picks the header.
+        """
+        return not self.gemini_api_key.startswith("AIza")
+
     @property
     def is_development(self) -> bool:
         return self.environment.lower() in {"dev", "development", "local"}

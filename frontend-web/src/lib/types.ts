@@ -437,6 +437,13 @@ export interface HskkPartFormat {
   answer_seconds: number;
 }
 
+export interface HskkWrittenFormat {
+  title: string;
+  instruction_vi: string;
+  count: number;
+  total_points: number;
+}
+
 export interface HskkLevelFormat {
   code: HskkExamLevel;
   label: string;
@@ -445,8 +452,13 @@ export interface HskkLevelFormat {
   prep_seconds: number;
   pass_score: number;
   total_items: number;
-  total_points: number;
+  speaking_items: number;
+  speaking_points: number;
+  written: HskkWrittenFormat;
   parts: HskkPartFormat[];
+  /** Parts of the official format this paper leaves out, with the reason why. */
+  skipped_parts: Array<{ part: number; title: string; reason: string }>;
+  ai_grading: boolean;
 }
 
 export interface HskkItem {
@@ -472,15 +484,46 @@ export interface HskkPart {
   items: HskkItem[];
 }
 
+export interface HskkWrittenSection {
+  part: number;
+  kind: "written";
+  title: string;
+  instruction_vi: string;
+  points_per_item: number;
+  max_score: number;
+  questions: QuizQuestion[];
+}
+
 export interface HskkPaper {
   session_id: number;
+  quiz_session_id: number;
   exam_level: HskkExamLevel;
   label: string;
   prep_seconds: number;
   pass_score: number;
   total_items: number;
   max_score: number;
+  ai_grading: boolean;
+  written: HskkWrittenSection;
   parts: HskkPart[];
+}
+
+/** What Gemini sends back for one spoken answer. */
+export interface HskkGrade {
+  part: number;
+  question_index: number;
+  score: number;
+  max_score: number;
+  percent: number;
+  transcript: string;
+  expected: string;
+  verdict: string;
+  strengths: string[];
+  fixes: string[];
+  pronunciation_percent: number;
+  content_percent: number;
+  fluency_percent: number;
+  graded_by: "ai";
 }
 
 export interface HskkResult {
@@ -489,6 +532,10 @@ export interface HskkResult {
   score: number;
   max_score: number;
   percent: number;
+  written_score: number;
+  written_max: number;
+  written_percent: number;
+  overall_percent: number;
   passed: boolean;
   pass_score: number;
   band: string;
@@ -509,11 +556,13 @@ export interface HskkStats {
   best_percent: number;
   average_percent: number;
   last_percent: number;
+  ai_grading: boolean;
   recent: Array<{
     exam_level: HskkExamLevel;
     score: number;
     max_score: number;
     percent: number;
+    written_percent: number;
     ended_at: string | null;
   }>;
   ratings: Array<{ self_rating: HskkSelfRating; label: string; total: number }>;

@@ -19,6 +19,11 @@
   Endpoint `/api/donate/config` không được trả khoá ra ngoài.
 - Test không bao giờ được gọi API thanh toán thật — fixture `_no_live_payment_credentials`
   trong `tests/conftest.py` xoá khoá PayOS; test nào cần thì tự stub client.
+- Khoá Gemini (`GEMINI_API_KEY`) dùng để chấm phần nói của bài thi thử, cũng chỉ
+  đọc từ biến môi trường. Test không được gọi Gemini thật — fixture
+  `_no_live_ai_credentials` xoá khoá; test nào cần thì stub
+  `gemini_service.generate_json`. Thiếu khoá thì bài thi phải tự chuyển sang chế
+  độ tự chấm chứ không được hỏng.
 - Frontend là React 19 + TypeScript + Vite trong `frontend-web/`; không còn giao diện vanilla JS.
 - `frontend-web/dist/` được commit vào git vì môi trường deploy (Render) không có Node — build lại và commit `dist/` sau khi sửa `frontend-web/src`.
 - Không viết SQL trong route; business logic đặt trong service.

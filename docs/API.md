@@ -55,22 +55,50 @@ những phiên dài liên tục; phiên chỉ chứa tối đa số từ thực 
 Frontend gửi thứ tự `position`; backend tự quyết định kết quả đúng/sai. Mỗi vị trí phải xuất hiện đúng một lần.
 `count` nhận 1–200; nếu bộ lọc không còn câu nào, endpoint trả `409` thay vì một phiên rỗng.
 
-## HSKK (thi thử khẩu ngữ)
+## Thi thử HSK (`/api/hskk`)
 
-- `GET /hskk/levels` — cấu trúc chính thức của `beginner` (Sơ cấp, 27 câu) và `intermediate` (Trung cấp, 14 câu): số câu, điểm mỗi câu, thời gian trả lời và thời gian chuẩn bị. Không kèm câu hỏi nên gọi được ở màn hình giới thiệu.
+Một đề gồm hai nửa: **trắc nghiệm** (chạy trên chính engine của `/api/quiz`) và
+**phần nói** theo cấu trúc HSKK. Mỗi nửa chấm riêng trên thang 100, điểm cuối là
+trung bình cộng hai nửa.
+
+- `GET /hskk/levels` — cấu trúc chính thức của `beginner` (Sơ cấp) và `intermediate` (Trung cấp): số câu, điểm mỗi câu, thời gian trả lời, thời gian chuẩn bị, phần trắc nghiệm và cờ `ai_grading`. Không kèm câu hỏi nên gọi được ở màn hình giới thiệu.
+- `GET /hskk/grading` — `{ "ai_grading": true|false }`, cho giao diện biết có chấm bằng AI được không.
 - `GET /hskk/stats` — số lượt đã nộp, điểm cao nhất/trung bình/gần nhất và các lượt gần đây.
-- `POST /hskk/session` — body `{ "exam_level": "beginner" }`; trả nguyên một đề gồm ba phần. Câu của phần "nghe rồi nhắc lại"/"nghe rồi trả lời" có `audio_text`; phần đọc đề trả `null` để giao diện không lộ lời đề trước khi thí sinh nghe.
-- `POST /hskk/answer` — body `{ "session_id": 1, "part": 1, "question_index": 0, "question_id": "b1-01", "self_rating": "good", "spoken_seconds": 12 }`. Gửi lại cùng một `(session_id, part, question_index)` sẽ **ghi đè** đánh giá cũ chứ không cộng thêm.
-- `POST /hskk/session/{session_id}/complete` — trả tổng điểm, phần trăm, đạt/chưa đạt và điểm từng phần.
+- `POST /hskk/session` — body `{ "exam_level": "beginner" }`; trả `written` (câu trắc nghiệm) và `parts` (phần nói). Câu của phần "nghe rồi nhắc lại"/"nghe rồi trả lời" có `audio_text`; phần đọc đề trả `null` để giao diện không lộ lời đề trước khi thí sinh nghe.
+- `POST /hskk/written` — body `{ "session_id": 1, "question_index": 0, "vocabulary_id": 42, "is_correct": true }`; mỗi câu đúng được `100 / số câu` điểm. Lượt trả lời được ghi sang bảng `quiz_attempts` nên thống kê trắc nghiệm ở Tổng quan vẫn chạy như cũ.
+- `POST /hskk/answer` — body `{ "session_id": 1, "part": 1, "question_index": 0, "question_id": "b1-01", "self_rating": "good", "spoken_seconds": 12 }`. Dùng khi tự chấm.
+- `POST /hskk/grade` — chấm bằng AI. Body kèm `audio_base64` (WAV 16 kHz mono do trình duyệt tự chuyển đổi). Trả điểm, bản gỡ băng, nhận xét tiếng Việt và ba điểm thành phần (phát âm / nội dung / trôi chảy).
+- `POST /hskk/session/{session_id}/complete` — trả điểm hai nửa, `overall_percent`, đạt/chưa đạt và điểm từng phần.
 
-Bài nói không thể chấm tự động, nên thí sinh tự đánh giá: `good` = 100% điểm câu,
-`ok` = 60%, `bad` = 20%, `skipped` = 0. Backend giữ toàn bộ phép tính điểm, client
-không tự gửi điểm lên. Bản ghi âm nằm lại trong trình duyệt và **không** được tải
-lên server.
+Gửi lại cùng một `(session_id, part, question_index)` ở bất kỳ endpoint nào ở trên
+sẽ **ghi đè** kết quả cũ chứ không cộng thêm. Backend giữ toàn bộ phép tính điểm.
 
-Ngân hàng đề là file tĩnh `scripts/data/hskk_bank.json` (đi kèm bản `.exe`), không
-gọi ra dịch vụ AI nào — ứng dụng phải chạy được offline và repo không cần khoá API.
-Mỗi lượt thi bốc ngẫu nhiên một tập con của từng pool nên hai lần thi không trùng đề.
+Khi tự chấm: `good` = 100% điểm câu, `ok` = 60%, `bad` = 20%, `skipped` = 0. Khi
+AI chấm, điểm phần trăm Gemini trả về được nhân với điểm tối đa của câu, và được
+quy về cùng bốn mức trên để thống kê không phải phân biệt hai nguồn chấm.
+
+Ngân hàng đề là file tĩnh `scripts/data/hskk_bank.json` (đi kèm bản `.exe`); mỗi
+lượt thi bốc ngẫu nhiên một tập con của từng pool nên hai lần thi không trùng đề.
+Trung cấp bỏ phần 2 (nhìn tranh kể chuyện) vì chưa có bộ tranh — điểm dồn sang
+phần nêu quan điểm, và `skipped_parts` nói rõ lý do để giao diện hiển thị.
+
+### Chấm điểm bằng Gemini
+
+Bài nói không thể chấm bằng so khớp chuỗi, nên bản ghi âm được gửi tới Gemini kèm
+một prompt có thang điểm riêng cho từng dạng đề (nhắc lại / trả lời / nói theo đề
+/ nêu quan điểm). Toàn bộ prompt nằm ở `_GRADING_PROMPTS` trong
+`backend/services/hskk_service.py` — sửa thang điểm thì sửa ở đó.
+
+- Khoá đọc từ biến môi trường `GEMINI_API_KEY`, **không bao giờ** commit hay đóng
+  gói vào `.exe`. `GEMINI_MODEL` mặc định `gemini-2.0-flash`.
+- Khoá dạng `AIza...` gửi bằng header `x-goog-api-key`; token OAuth (`ya29.`,
+  `AQ.`) gửi bằng `Authorization: Bearer`. App tự chọn theo dạng khoá.
+- Chưa cấu hình khoá → `/hskk/grade` trả `409` kèm hướng dẫn, và bài thi tự
+  chuyển sang chế độ tự chấm. Khoá sai/hết hạn → `409` nói rõ cần tạo khoá mới.
+- **Lưu ý riêng tư**: khi bật chấm AI, đoạn ghi âm được gửi ra dịch vụ ngoài. Khi
+  tắt (không có khoá), bản ghi chỉ nằm trong trình duyệt.
+- Test không bao giờ gọi API thật: fixture `_no_live_ai_credentials` trong
+  `tests/conftest.py` xoá khoá, test nào cần thì stub `gemini_service.generate_json`.
 
 ## Donate (PayOS)
 

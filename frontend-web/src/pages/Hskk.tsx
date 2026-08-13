@@ -7,15 +7,18 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { usePlayAudio } from "../lib/useAudio";
 import { useRecorder } from "../lib/useRecorder";
+import { blobToWavBase64 } from "../lib/wav";
 import { formatNumber, formatPercent } from "../lib/format";
 import type {
   HskkExamLevel,
+  HskkGrade,
   HskkItem,
   HskkLevelFormat,
   HskkPaper,
   HskkPart,
   HskkResult,
   HskkSelfRating,
+  QuizOption,
 } from "../lib/types";
 import {
   Badge,
@@ -37,17 +40,18 @@ import {
   IconPause,
   IconPlay,
   IconRefresh,
+  IconSpark,
   IconStop,
   IconTarget,
   IconTrophy,
   IconX,
 } from "../components/icons";
 
-/** One flattened question plus the part it belongs to, so the runner is a plain list. */
+/** One flattened speaking question plus the part it belongs to. */
 interface Slot {
   part: HskkPart;
   item: HskkItem;
-  /** 1-based position across the whole paper, for the progress bar. */
+  /** 1-based position across the speaking half, for the progress bar. */
   position: number;
 }
 
@@ -56,6 +60,13 @@ const RATINGS: Array<{ value: HskkSelfRating; label: string; hint: string; tone:
   { value: "ok", label: "Tạm được", hint: "Có ngập ngừng hoặc thiếu ý", tone: "gold" },
   { value: "bad", label: "Còn vấp", hint: "Nói được rất ít", tone: "danger" },
 ];
+
+const QUESTION_LABEL: Record<string, string> = {
+  mcq_meaning: "Chọn nghĩa đúng",
+  mcq_hanzi: "Chọn Hán tự đúng",
+  mcq_pinyin: "Chọn pinyin đúng",
+  mcq_audio: "Nghe và chọn nghĩa",
+};
 
 function flatten(paper: HskkPaper): Slot[] {
   const slots: Slot[] = [];
@@ -70,10 +81,12 @@ function clock(totalSeconds: number): string {
   return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
 }
 
-/** Parts 1 and 2 must be *heard* first; parts 3 (and the picture task) are read. */
+/** Parts 1 and 2 must be *heard* first; part 3 is read off the paper. */
 function isHeard(part: HskkPart): boolean {
   return part.kind === "repeat" || part.kind === "answer";
 }
+
+type Stage = "intro" | "written" | "speaking" | "result";
 
 export default function Hskk() {
   const { settings } = useSettings();
@@ -82,10 +95,18 @@ export default function Hskk() {
   const recorder = useRecorder();
 
   const [examLevel, setExamLevel] = useState<HskkExamLevel>("beginner");
+  const [stage, setStage] = useState<Stage>("intro");
   const [paper, setPaper] = useState<HskkPaper | null>(null);
+
+  const [writtenIndex, setWrittenIndex] = useState(0);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [writtenCorrect, setWrittenCorrect] = useState(0);
+
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [grade, setGrade] = useState<HskkGrade | null>(null);
+  const [grading, setGrading] = useState(false);
   const [result, setResult] = useState<HskkResult | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -95,9 +116,10 @@ export default function Hskk() {
   const slots = useMemo(() => (paper ? flatten(paper) : []), [paper]);
   const slot = slots[index];
   const format = levels.data?.items.find((entry) => entry.code === examLevel);
+  const writtenQuestion = paper?.written.questions[writtenIndex];
 
-  // Countdown for the current question. It mirrors the real exam's fixed answer
-  // window, and stops the recording when the window closes.
+  // Countdown mirroring the exam's fixed answer window; it stops the recording
+  // when the window closes.
   const stopRecorder = recorder.stop;
   useEffect(() => {
     if (remaining === null) return;
@@ -110,25 +132,39 @@ export default function Hskk() {
     return () => window.clearTimeout(timer);
   }, [remaining, stopRecorder]);
 
-  // A new question starts clean: no leftover clip, no revealed answer, and the
-  // heard parts play themselves once so the learner never reads them first.
+  // A new speaking question starts clean, and the heard parts play themselves
+  // once so the learner never reads the prompt first.
   const audioText = slot?.item.audio_text ?? null;
   const resetRecorder = recorder.reset;
   useEffect(() => {
-    if (!slot) return;
+    if (stage !== "speaking" || !slot) return;
     resetRecorder();
     setRevealed(false);
     setRemaining(null);
+    setGrade(null);
     if (audioText && settings.autoplay_audio) play(audioText, { voice: settings.audio_voice });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slot?.item.question_id]);
+  }, [slot?.item.question_id, stage]);
+
+  // Autoplay the listening questions of the written section too.
+  const writtenAudio = writtenQuestion?.prompt.audio_text;
+  useEffect(() => {
+    if (stage !== "written" || !writtenAudio) return;
+    if (settings.autoplay_audio) play(writtenAudio, { voice: settings.audio_voice });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [writtenAudio, stage]);
 
   const startExam = useCallback(async () => {
     setBusy(true);
     try {
       const next = await api.hskk.createSession(examLevel);
       setPaper(next);
+      setStage("written");
+      setWrittenIndex(0);
+      setWrittenCorrect(0);
+      setPicked(null);
       setIndex(0);
+      setGrade(null);
       setResult(null);
     } catch (error) {
       toast.error("Không tạo được đề thi thử", error instanceof Error ? error.message : undefined);
@@ -142,6 +178,7 @@ export default function Hskk() {
       recorder.reset();
       try {
         setResult(await api.hskk.complete(sessionId));
+        setStage("result");
         stats.reload();
       } catch (error) {
         toast.error("Không nộp được bài", error instanceof Error ? error.message : undefined);
@@ -149,6 +186,63 @@ export default function Hskk() {
     },
     [recorder, stats, toast]
   );
+
+  // ---------------------------------------------------------------- written --
+  async function chooseWritten(option: QuizOption) {
+    if (!paper || !writtenQuestion || picked !== null) return;
+    setPicked(option.vocabulary_id);
+    const isCorrect = option.vocabulary_id === writtenQuestion.target_vocabulary_id;
+    if (isCorrect) setWrittenCorrect((value) => value + 1);
+    try {
+      await api.hskk.written(
+        paper.session_id,
+        writtenIndex,
+        writtenQuestion.target_vocabulary_id,
+        isCorrect
+      );
+    } catch {
+      toast.error("Không lưu được câu trả lời");
+    }
+  }
+
+  function nextWritten() {
+    if (!paper) return;
+    setPicked(null);
+    if (writtenIndex + 1 >= paper.written.questions.length) setStage("speaking");
+    else setWrittenIndex(writtenIndex + 1);
+  }
+
+  // --------------------------------------------------------------- speaking --
+  async function requestGrade() {
+    if (!paper || !slot || !recorder.clipBlob || grading) return;
+    setGrading(true);
+    try {
+      const audio = await blobToWavBase64(recorder.clipBlob);
+      const graded = await api.hskk.grade(
+        paper.session_id,
+        slot.part.part,
+        slot.item.question_index,
+        slot.item.question_id,
+        audio,
+        recorder.seconds
+      );
+      setGrade(graded);
+      setRevealed(true);
+    } catch (error) {
+      toast.error(
+        "Không chấm được bằng AI",
+        error instanceof Error ? error.message : "Bạn vẫn có thể tự chấm câu này."
+      );
+    } finally {
+      setGrading(false);
+    }
+  }
+
+  const advance = useCallback(async () => {
+    if (!paper) return;
+    if (index + 1 >= slots.length) await finish(paper.session_id);
+    else setIndex(index + 1);
+  }, [finish, index, paper, slots.length]);
 
   async function rate(value: HskkSelfRating) {
     if (!paper || !slot || busy) return;
@@ -164,8 +258,7 @@ export default function Hskk() {
         value,
         recorder.seconds
       );
-      if (index + 1 >= slots.length) await finish(paper.session_id);
-      else setIndex(index + 1);
+      await advance();
     } catch (error) {
       toast.error("Không lưu được câu trả lời", error instanceof Error ? error.message : undefined);
     } finally {
@@ -183,17 +276,16 @@ export default function Hskk() {
     // The countdown only runs if the microphone actually opened; otherwise the
     // clock would tick down against a recording that never started.
     if (!(await recorder.start())) return;
+    setGrade(null);
     setRemaining(slot.part.answer_seconds);
     // Once you have spoken there is no reason to hide the prompt any more.
     setRevealed(true);
   }
 
-  // Keyboard shortcuts, kept off while a field has focus (there are none on this
-  // page today, but the guard keeps it true if one is added).
   const ratingRef = useRef(rate);
   ratingRef.current = rate;
   useEffect(() => {
-    if (!paper || result) return;
+    if (stage !== "speaking") return;
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
       if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
@@ -203,35 +295,47 @@ export default function Hskk() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [paper, result]);
+  }, [stage]);
 
   if (levels.error) return <ErrorState message={levels.error} onRetry={levels.reload} />;
   if (levels.loading && !levels.data) return <PageSkeleton tiles={4} rows={2} />;
 
   // ---------------------------------------------------------------- result --
-  if (result) {
+  if (stage === "result" && result) {
     return (
       <div className="animate-float-in mx-auto max-w-2xl">
         <Card className="flex flex-col items-center gap-5 px-6 py-10 text-center">
-          <ProgressRing value={result.percent} accent={result.passed ? "jade" : "gold"} size={150}>
-            <span className="font-display tnum text-3xl font-bold text-ink">{result.score}</span>
-            <span className="text-xs text-ink-faint">/ {result.max_score} điểm</span>
+          <ProgressRing value={result.overall_percent} accent={result.passed ? "jade" : "gold"} size={150}>
+            <span className="font-display tnum text-3xl font-bold text-ink">{result.overall_percent}</span>
+            <span className="text-xs text-ink-faint">/ 100 điểm</span>
           </ProgressRing>
           <div>
-            <p className="font-display text-2xl font-bold text-ink">
-              {result.passed ? "Đạt" : "Chưa đạt"}
-            </p>
+            <p className="font-display text-2xl font-bold text-ink">{result.passed ? "Đạt" : "Chưa đạt"}</p>
             <p className="mt-1 text-sm text-ink-soft">{result.band}</p>
             <p className="mt-1 text-xs text-ink-faint">
-              Điểm đỗ: {result.pass_score} · Đã trả lời {formatNumber(result.answered_items)}/
+              Điểm đỗ: {result.pass_score} · Đã làm {formatNumber(result.answered_items)}/
               {formatNumber(result.total_items)} câu
             </p>
           </div>
 
-          <div className="w-full space-y-2 border-t border-border-soft pt-5 text-left">
+          <div className="grid w-full grid-cols-2 gap-4 border-t border-border-soft pt-5">
+            <StatTile
+              label="Từ vựng & câu"
+              value={formatPercent(result.written_percent, 0)}
+              hint={`${result.written_score}/${result.written_max} điểm`}
+              accent="sky"
+            />
+            <StatTile
+              label="Phần nói"
+              value={formatPercent(result.percent, 0)}
+              hint={`${result.score}/${result.max_score} điểm`}
+              accent="accent"
+            />
+          </div>
+
+          <div className="w-full space-y-2 text-left">
             {result.parts.map((part) => (
               <div key={part.part} className="flex items-center gap-3">
-                <span className="w-24 shrink-0 text-xs text-ink-faint">Phần {part.part}</span>
                 <span className="flex-1 truncate text-sm text-ink">{part.title}</span>
                 <ProgressBar value={part.max_score ? (part.score / part.max_score) * 100 : 0} accent="accent" />
                 <span className="tnum w-20 shrink-0 text-right text-sm font-semibold text-ink-soft">
@@ -241,16 +345,11 @@ export default function Hskk() {
             ))}
           </div>
 
-          <p className="max-w-md text-xs text-ink-faint">
-            Điểm dựa trên phần bạn tự đánh giá, vì bài nói không thể chấm tự động. Nghe lại bản ghi
-            của chính mình là cách nhanh nhất để thấy chỗ cần sửa.
-          </p>
-
           <div className="flex flex-wrap justify-center gap-3">
             <Button onClick={startExam} disabled={busy}>
               <IconRefresh className="h-4 w-4" /> Thi lại đề mới
             </Button>
-            <Button variant="secondary" onClick={() => { setPaper(null); setResult(null); }}>
+            <Button variant="secondary" onClick={() => setStage("intro")}>
               Về trang thi thử
             </Button>
           </div>
@@ -260,13 +359,13 @@ export default function Hskk() {
   }
 
   // ------------------------------------------------------------------ intro --
-  if (!paper || !slot) {
+  if (stage === "intro" || !paper) {
     return (
       <div className="animate-float-in">
         <PageHeader
-          eyebrow="Kỹ năng nói"
-          title="Thi thử HSKK"
-          description="Đề mô phỏng đúng cấu trúc kỳ thi khẩu ngữ HSKK: đủ số phần, số câu, thang điểm và thời gian trả lời. Mỗi lần thi là một đề khác, ghép từ ngân hàng câu hỏi."
+          eyebrow="Thi thử"
+          title="Thi thử HSK"
+          description="Một đề duy nhất chạy từ trắc nghiệm từ vựng đến phần thi nói theo đúng cấu trúc HSKK. Mỗi lần thi là một đề khác, ghép từ ngân hàng câu hỏi."
         />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -283,11 +382,7 @@ export default function Hskk() {
             accent="accent"
             icon={<IconTarget className="h-4 w-4" />}
           />
-          <StatTile
-            label="Điểm trung bình"
-            value={formatPercent(stats.data?.average_percent, 0)}
-            accent="sky"
-          />
+          <StatTile label="Điểm trung bình" value={formatPercent(stats.data?.average_percent, 0)} accent="sky" />
           <StatTile label="Lượt thi đã nộp" value={formatNumber(stats.data?.sessions)} accent="violet" />
         </div>
 
@@ -320,14 +415,22 @@ export default function Hskk() {
         <Card className="mt-6 p-6">
           <h2 className="font-display text-lg font-bold text-ink">Trước khi bắt đầu</h2>
           <ul className="mt-3 space-y-1.5 text-sm text-ink-soft">
-            <li>· Bài nói được ghi âm ngay trong trình duyệt để bạn nghe lại, không gửi đi đâu cả.</li>
-            <li>· Mỗi câu có đồng hồ đếm ngược đúng bằng thời gian trả lời của đề thật.</li>
-            <li>· Sau mỗi câu bạn tự chấm, vì không có cách nào chấm phát âm tự động.</li>
-            {!recorder.supported && (
-              <li className="text-gold">
-                · Trình duyệt này không ghi âm được (cần HTTPS hoặc localhost) — bài thi vẫn chạy
-                bình thường, chỉ không nghe lại được.
+            <li>· Làm phần trắc nghiệm trước, sau đó chuyển sang phần nói.</li>
+            <li>· Mỗi câu nói có đồng hồ đếm ngược đúng bằng thời gian của đề thật.</li>
+            {format?.ai_grading ? (
+              <li className="text-jade">
+                · Phần nói được AI chấm: bản ghi âm được gửi lên Gemini để nhận điểm, bản gỡ băng và
+                nhận xét chi tiết.
               </li>
+            ) : (
+              <li className="text-gold">
+                · Chưa cấu hình khoá Gemini nên phần nói sẽ do bạn tự chấm. Đặt biến môi trường
+                <code className="mx-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs">GEMINI_API_KEY</code>
+                để bật chấm điểm bằng AI.
+              </li>
+            )}
+            {!recorder.supported && (
+              <li className="text-gold">· Trình duyệt này không ghi âm được — bài thi vẫn chạy, chỉ không nghe lại hay chấm AI được.</li>
             )}
           </ul>
           <Button size="lg" className="mt-6 w-full sm:w-auto" onClick={startExam} disabled={busy}>
@@ -338,7 +441,102 @@ export default function Hskk() {
     );
   }
 
-  // ------------------------------------------------------------------- exam --
+  // ---------------------------------------------------------------- written --
+  if (stage === "written" && writtenQuestion) {
+    const total = paper.written.questions.length;
+    return (
+      <div className="animate-float-in mx-auto max-w-2xl">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <Badge tone="sky">Phần trắc nghiệm · {paper.written.title}</Badge>
+          <span className="tnum text-xs font-semibold text-ink-soft">
+            Câu {writtenIndex + 1}/{total}
+          </span>
+          <span className="ml-auto tnum text-xs text-ink-faint">
+            Đúng {writtenCorrect}/{writtenIndex + (picked === null ? 0 : 1)}
+          </span>
+        </div>
+        <ProgressBar value={(writtenIndex / total) * 100} accent="sky" />
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={writtenIndex}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Card className="mt-4 flex flex-col items-center gap-3 p-8 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                {QUESTION_LABEL[writtenQuestion.question_type]}
+              </p>
+              {writtenQuestion.prompt.audio_text ? (
+                <button
+                  onClick={() =>
+                    play(writtenQuestion.prompt.audio_text as string, { voice: settings.audio_voice })
+                  }
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lift transition-transform duration-200 active:scale-95"
+                  aria-label="Nghe lại"
+                >
+                  {playingText === writtenQuestion.prompt.audio_text ? (
+                    <IconPause className="h-8 w-8" />
+                  ) : (
+                    <IconPlay className="h-8 w-8" />
+                  )}
+                </button>
+              ) : (
+                <>
+                  {writtenQuestion.prompt.hanzi && (
+                    <p className="hanzi text-4xl font-bold text-ink">{writtenQuestion.prompt.hanzi}</p>
+                  )}
+                  {writtenQuestion.prompt.pinyin && (
+                    <p className="text-sm text-gold">{writtenQuestion.prompt.pinyin}</p>
+                  )}
+                  {writtenQuestion.prompt.meaning && (
+                    <p className="text-lg font-semibold text-ink">{writtenQuestion.prompt.meaning}</p>
+                  )}
+                </>
+              )}
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {writtenQuestion.options.map((option) => {
+            const isTarget = option.vocabulary_id === writtenQuestion.target_vocabulary_id;
+            const isPicked = picked === option.vocabulary_id;
+            const done = picked !== null;
+            return (
+              <button
+                key={option.vocabulary_id}
+                onClick={() => void chooseWritten(option)}
+                disabled={done}
+                className={clsx(
+                  "rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-colors duration-200",
+                  writtenQuestion.question_type === "mcq_hanzi" && "hanzi text-lg",
+                  !done && "border-border bg-surface text-ink hover:border-accent/50",
+                  done && isTarget && "border-jade bg-jade-soft text-jade",
+                  done && isPicked && !isTarget && "border-danger bg-danger-soft text-danger",
+                  done && !isPicked && !isTarget && "border-border bg-surface text-ink-faint opacity-60"
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {picked !== null && (
+          <Button className="mt-6 w-full" size="lg" onClick={nextWritten}>
+            {writtenIndex + 1 >= total ? "Sang phần thi nói" : "Tiếp theo"}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // --------------------------------------------------------------- speaking --
+  if (!slot) return <PageSkeleton tiles={0} rows={2} />;
+
   const heard = isHeard(slot.part);
   const showPrompt = revealed || !heard;
   const partIndex = slot.item.question_index + 1;
@@ -353,7 +551,7 @@ export default function Hskk() {
           Câu {partIndex}/{slot.part.items.length}
         </span>
         <span className="ml-auto tnum text-xs text-ink-faint">
-          {slot.position}/{slots.length} toàn bài · {slot.part.points_per_item} điểm/câu
+          {slot.position}/{slots.length} phần nói · {slot.part.points_per_item} điểm/câu
         </span>
       </div>
       <ProgressBar value={((slot.position - 1) / slots.length) * 100} accent="accent" />
@@ -422,7 +620,7 @@ export default function Hskk() {
           disabled={!recorder.supported}
           className={clsx(
             "flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-200 active:scale-95",
-            recorder.recording ? "bg-danger text-white animate-pulse" : "bg-surface-2 text-ink border border-border",
+            recorder.recording ? "animate-pulse bg-danger text-white" : "border border-border bg-surface-2 text-ink",
             !recorder.supported && "opacity-50"
           )}
           aria-label={recorder.recording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
@@ -432,23 +630,28 @@ export default function Hskk() {
         <div className="flex items-center gap-3 text-sm">
           <span className="tnum font-semibold text-ink">{clock(recorder.seconds)}</span>
           <span className="text-ink-faint">
-            {remaining !== null
-              ? `còn ${clock(remaining)}`
-              : `tối đa ${clock(slot.part.answer_seconds)}`}
+            {remaining !== null ? `còn ${clock(remaining)}` : `tối đa ${clock(slot.part.answer_seconds)}`}
           </span>
         </div>
-        {recorder.error && <p className="text-xs text-danger">{recorder.error}</p>}
+        {recorder.error && <p className="text-center text-xs text-danger">{recorder.error}</p>}
         {recorder.clipUrl && (
           <audio controls src={recorder.clipUrl} className="w-full max-w-sm" aria-label="Nghe lại bài nói của bạn" />
         )}
+        {paper.ai_grading && recorder.clipBlob && !recorder.recording && !grade && (
+          <Button onClick={() => void requestGrade()} disabled={grading}>
+            <IconSpark className="h-4 w-4" /> {grading ? "AI đang chấm..." : "Chấm bằng AI"}
+          </Button>
+        )}
       </Card>
+
+      {grade && <GradeCard grade={grade} />}
 
       <div className="mt-4 grid grid-cols-3 gap-3">
         {RATINGS.map((entry) => (
           <button
             key={entry.value}
             onClick={() => void rate(entry.value)}
-            disabled={busy}
+            disabled={busy || grading}
             className={clsx(
               "rounded-xl border px-3 py-3.5 text-center transition-colors duration-200 disabled:opacity-60",
               entry.tone === "jade" && "border-jade/50 bg-jade-soft text-jade hover:border-jade",
@@ -468,17 +671,104 @@ export default function Hskk() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <span className="text-xs text-ink-faint">
-          <Kbd>1</Kbd> trôi chảy · <Kbd>2</Kbd> tạm được · <Kbd>3</Kbd> còn vấp
+          {grade ? "AI đã chấm câu này." : <>
+            <Kbd>1</Kbd> trôi chảy · <Kbd>2</Kbd> tạm được · <Kbd>3</Kbd> còn vấp
+          </>}
         </span>
-        <button
-          onClick={() => void rate("skipped")}
-          disabled={busy}
-          className="text-xs font-semibold text-ink-soft transition-colors hover:text-ink"
-        >
-          Bỏ qua câu này
-        </button>
+        {grade ? (
+          <Button onClick={() => void advance()} disabled={busy}>
+            {index + 1 >= slots.length ? "Nộp bài" : "Câu tiếp theo"}
+          </Button>
+        ) : (
+          <button
+            onClick={() => void rate("skipped")}
+            disabled={busy}
+            className="text-xs font-semibold text-ink-soft transition-colors hover:text-ink"
+          >
+            Bỏ qua câu này
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+/** Gemini's verdict for one spoken answer. */
+function GradeCard({ grade }: { grade: HskkGrade }) {
+  const tone = grade.percent >= 80 ? "jade" : grade.percent >= 50 ? "gold" : "danger";
+  return (
+    <Card
+      className={clsx(
+        "mt-4 p-5",
+        tone === "jade" && "border-jade/40",
+        tone === "gold" && "border-gold/40",
+        tone === "danger" && "border-danger/40"
+      )}
+      role="status"
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <Badge tone="violet">AI chấm</Badge>
+        <span
+          className={clsx(
+            "tnum font-display text-2xl font-bold",
+            tone === "jade" && "text-jade",
+            tone === "gold" && "text-gold",
+            tone === "danger" && "text-danger"
+          )}
+        >
+          {Math.round(grade.percent)}%
+        </span>
+        <span className="tnum text-xs text-ink-faint">
+          {grade.score}/{grade.max_score} điểm
+        </span>
+      </div>
+
+      {grade.verdict && <p className="mt-2 text-sm text-ink">{grade.verdict}</p>}
+
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        {[
+          { label: "Phát âm", value: grade.pronunciation_percent },
+          { label: "Nội dung", value: grade.content_percent },
+          { label: "Trôi chảy", value: grade.fluency_percent },
+        ].map((entry) => (
+          <div key={entry.label}>
+            <div className="flex items-center justify-between text-[11px] text-ink-faint">
+              <span>{entry.label}</span>
+              <span className="tnum">{Math.round(entry.value)}%</span>
+            </div>
+            <div className="mt-1">
+              <ProgressBar value={entry.value} accent="violet" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2 border-t border-border-soft pt-4 text-sm">
+        <div>
+          <p className="text-xs font-semibold text-ink-soft">Bạn đã nói</p>
+          <p className="hanzi mt-0.5 text-base text-ink">{grade.transcript || "— không nghe được tiếng nói nào —"}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-ink-soft">Đề bài</p>
+          <p className="hanzi mt-0.5 text-base text-ink-soft">{grade.expected}</p>
+        </div>
+      </div>
+
+      {grade.strengths.length > 0 && (
+        <ul className="mt-3 space-y-1 text-xs text-jade">
+          {grade.strengths.map((entry) => (
+            <li key={entry}>+ {entry}</li>
+          ))}
+        </ul>
+      )}
+      {grade.fixes.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-ink-soft">
+          {grade.fixes.map((entry) => (
+            <li key={entry}>· {entry}</li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }
 
@@ -489,7 +779,6 @@ function FormatTable({ format }: { format: HskkLevelFormat }) {
       <div className="flex flex-wrap items-center gap-3 border-b border-border-soft px-6 py-4">
         <h2 className="font-display text-lg font-bold text-ink">Cấu trúc đề {format.label}</h2>
         <Badge tone="neutral">{format.total_items} câu</Badge>
-        <Badge tone="neutral">{format.total_points} điểm</Badge>
         <span className="ml-auto text-xs text-ink-faint">
           Chuẩn bị {Math.round(format.prep_seconds / 60)} phút · đỗ từ {format.pass_score} điểm
         </span>
@@ -506,6 +795,16 @@ function FormatTable({ format }: { format: HskkLevelFormat }) {
             </tr>
           </thead>
           <tbody>
+            <tr className="border-t border-border-soft">
+              <td className="px-6 py-3 font-semibold text-ink">TN</td>
+              <td className="px-3 py-3">
+                <p className="font-medium text-ink">{format.written.title}</p>
+                <p className="mt-0.5 text-xs text-ink-faint">{format.written.instruction_vi}</p>
+              </td>
+              <td className="tnum px-3 py-3 text-ink-soft">{format.written.count}</td>
+              <td className="px-3 py-3 text-ink-faint">—</td>
+              <td className="tnum px-6 py-3 text-right text-ink-soft">{format.written.total_points}</td>
+            </tr>
             {format.parts.map((part) => (
               <tr key={part.part} className="border-t border-border-soft">
                 <td className="px-6 py-3 font-semibold text-ink">{part.part}</td>
@@ -521,6 +820,14 @@ function FormatTable({ format }: { format: HskkLevelFormat }) {
           </tbody>
         </table>
       </div>
+      {format.skipped_parts.map((entry) => (
+        <p key={entry.part} className="border-t border-border-soft px-6 py-3 text-xs text-gold">
+          Phần {entry.part} ({entry.title}): {entry.reason}
+        </p>
+      ))}
+      <p className="border-t border-border-soft px-6 py-3 text-xs text-ink-faint">
+        Trắc nghiệm và phần nói được chấm riêng, mỗi bên thang 100; điểm cuối là trung bình hai bên.
+      </p>
     </Card>
   );
 }

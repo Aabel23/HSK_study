@@ -21,6 +21,7 @@ import type {
   DictationSession,
   DictationStats,
   HskkExamLevel,
+  HskkGrade,
   HskkLevelFormat,
   HskkPaper,
   HskkResult,
@@ -361,6 +362,36 @@ export const api = {
       request<HskkPaper>("/api/hskk/session", {
         method: "POST",
         body: JSON.stringify({ exam_level: examLevel }),
+      }),
+    written: (sessionId: number, questionIndex: number, vocabularyId: number, isCorrect: boolean) =>
+      request<{ is_correct: boolean; score: number }>("/api/hskk/written", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          question_index: questionIndex,
+          vocabulary_id: vocabularyId,
+          is_correct: isCorrect,
+        }),
+      }),
+    grade: (
+      sessionId: number,
+      part: number,
+      questionIndex: number,
+      questionId: string,
+      audioBase64: string,
+      spokenSeconds: number
+    ) =>
+      request<HskkGrade>("/api/hskk/grade", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          part,
+          question_index: questionIndex,
+          question_id: questionId,
+          audio_base64: audioBase64,
+          audio_mime_type: "audio/wav",
+          spoken_seconds: spokenSeconds,
+        }),
       }),
     answer: (
       sessionId: number,

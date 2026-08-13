@@ -241,6 +241,31 @@ class HskkAnswerCreate(BaseModel):
     spoken_seconds: int = Field(default=0, ge=0, le=600)
 
 
+class HskkWrittenAnswer(BaseModel):
+    """One multiple-choice answer from the written half of the exam."""
+
+    session_id: int = Field(gt=0)
+    question_index: int = Field(ge=0, le=99)
+    vocabulary_id: int = Field(gt=0)
+    is_correct: bool
+
+
+class HskkGradeRequest(BaseModel):
+    """A spoken answer sent to Gemini for scoring.
+
+    ``audio_base64`` holds a WAV clip; the 12 MB ceiling is well under Gemini's
+    inline-data limit and comfortably fits the longest 2-minute answer.
+    """
+
+    session_id: int = Field(gt=0)
+    part: int = Field(ge=1, le=3)
+    question_index: int = Field(ge=0, le=99)
+    question_id: str = Field(min_length=1, max_length=32)
+    audio_base64: str = Field(min_length=32, max_length=12_000_000)
+    audio_mime_type: str = Field(default="audio/wav", pattern="^audio/(wav|webm|ogg|mp3|mpeg|aac|flac)$")
+    spoken_seconds: int = Field(default=0, ge=0, le=600)
+
+
 class DonationCreate(BaseModel):
     # The real bounds live in Settings so they stay configurable; these are the
     # outer limits PayOS itself accepts.

@@ -363,6 +363,23 @@ PROGRESS_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
 )
 
 
+# The mock exam grew a written (multiple-choice) section and AI grading after
+# its first release, so these columns are added in place rather than by
+# recreating the tables — an installed database keeps its exam history.
+HSKK_SESSION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("quiz_session_id", "INTEGER"),
+    ("written_score", "REAL NOT NULL DEFAULT 0"),
+    ("written_max", "REAL NOT NULL DEFAULT 0"),
+)
+
+HSKK_ANSWER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("graded_by", "TEXT NOT NULL DEFAULT 'self'"),
+    ("ai_score", "REAL"),
+    ("ai_feedback", "TEXT"),
+    ("transcript", "TEXT"),
+)
+
+
 def _add_missing_columns(
     connection: sqlite3.Connection,
     table: str,
@@ -419,6 +436,11 @@ def _migrate_progress_columns(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migrate_hskk_columns(connection: sqlite3.Connection) -> None:
+    _add_missing_columns(connection, "hskk_sessions", HSKK_SESSION_COLUMN_MIGRATIONS)
+    _add_missing_columns(connection, "hskk_answers", HSKK_ANSWER_COLUMN_MIGRATIONS)
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -434,6 +456,7 @@ def initialize_database(database_path: str | Path | None = None) -> Path:
         _migrate_vocabulary_columns(connection)
         _migrate_progress_columns(connection)
         _migrate_sentence_columns(connection)
+        _migrate_hskk_columns(connection)
         connection.commit()
     finally:
         connection.close()

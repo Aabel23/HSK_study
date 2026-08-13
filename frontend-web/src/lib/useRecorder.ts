@@ -16,6 +16,8 @@ export function useRecorder() {
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
+  /** Kept alongside the URL so the clip can also be sent off for AI grading. */
+  const [clipBlob, setClipBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -27,6 +29,7 @@ export function useRecorder() {
     if (clipUrlRef.current) URL.revokeObjectURL(clipUrlRef.current);
     clipUrlRef.current = null;
     setClipUrl(null);
+    setClipBlob(null);
   }, []);
 
   const stopTimer = useCallback(() => {
@@ -65,6 +68,7 @@ export function useRecorder() {
         const url = URL.createObjectURL(blob);
         clipUrlRef.current = url;
         setClipUrl(url);
+        setClipBlob(blob);
       };
       recorderRef.current = recorder;
       recorder.start();
@@ -101,5 +105,5 @@ export function useRecorder() {
     };
   }, [stopTimer]);
 
-  return { supported, recording, seconds, clipUrl, error, start, stop, reset };
+  return { supported, recording, seconds, clipUrl, clipBlob, error, start, stop, reset };
 }

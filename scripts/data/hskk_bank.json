@@ -8,6 +8,13 @@
       "blurb": "27 câu, khoảng 20 phút (đã gồm 7 phút chuẩn bị). Tập trung vào phát âm, thanh điệu và câu giao tiếp hằng ngày.",
       "prep_seconds": 420,
       "pass_score": 60,
+      "written": {
+        "title": "Từ vựng & câu",
+        "instruction_vi": "Trắc nghiệm bốn lựa chọn: nhận nghĩa, nhận mặt chữ, nhận pinyin và nghe chọn nghĩa. Chấm tự động.",
+        "count": 15,
+        "hsk_levels": ["1", "2"],
+        "question_types": ["mcq_meaning", "mcq_hanzi", "mcq_pinyin", "mcq_audio"]
+      },
       "parts": [
         {
           "part": 1,
@@ -151,9 +158,23 @@
     "intermediate": {
       "label": "HSKK Trung cấp",
       "hsk_range": "Thi cùng HSK 3-4",
-      "blurb": "14 câu, khoảng 23 phút (đã gồm 10 phút chuẩn bị). Câu dài hơn, có liên từ và mệnh đề phụ; phần nói cần bố cục mở - thân - kết.",
+      "blurb": "Phần nói gồm 12 câu, khoảng 23 phút (đã gồm 10 phút chuẩn bị). Câu dài hơn, có liên từ và mệnh đề phụ; phần nêu quan điểm cần bố cục mở - thân - kết.",
       "prep_seconds": 600,
       "pass_score": 60,
+      "written": {
+        "title": "Từ vựng & câu",
+        "instruction_vi": "Trắc nghiệm bốn lựa chọn ở mức HSK 3-4. Chấm tự động.",
+        "count": 20,
+        "hsk_levels": ["3", "4"],
+        "question_types": ["mcq_meaning", "mcq_hanzi", "mcq_pinyin", "mcq_audio"]
+      },
+      "skipped_parts": [
+        {
+          "part": 2,
+          "title": "Nhìn tranh kể chuyện",
+          "reason": "Chưa có bộ tranh đề thi nên phần này tạm bỏ; điểm được dồn sang phần nêu quan điểm. Pool câu hỏi vẫn giữ trong `pools.2` để bật lại khi có tranh."
+        }
+      ],
       "parts": [
         {
           "part": 1,
@@ -166,23 +187,13 @@
           "answer_seconds": 20
         },
         {
-          "part": 2,
-          "kind": "describe",
-          "title": "Kể lại tình huống",
-          "instruction_zh": "看图说话",
-          "instruction_vi": "Kể lại tình huống thành đoạn có mở - thân - kết. Dùng 首先…然后…最后… hoặc 第一…第二…第三…",
-          "count": 2,
-          "points_per_item": 17.5,
-          "answer_seconds": 120
-        },
-        {
           "part": 3,
           "kind": "opinion",
           "title": "Nêu quan điểm",
           "instruction_zh": "回答问题",
           "instruction_vi": "Trả lời có lý do và ví dụ minh hoạ, nói khoảng 1-2 phút.",
           "count": 2,
-          "points_per_item": 17.5,
+          "points_per_item": 35,
           "answer_seconds": 120
         }
       ],

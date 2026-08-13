@@ -62,6 +62,26 @@ def _generate_one(hsk_level: str | None, question_type: str) -> dict[str, Any]:
     }
 
 
+def generate_questions(
+    hsk_levels: list[str] | None, question_types: list[str], count: int
+) -> list[dict[str, Any]]:
+    """Build a mixed batch of multiple-choice questions.
+
+    Unlike :func:`create_session` this takes *several* HSK levels and picks one
+    per question, which is what the HSK mock exam needs — a paper covers a band
+    (HSK 1-2, HSK 3-4) rather than a single level. No session row is written, so
+    the caller owns the bookkeeping.
+    """
+    active_types = question_types or list(DEFAULT_QUESTION_TYPES)
+    questions = []
+    for index in range(count):
+        level = random.choice(hsk_levels) if hsk_levels else None
+        question = _generate_one(level, random.choice(active_types))
+        question["question_id"] = index
+        questions.append(question)
+    return questions
+
+
 def create_session(
     hsk_level: str | None, question_types: list[str], count: int
 ) -> dict[str, Any]:
