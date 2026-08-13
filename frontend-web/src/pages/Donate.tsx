@@ -330,7 +330,9 @@ PAYOS_CHECKSUM_KEY=...`}
               {formatDong(donation?.amount ?? 0)}
             </p>
             <div className="rounded-2xl border border-border bg-white p-3">
-              <canvas ref={canvasRef} className="block h-auto w-[240px] max-w-full" />
+              {/* The QR shrinks with the viewport so the whole dialog — amount,
+                  code and footer — always fits on short phone screens. */}
+              <canvas ref={canvasRef} className="block h-auto w-[min(240px,45dvh,70vw)] max-w-full" />
             </div>
             <p className="flex items-center gap-2 text-sm text-ink-soft">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-gold" />

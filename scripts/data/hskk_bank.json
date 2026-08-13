@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "note": "Ngân hàng đề thi thử HSKK. Mỗi lượt thi được lắp từ các pool bên dưới nên đề khác nhau mỗi lần, nhưng cấu trúc luôn đúng format thật.",
+  "levels": {
+    "beginner": {
+      "label": "HSKK Sơ cấp",
+      "hsk_range": "Thi cùng HSK 1-2",
+      "blurb": "27 câu, khoảng 20 phút (đã gồm 7 phút chuẩn bị). Tập trung vào phát âm, thanh điệu và câu giao tiếp hằng ngày.",
+      "prep_seconds": 420,
+      "pass_score": 60,
+      "parts": [
+        {
+          "part": 1,
+          "kind": "repeat",
+          "title": "Nghe và nhắc lại",
+          "instruction_zh": "听后重复",
+          "instruction_vi": "Nghe câu ngắn rồi nhắc lại nguyên văn, đúng phát âm và thanh điệu.",
+          "count": 15,
+          "points_per_item": 2,
+          "answer_seconds": 15
+        },
+        {
+          "part": 2,
+          "kind": "answer",
+          "title": "Nghe và trả lời",
+          "instruction_zh": "听后回答",
+          "instruction_vi": "Nghe câu hỏi đời thường rồi trả lời ngắn gọn, đúng ngữ pháp cơ bản.",
+          "count": 10,
+          "points_per_item": 3,
+          "answer_seconds": 25
+        },
+        {
+          "part": 3,
+          "kind": "speak",
+          "title": "Nói theo đề cho sẵn",
+          "instruction_zh": "回答问题",
+          "instruction_vi": "Đề in kèm bính âm. Trả lời liền mạch, ít nhất 5 câu cho mỗi đề.",
+          "count": 2,
+          "points_per_item": 20,
+          "answer_seconds": 90,
+          "min_sentences": 5
+        }
+      ],
+      "pools": {
+        "1": [
+          { "id": "b1-01", "hanzi": "我很高兴认识你", "pinyin": "Wǒ hěn gāoxìng rènshi nǐ", "vi": "Rất vui được quen biết bạn" },
+          { "id": "b1-02", "hanzi": "今天天气很好", "pinyin": "Jīntiān tiānqì hěn hǎo", "vi": "Hôm nay thời tiết rất đẹp" },
+          { "id": "b1-03", "hanzi": "我家有五口人", "pinyin": "Wǒ jiā yǒu wǔ kǒu rén", "vi": "Nhà tôi có năm người" },
+          { "id": "b1-04", "hanzi": "请你再说一遍", "pinyin": "Qǐng nǐ zài shuō yí biàn", "vi": "Xin bạn nói lại một lần nữa" },
+          { "id": "b1-05", "hanzi": "他是我的中文老师", "pinyin": "Tā shì wǒ de Zhōngwén lǎoshī", "vi": "Anh ấy là giáo viên tiếng Trung của tôi" },
+          { "id": "b1-06", "hanzi": "我想喝一杯热茶", "pinyin": "Wǒ xiǎng hē yì bēi rè chá", "vi": "Tôi muốn uống một tách trà nóng" },
+          { "id": "b1-07", "hanzi": "医院离这儿很远", "pinyin": "Yīyuàn lí zhèr hěn yuǎn", "vi": "Bệnh viện cách đây rất xa" },
+          { "id": "b1-08", "hanzi": "我昨天买了一件衣服", "pinyin": "Wǒ zuótiān mǎi le yí jiàn yīfu", "vi": "Hôm qua tôi đã mua một chiếc áo" },
+          { "id": "b1-09", "hanzi": "你什么时候回家", "pinyin": "Nǐ shénme shíhou huí jiā", "vi": "Khi nào bạn về nhà" },
+          { "id": "b1-10", "hanzi": "这个苹果多少钱", "pinyin": "Zhège píngguǒ duōshao qián", "vi": "Quả táo này bao nhiêu tiền" },
+          { "id": "b1-11", "hanzi": "我每天七点起床", "pinyin": "Wǒ měi tiān qī diǎn qǐchuáng", "vi": "Tôi dậy lúc bảy giờ mỗi ngày" },
+          { "id": "b1-12", "hanzi": "我们一起去看电影吧", "pinyin": "Wǒmen yìqǐ qù kàn diànyǐng ba", "vi": "Chúng ta cùng đi xem phim nhé" },
+          { "id": "b1-13", "hanzi": "我不会开车", "pinyin": "Wǒ bú huì kāichē", "vi": "Tôi không biết lái xe" },
+          { "id": "b1-14", "hanzi": "他在房间里睡觉", "pinyin": "Tā zài fángjiān lǐ shuìjiào", "vi": "Anh ấy đang ngủ trong phòng" },
+          { "id": "b1-15", "hanzi": "我的手机在桌子上", "pinyin": "Wǒ de shǒujī zài zhuōzi shang", "vi": "Điện thoại của tôi ở trên bàn" },
+          { "id": "b1-16", "hanzi": "今天是星期几", "pinyin": "Jīntiān shì xīngqī jǐ", "vi": "Hôm nay là thứ mấy" },
+          { "id": "b1-17", "hanzi": "妈妈做的菜很好吃", "pinyin": "Māma zuò de cài hěn hǎochī", "vi": "Món mẹ nấu rất ngon" },
+          { "id": "b1-18", "hanzi": "我在学校学习汉语", "pinyin": "Wǒ zài xuéxiào xuéxí Hànyǔ", "vi": "Tôi học tiếng Hán ở trường" },
+          { "id": "b1-19", "hanzi": "外面下雨了", "pinyin": "Wàimiàn xià yǔ le", "vi": "Bên ngoài trời mưa rồi" },
+          { "id": "b1-20", "hanzi": "请问洗手间在哪儿", "pinyin": "Qǐngwèn xǐshǒujiān zài nǎr", "vi": "Xin hỏi nhà vệ sinh ở đâu" },
+          { "id": "b1-21", "hanzi": "我朋友明天来北京", "pinyin": "Wǒ péngyou míngtiān lái Běijīng", "vi": "Bạn tôi ngày mai đến Bắc Kinh" },
+          { "id": "b1-22", "hanzi": "这本书很有意思", "pinyin": "Zhè běn shū hěn yǒu yìsi", "vi": "Cuốn sách này rất thú vị" },
+          { "id": "b1-23", "hanzi": "我身体不太舒服", "pinyin": "Wǒ shēntǐ bú tài shūfu", "vi": "Tôi thấy trong người không khoẻ lắm" },
+          { "id": "b1-24", "hanzi": "弟弟比我高一点儿", "pinyin": "Dìdi bǐ wǒ gāo yìdiǎnr", "vi": "Em trai cao hơn tôi một chút" }
+        ],
+        "2": [
+          { "id": "b2-01", "hanzi": "你家有几口人？", "pinyin": "Nǐ jiā yǒu jǐ kǒu rén?", "vi": "Nhà bạn có mấy người?" },
+          { "id": "b2-02", "hanzi": "你叫什么名字？", "pinyin": "Nǐ jiào shénme míngzi?", "vi": "Bạn tên là gì?" },
+          { "id": "b2-03", "hanzi": "你每天几点起床？", "pinyin": "Nǐ měi tiān jǐ diǎn qǐchuáng?", "vi": "Mỗi ngày bạn dậy lúc mấy giờ?" },
+          { "id": "b2-04", "hanzi": "你喜欢吃什么菜？", "pinyin": "Nǐ xǐhuan chī shénme cài?", "vi": "Bạn thích ăn món gì?" },
+          { "id": "b2-05", "hanzi": "你今天做什么了？", "pinyin": "Nǐ jīntiān zuò shénme le?", "vi": "Hôm nay bạn đã làm gì?" },
+          { "id": "b2-06", "hanzi": "你会说汉语吗？", "pinyin": "Nǐ huì shuō Hànyǔ ma?", "vi": "Bạn có biết nói tiếng Hán không?" },
+          { "id": "b2-07", "hanzi": "你的生日是几月几号？", "pinyin": "Nǐ de shēngrì shì jǐ yuè jǐ hào?", "vi": "Sinh nhật bạn ngày mấy tháng mấy?" },
+          { "id": "b2-08", "hanzi": "你家离学校远吗？", "pinyin": "Nǐ jiā lí xuéxiào yuǎn ma?", "vi": "Nhà bạn có xa trường không?" },
+          { "id": "b2-09", "hanzi": "你喜欢什么运动？", "pinyin": "Nǐ xǐhuan shénme yùndòng?", "vi": "Bạn thích môn thể thao nào?" },
+          { "id": "b2-10", "hanzi": "周末你常常做什么？", "pinyin": "Zhōumò nǐ chángcháng zuò shénme?", "vi": "Cuối tuần bạn thường làm gì?" },
+          { "id": "b2-11", "hanzi": "你怎么去上班？", "pinyin": "Nǐ zěnme qù shàngbān?", "vi": "Bạn đi làm bằng cách nào?" },
+          { "id": "b2-12", "hanzi": "你学汉语多长时间了？", "pinyin": "Nǐ xué Hànyǔ duō cháng shíjiān le?", "vi": "Bạn học tiếng Hán bao lâu rồi?" },
+          { "id": "b2-13", "hanzi": "你最喜欢哪个季节？", "pinyin": "Nǐ zuì xǐhuan nǎge jìjié?", "vi": "Bạn thích mùa nào nhất?" },
+          { "id": "b2-14", "hanzi": "今天天气怎么样？", "pinyin": "Jīntiān tiānqì zěnmeyàng?", "vi": "Hôm nay thời tiết thế nào?" },
+          { "id": "b2-15", "hanzi": "你有没有兄弟姐妹？", "pinyin": "Nǐ yǒu méiyǒu xiōngdì jiěmèi?", "vi": "Bạn có anh chị em không?" },
+          { "id": "b2-16", "hanzi": "你喜欢看什么电影？", "pinyin": "Nǐ xǐhuan kàn shénme diànyǐng?", "vi": "Bạn thích xem phim gì?" },
+          { "id": "b2-17", "hanzi": "你昨天晚上吃什么了？", "pinyin": "Nǐ zuótiān wǎnshang chī shénme le?", "vi": "Tối qua bạn đã ăn gì?" },
+          { "id": "b2-18", "hanzi": "你想去中国旅游吗？", "pinyin": "Nǐ xiǎng qù Zhōngguó lǚyóu ma?", "vi": "Bạn có muốn đi du lịch Trung Quốc không?" }
+        ],
+        "3": [
+          {
+            "id": "b3-01",
+            "hanzi": "请介绍一下你的家人。",
+            "pinyin": "Qǐng jièshào yíxià nǐ de jiārén.",
+            "vi": "Hãy giới thiệu về gia đình bạn.",
+            "hints": ["我家有…口人", "我爸爸是…", "我们常常一起…", "我最喜欢…"]
+          },
+          {
+            "id": "b3-02",
+            "hanzi": "说一说你的一天。",
+            "pinyin": "Shuō yi shuō nǐ de yì tiān.",
+            "vi": "Hãy kể về một ngày của bạn.",
+            "hints": ["我每天…点起床", "上午我…", "下午我…", "晚上我…"]
+          },
+          {
+            "id": "b3-03",
+            "hanzi": "你为什么学习汉语？",
+            "pinyin": "Nǐ wèishénme xuéxí Hànyǔ?",
+            "vi": "Vì sao bạn học tiếng Hán?",
+            "hints": ["我学汉语…年了", "因为…", "我觉得汉语…", "以后我想…"]
+          },
+          {
+            "id": "b3-04",
+            "hanzi": "请介绍你最好的朋友。",
+            "pinyin": "Qǐng jièshào nǐ zuì hǎo de péngyou.",
+            "vi": "Hãy giới thiệu người bạn thân nhất của bạn.",
+            "hints": ["他/她叫…", "我们是在…认识的", "他/她很…", "我们常常一起…"]
+          },
+          {
+            "id": "b3-05",
+            "hanzi": "说一说你的学校或者公司。",
+            "pinyin": "Shuō yi shuō nǐ de xuéxiào huòzhě gōngsī.",
+            "vi": "Hãy kể về trường học hoặc công ty của bạn.",
+            "hints": ["我的学校在…", "那儿有…", "我每天…点去", "我觉得…"]
+          },
+          {
+            "id": "b3-06",
+            "hanzi": "你有什么爱好？请说一说。",
+            "pinyin": "Nǐ yǒu shénme àihào? Qǐng shuō yi shuō.",
+            "vi": "Bạn có sở thích gì? Hãy kể một chút.",
+            "hints": ["我的爱好是…", "我常常在…", "因为…", "我希望以后…"]
+          },
+          {
+            "id": "b3-07",
+            "hanzi": "请说一说你住的地方。",
+            "pinyin": "Qǐng shuō yi shuō nǐ zhù de dìfang.",
+            "vi": "Hãy kể về nơi bạn đang sống.",
+            "hints": ["我住在…", "我家附近有…", "去…很方便", "我很喜欢这里，因为…"]
+          },
+          {
+            "id": "b3-08",
+            "hanzi": "你最喜欢的季节是什么？为什么？",
+            "pinyin": "Nǐ zuì xǐhuan de jìjié shì shénme? Wèishénme?",
+            "vi": "Mùa bạn thích nhất là mùa nào? Vì sao?",
+            "hints": ["我最喜欢…", "因为那时候天气…", "我可以…", "我常常和家人…"]
+          }
+        ]
+      }
+    },
+    "intermediate": {
+      "label": "HSKK Trung cấp",
+      "hsk_range": "Thi cùng HSK 3-4",
+      "blurb": "14 câu, khoảng 23 phút (đã gồm 10 phút chuẩn bị). Câu dài hơn, có liên từ và mệnh đề phụ; phần nói cần bố cục mở - thân - kết.",
+      "prep_seconds": 600,
+      "pass_score": 60,
+      "parts": [
+        {
+          "part": 1,
+          "kind": "repeat",
+          "title": "Nghe và nhắc lại",
+          "instruction_zh": "听后重复",
+          "instruction_vi": "Câu dài 10-20 chữ, có liên từ hoặc mệnh đề phụ. Nghe một lần rồi lặp lại chính xác.",
+          "count": 10,
+          "points_per_item": 3,
+          "answer_seconds": 20
+        },
+        {
+          "part": 2,
+          "kind": "describe",
+          "title": "Kể lại tình huống",
+          "instruction_zh": "看图说话",
+          "instruction_vi": "Kể lại tình huống thành đoạn có mở - thân - kết. Dùng 首先…然后…最后… hoặc 第一…第二…第三…",
+          "count": 2,
+          "points_per_item": 17.5,
+          "answer_seconds": 120
+        },
+        {
+          "part": 3,
+          "kind": "opinion",
+          "title": "Nêu quan điểm",
+          "instruction_zh": "回答问题",
+          "instruction_vi": "Trả lời có lý do và ví dụ minh hoạ, nói khoảng 1-2 phút.",
+          "count": 2,
+          "points_per_item": 17.5,
+          "answer_seconds": 120
+        }
+      ],
+      "pools": {
+        "1": [
+          { "id": "i1-01", "hanzi": "虽然今天的工作很忙，但是我还是想去跑步。", "pinyin": "Suīrán jīntiān de gōngzuò hěn máng, dànshì wǒ háishi xiǎng qù pǎobù.", "vi": "Tuy hôm nay công việc rất bận, nhưng tôi vẫn muốn đi chạy bộ." },
+          { "id": "i1-02", "hanzi": "如果明天不下雨，我们就去公园散步。", "pinyin": "Rúguǒ míngtiān bú xià yǔ, wǒmen jiù qù gōngyuán sànbù.", "vi": "Nếu mai trời không mưa, chúng ta sẽ đi dạo công viên." },
+          { "id": "i1-03", "hanzi": "我觉得学习一门外语最重要的是坚持。", "pinyin": "Wǒ juéde xuéxí yì mén wàiyǔ zuì zhòngyào de shì jiānchí.", "vi": "Tôi thấy học một ngoại ngữ, quan trọng nhất là kiên trì." },
+          { "id": "i1-04", "hanzi": "他不但会说汉语，而且说得非常流利。", "pinyin": "Tā búdàn huì shuō Hànyǔ, érqiě shuō de fēicháng liúlì.", "vi": "Anh ấy không chỉ biết nói tiếng Hán, mà còn nói rất trôi chảy." },
+          { "id": "i1-05", "hanzi": "因为堵车，所以我上班迟到了半个小时。", "pinyin": "Yīnwèi dǔchē, suǒyǐ wǒ shàngbān chídào le bàn ge xiǎoshí.", "vi": "Vì tắc đường nên tôi đi làm muộn nửa tiếng." },
+          { "id": "i1-06", "hanzi": "医生说，只要按时吃药，很快就会好起来。", "pinyin": "Yīshēng shuō, zhǐyào ànshí chī yào, hěn kuài jiù huì hǎo qǐlái.", "vi": "Bác sĩ nói chỉ cần uống thuốc đúng giờ thì sẽ nhanh khỏi." },
+          { "id": "i1-07", "hanzi": "这家饭馆的菜又便宜又好吃，所以人特别多。", "pinyin": "Zhè jiā fànguǎn de cài yòu piányi yòu hǎochī, suǒyǐ rén tèbié duō.", "vi": "Món ở quán này vừa rẻ vừa ngon nên rất đông khách." },
+          { "id": "i1-08", "hanzi": "除了周末以外，我每天都要工作八个小时。", "pinyin": "Chúle zhōumò yǐwài, wǒ měi tiān dōu yào gōngzuò bā ge xiǎoshí.", "vi": "Ngoài cuối tuần ra, ngày nào tôi cũng phải làm việc tám tiếng." },
+          { "id": "i1-09", "hanzi": "无论遇到什么困难，我们都不应该放弃。", "pinyin": "Wúlùn yùdào shénme kùnnan, wǒmen dōu bù yīnggāi fàngqì.", "vi": "Dù gặp khó khăn gì, chúng ta cũng không nên bỏ cuộc." },
+          { "id": "i1-10", "hanzi": "他一边听音乐，一边整理房间里的东西。", "pinyin": "Tā yìbiān tīng yīnyuè, yìbiān zhěnglǐ fángjiān lǐ de dōngxi.", "vi": "Anh ấy vừa nghe nhạc vừa dọn dẹp đồ đạc trong phòng." },
+          { "id": "i1-11", "hanzi": "我打算明年夏天去中国留学一年。", "pinyin": "Wǒ dǎsuàn míngnián xiàtiān qù Zhōngguó liúxué yì nián.", "vi": "Tôi định mùa hè năm sau sang Trung Quốc du học một năm." },
+          { "id": "i1-12", "hanzi": "网上买东西虽然方便，但是有时候质量不太好。", "pinyin": "Wǎngshàng mǎi dōngxi suīrán fāngbiàn, dànshì yǒu shíhou zhìliàng bú tài hǎo.", "vi": "Mua hàng trên mạng tuy tiện, nhưng đôi khi chất lượng không tốt lắm." },
+          { "id": "i1-13", "hanzi": "我一直觉得，多运动对身体健康很有帮助。", "pinyin": "Wǒ yìzhí juéde, duō yùndòng duì shēntǐ jiànkāng hěn yǒu bāngzhù.", "vi": "Tôi luôn thấy vận động nhiều rất có ích cho sức khoẻ." },
+          { "id": "i1-14", "hanzi": "越来越多的年轻人喜欢在大城市工作和生活。", "pinyin": "Yuè lái yuè duō de niánqīngrén xǐhuan zài dà chéngshì gōngzuò hé shēnghuó.", "vi": "Ngày càng nhiều người trẻ thích làm việc và sống ở thành phố lớn." },
+          { "id": "i1-15", "hanzi": "请你把这份材料复印一下，然后交给经理。", "pinyin": "Qǐng nǐ bǎ zhè fèn cáiliào fùyìn yíxià, ránhòu jiāo gěi jīnglǐ.", "vi": "Nhờ bạn photo tài liệu này rồi đưa cho giám đốc." },
+          { "id": "i1-16", "hanzi": "我小时候在爷爷奶奶家住过几年。", "pinyin": "Wǒ xiǎo shíhou zài yéye nǎinai jiā zhù guo jǐ nián.", "vi": "Hồi nhỏ tôi từng sống ở nhà ông bà mấy năm." },
+          { "id": "i1-17", "hanzi": "由于天气原因，飞机推迟了两个小时起飞。", "pinyin": "Yóuyú tiānqì yuányīn, fēijī tuīchí le liǎng ge xiǎoshí qǐfēi.", "vi": "Do lý do thời tiết, máy bay hoãn cất cánh hai tiếng." },
+          { "id": "i1-18", "hanzi": "他花了三年时间才把这本小说写完。", "pinyin": "Tā huā le sān nián shíjiān cái bǎ zhè běn xiǎoshuō xiě wán.", "vi": "Anh ấy mất ba năm mới viết xong cuốn tiểu thuyết này." }
+        ],
+        "2": [
+          {
+            "id": "i2-01",
+            "hanzi": "一家人在厨房里一起吃晚饭",
+            "pinyin": "Yì jiā rén zài chúfáng lǐ yìqǐ chī wǎnfàn",
+            "vi": "Cả nhà cùng ăn tối trong bếp: mẹ vừa bưng món ra, bố và hai con đã ngồi vào bàn, mọi người vừa ăn vừa trò chuyện.",
+            "hints": ["首先…", "然后…", "最后…", "我觉得这样的时间很温暖"]
+          },
+          {
+            "id": "i2-02",
+            "hanzi": "下雨天在公共汽车站等车",
+            "pinyin": "Xià yǔ tiān zài gōnggòng qìchē zhàn děng chē",
+            "vi": "Trời mưa, một người đứng đợi xe buýt mà quên mang ô, quần áo ướt hết; sau đó có người lạ che ô giúp.",
+            "hints": ["那天…", "因为…所以…", "后来…", "我很感动"]
+          },
+          {
+            "id": "i2-03",
+            "hanzi": "两个同学在图书馆一起复习",
+            "pinyin": "Liǎng ge tóngxué zài túshūguǎn yìqǐ fùxí",
+            "vi": "Hai bạn học ngồi ôn bài trong thư viện, một bạn giảng lại bài khó cho bạn kia, cuối cùng cả hai đều thi tốt.",
+            "hints": ["第一…", "第二…", "第三…", "他们的成绩都很好"]
+          },
+          {
+            "id": "i2-04",
+            "hanzi": "在超市买东西和排队付钱",
+            "pinyin": "Zài chāoshì mǎi dōngxi hé páiduì fù qián",
+            "vi": "Một người đi siêu thị mua đồ, chọn rau và hoa quả, xếp hàng thanh toán thì phát hiện quên mang ví.",
+            "hints": ["他先…", "然后…", "没想到…", "最后…"]
+          },
+          {
+            "id": "i2-05",
+            "hanzi": "去机场差点儿赶不上飞机",
+            "pinyin": "Qù jīchǎng chàdiǎnr gǎn bu shàng fēijī",
+            "vi": "Một người ra sân bay muộn vì tắc đường, phải chạy vội qua cửa kiểm tra và lên máy bay đúng phút chót.",
+            "hints": ["那天早上…", "因为堵车…", "他一边跑一边…", "幸好…"]
+          },
+          {
+            "id": "i2-06",
+            "hanzi": "同事们在办公室开会",
+            "pinyin": "Tóngshìmen zài bàngōngshì kāihuì",
+            "vi": "Một nhóm đồng nghiệp họp trong văn phòng, một người đứng trước bảng trình bày kế hoạch, những người khác ghi chép và đặt câu hỏi.",
+            "hints": ["会议开始的时候…", "接着…", "大家…", "最后经理说…"]
+          },
+          {
+            "id": "i2-07",
+            "hanzi": "早上在公园遛狗",
+            "pinyin": "Zǎoshang zài gōngyuán liù gǒu",
+            "vi": "Buổi sáng một người dắt chó đi dạo trong công viên, gặp hàng xóm cùng tập thể dục, con chó chạy theo một đứa trẻ đang chơi bóng.",
+            "hints": ["每天早上…", "那天…", "突然…", "我觉得…"]
+          },
+          {
+            "id": "i2-08",
+            "hanzi": "医生给孩子看病",
+            "pinyin": "Yīshēng gěi háizi kànbìng",
+            "vi": "Bác sĩ đang khám cho một em nhỏ bị sốt, người mẹ ngồi bên cạnh lo lắng, bác sĩ dặn uống thuốc đúng giờ và nghỉ ngơi.",
+            "hints": ["那天…", "妈妈很着急，因为…", "医生说…", "过了几天…"]
+          }
+        ],
+        "3": [
+          { "id": "i3-01", "hanzi": "你觉得网上购物好还是去商店买东西好？", "pinyin": "Nǐ juéde wǎngshàng gòuwù hǎo háishi qù shāngdiàn mǎi dōngxi hǎo?", "vi": "Bạn thấy mua sắm online hay mua ở cửa hàng thì tốt hơn?", "hints": ["我觉得…更好", "第一个原因是…", "比如说…", "当然…也有缺点"] },
+          { "id": "i3-02", "hanzi": "你认为年轻人应该在大城市还是在小城市工作？", "pinyin": "Nǐ rènwéi niánqīngrén yīnggāi zài dà chéngshì háishi zài xiǎo chéngshì gōngzuò?", "vi": "Bạn cho rằng người trẻ nên làm việc ở thành phố lớn hay thành phố nhỏ?", "hints": ["我认为…", "因为…", "举个例子…", "总的来说…"] },
+          { "id": "i3-03", "hanzi": "有人说旅游是最好的学习方式，你同意吗？", "pinyin": "Yǒu rén shuō lǚyóu shì zuì hǎo de xuéxí fāngshì, nǐ tóngyì ma?", "vi": "Có người nói du lịch là cách học tốt nhất, bạn có đồng ý không?", "hints": ["我基本上同意这个看法", "一方面…", "另一方面…", "所以我觉得…"] },
+          { "id": "i3-04", "hanzi": "你觉得手机对我们的生活影响是好还是坏？", "pinyin": "Nǐ juéde shǒujī duì wǒmen de shēnghuó yǐngxiǎng shì hǎo háishi huài?", "vi": "Bạn thấy điện thoại ảnh hưởng tốt hay xấu tới cuộc sống?", "hints": ["手机让我们的生活…", "但是…", "我自己的经验是…", "关键是…"] },
+          { "id": "i3-05", "hanzi": "你认为学习外语最好的方法是什么？", "pinyin": "Nǐ rènwéi xuéxí wàiyǔ zuì hǎo de fāngfǎ shì shénme?", "vi": "Bạn cho rằng cách học ngoại ngữ tốt nhất là gì?", "hints": ["我觉得最重要的是…", "第一…", "第二…", "对我来说…"] },
+          { "id": "i3-06", "hanzi": "有人喜欢一个人生活，有人喜欢和家人住在一起，你怎么看？", "pinyin": "Yǒu rén xǐhuan yí ge rén shēnghuó, yǒu rén xǐhuan hé jiārén zhù zài yìqǐ, nǐ zěnme kàn?", "vi": "Có người thích sống một mình, có người thích sống cùng gia đình, bạn nghĩ sao?", "hints": ["这两种生活各有各的好处", "一个人住可以…", "和家人住…", "我更喜欢…"] },
+          { "id": "i3-07", "hanzi": "你觉得工作重要还是健康重要？为什么？", "pinyin": "Nǐ juéde gōngzuò zhòngyào háishi jiànkāng zhòngyào? Wèishénme?", "vi": "Bạn thấy công việc hay sức khoẻ quan trọng hơn? Vì sao?", "hints": ["对我来说…更重要", "因为…", "我身边就有这样的例子…", "所以…"] },
+          { "id": "i3-08", "hanzi": "现在很多人在家工作，你觉得这样好吗？", "pinyin": "Xiànzài hěn duō rén zài jiā gōngzuò, nǐ juéde zhèyàng hǎo ma?", "vi": "Hiện nay nhiều người làm việc tại nhà, bạn thấy như vậy có tốt không?", "hints": ["在家工作的好处是…", "不过也有问题，比如…", "我认为…", "最好的办法是…"] }
+        ]
+      }
+    }
+  }
+}

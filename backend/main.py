@@ -30,6 +30,7 @@ from backend.routes import (
     donate,
     flashcard,
     health,
+    hskk,
     listening,
     matching,
     progress,
@@ -164,6 +165,7 @@ def create_app() -> FastAPI:
     application.include_router(backup.router)
     application.include_router(typing.router)
     application.include_router(dictation.router)
+    application.include_router(hskk.router)
     application.include_router(donate.router)
 
     if WEB_DIST_DIR.exists():

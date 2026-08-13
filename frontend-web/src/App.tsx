@@ -18,6 +18,8 @@ const Matching = lazy(() => import("./pages/Matching"));
 const Sentences = lazy(() => import("./pages/Sentences"));
 const Listening = lazy(() => import("./pages/Listening"));
 const Quiz = lazy(() => import("./pages/Quiz"));
+const Typing = lazy(() => import("./pages/Typing"));
+const Hskk = lazy(() => import("./pages/Hskk"));
 const Writing = lazy(() => import("./pages/Writing"));
 const Progress = lazy(() => import("./pages/Progress"));
 const Achievements = lazy(() => import("./pages/Achievements"));
@@ -43,6 +45,8 @@ export default function App() {
                     <Route path="/sentences" element={<Sentences />} />
                     <Route path="/listening" element={<Listening />} />
                     <Route path="/quiz" element={<Quiz />} />
+                    <Route path="/typing" element={<Typing />} />
+                    <Route path="/hskk" element={<Hskk />} />
                     <Route path="/writing" element={<Writing />} />
                     <Route path="/progress" element={<Progress />} />
                     <Route path="/achievements" element={<Achievements />} />

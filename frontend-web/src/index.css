@@ -127,6 +127,12 @@ body,
   height: 100%;
 }
 
+/* Nothing may push the page sideways on narrow phones. `clip` (not `hidden`)
+   keeps `position: sticky` working for the sidebar. */
+html {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -134,7 +140,8 @@ body {
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 /* Anything interactive gets a pointer and a visible keyboard ring. Focus is

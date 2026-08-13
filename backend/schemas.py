@@ -214,6 +214,33 @@ class DictationAnswerCheck(BaseModel):
     replays: int = Field(default=0, ge=0, le=99)
 
 
+class HskkLevel(str, Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+
+
+class HskkSelfRating(str, Enum):
+    """The learner grades their own spoken answer; speech is not auto-scored."""
+
+    good = "good"
+    ok = "ok"
+    bad = "bad"
+    skipped = "skipped"
+
+
+class HskkSessionCreate(BaseModel):
+    exam_level: HskkLevel = HskkLevel.beginner
+
+
+class HskkAnswerCreate(BaseModel):
+    session_id: int = Field(gt=0)
+    part: int = Field(ge=1, le=3)
+    question_index: int = Field(ge=0, le=99)
+    question_id: str = Field(default="", max_length=32)
+    self_rating: HskkSelfRating
+    spoken_seconds: int = Field(default=0, ge=0, le=600)
+
+
 class DonationCreate(BaseModel):
     # The real bounds live in Settings so they stay configurable; these are the
     # outer limits PayOS itself accepts.

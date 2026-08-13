@@ -20,6 +20,12 @@ import type {
   DictationMode,
   DictationSession,
   DictationStats,
+  HskkExamLevel,
+  HskkLevelFormat,
+  HskkPaper,
+  HskkResult,
+  HskkSelfRating,
+  HskkStats,
   DonateConfig,
   DonateSummary,
   Donation,
@@ -346,6 +352,37 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ total_items: total, correct_items: correct, incorrect_items: incorrect }),
       }),
+  },
+
+  hskk: {
+    levels: () => request<{ items: HskkLevelFormat[] }>("/api/hskk/levels"),
+    stats: () => request<HskkStats>("/api/hskk/stats"),
+    createSession: (examLevel: HskkExamLevel) =>
+      request<HskkPaper>("/api/hskk/session", {
+        method: "POST",
+        body: JSON.stringify({ exam_level: examLevel }),
+      }),
+    answer: (
+      sessionId: number,
+      part: number,
+      questionIndex: number,
+      questionId: string,
+      selfRating: HskkSelfRating,
+      spokenSeconds: number
+    ) =>
+      request<{ score: number; max_score: number }>("/api/hskk/answer", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          part,
+          question_index: questionIndex,
+          question_id: questionId,
+          self_rating: selfRating,
+          spoken_seconds: spokenSeconds,
+        }),
+      }),
+    complete: (sessionId: number) =>
+      request<HskkResult>(`/api/hskk/session/${sessionId}/complete`, { method: "POST" }),
   },
 
   donate: {

@@ -245,12 +245,12 @@ export default function Flashcards() {
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
             <span className="hanzi text-3xl font-bold text-ink">{item.hanzi}</span>
-            {settings.show_pinyin && <span className="text-sm text-gold">{item.pinyin}</span>}
+            <span className="text-sm text-gold">{item.pinyin}</span>
             <span className="text-lg font-semibold text-accent">{item.meaning}</span>
             {item.example && (
               <div className="mt-2 text-center text-sm text-ink-soft">
                 <p className="hanzi">{item.example}</p>
-                {settings.show_pinyin && <p className="text-gold">{item.example_pinyin}</p>}
+                <p className="text-gold">{item.example_pinyin}</p>
                 <p>{item.example_meaning}</p>
               </div>
             )}

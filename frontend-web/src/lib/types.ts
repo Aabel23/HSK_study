@@ -417,6 +417,108 @@ export interface SentenceLevelSummary {
   max_tokens: number;
 }
 
+/** HSKK is a spoken exam, so the learner grades their own answer. */
+export type HskkSelfRating = "good" | "ok" | "bad" | "skipped";
+
+export type HskkExamLevel = "beginner" | "intermediate";
+
+/** repeat = nhắc lại, answer = trả lời câu hỏi, describe = kể theo tình huống, opinion = nêu quan điểm. */
+export type HskkPartKind = "repeat" | "answer" | "describe" | "opinion";
+
+export interface HskkPartFormat {
+  part: number;
+  kind: HskkPartKind;
+  title: string;
+  instruction_zh: string;
+  instruction_vi: string;
+  count: number;
+  points_per_item: number;
+  total_points: number;
+  answer_seconds: number;
+}
+
+export interface HskkLevelFormat {
+  code: HskkExamLevel;
+  label: string;
+  hsk_range: string;
+  blurb: string;
+  prep_seconds: number;
+  pass_score: number;
+  total_items: number;
+  total_points: number;
+  parts: HskkPartFormat[];
+}
+
+export interface HskkItem {
+  question_index: number;
+  question_id: string;
+  hanzi: string;
+  pinyin: string;
+  vi: string;
+  hints: string[];
+  /** Set only for parts the learner must *hear*; null when the prompt is read. */
+  audio_text: string | null;
+}
+
+export interface HskkPart {
+  part: number;
+  kind: HskkPartKind;
+  title: string;
+  instruction_zh: string;
+  instruction_vi: string;
+  points_per_item: number;
+  answer_seconds: number;
+  min_sentences: number | null;
+  items: HskkItem[];
+}
+
+export interface HskkPaper {
+  session_id: number;
+  exam_level: HskkExamLevel;
+  label: string;
+  prep_seconds: number;
+  pass_score: number;
+  total_items: number;
+  max_score: number;
+  parts: HskkPart[];
+}
+
+export interface HskkResult {
+  session_id: number;
+  exam_level: HskkExamLevel;
+  score: number;
+  max_score: number;
+  percent: number;
+  passed: boolean;
+  pass_score: number;
+  band: string;
+  total_items: number;
+  answered_items: number;
+  parts: Array<{
+    part: number;
+    title: string;
+    answered: number;
+    score: number;
+    max_score: number;
+    spoken_seconds: number;
+  }>;
+}
+
+export interface HskkStats {
+  sessions: number;
+  best_percent: number;
+  average_percent: number;
+  last_percent: number;
+  recent: Array<{
+    exam_level: HskkExamLevel;
+    score: number;
+    max_score: number;
+    percent: number;
+    ended_at: string | null;
+  }>;
+  ratings: Array<{ self_rating: HskkSelfRating; label: string; total: number }>;
+}
+
 export type DonationStatus = "pending" | "paid" | "cancelled" | "expired";
 
 export interface DonateConfig {

@@ -293,6 +293,34 @@ CREATE TABLE IF NOT EXISTS donations (
     paid_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS hskk_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    exam_level TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    total_items INTEGER NOT NULL DEFAULT 0,
+    answered_items INTEGER NOT NULL DEFAULT 0,
+    score REAL NOT NULL DEFAULT 0,
+    max_score REAL NOT NULL DEFAULT 100
+);
+
+CREATE TABLE IF NOT EXISTS hskk_answers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    part INTEGER NOT NULL,
+    question_index INTEGER NOT NULL,
+    question_id TEXT NOT NULL DEFAULT '',
+    self_rating TEXT NOT NULL CHECK (self_rating IN ('good', 'ok', 'bad', 'skipped')),
+    score REAL NOT NULL DEFAULT 0,
+    max_score REAL NOT NULL DEFAULT 0,
+    spoken_seconds INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    UNIQUE (session_id, part, question_index),
+    FOREIGN KEY (session_id) REFERENCES hskk_sessions(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_hskk_sessions_started ON hskk_sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_hskk_answers_session ON hskk_answers(session_id);
 CREATE INDEX IF NOT EXISTS idx_donations_created ON donations(created_at);
 CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status);
 CREATE INDEX IF NOT EXISTS idx_daily_activity_date ON daily_activity(activity_date);

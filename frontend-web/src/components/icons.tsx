@@ -306,6 +306,27 @@ export const IconHeartFilled = ({ className }: IconProps) => (
   </svg>
 );
 
+export const IconMic = ({ className }: IconProps) => (
+  <svg {...base} className={className}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" />
+  </svg>
+);
+
+export const IconStop = ({ className }: IconProps) => (
+  <svg {...base} fill="currentColor" stroke="none" className={className}>
+    <rect x="6.5" y="6.5" width="11" height="11" rx="2.5" />
+  </svg>
+);
+
+export const IconClipboard = ({ className }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M9 4.5h6M8 6H6.5a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 17.5 6H16" />
+    <rect x="8.5" y="3" width="7" height="3.5" rx="1.2" />
+    <path d="M8.5 11h7M8.5 15h4.5" />
+  </svg>
+);
+
 export const IconQr = ({ className }: IconProps) => (
   <svg {...base} className={className}>
     <rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5" />
