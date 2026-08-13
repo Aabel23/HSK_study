@@ -12,3 +12,10 @@ services:
         value: "true"
       - key: CHINESE_STUDY_DOCS
         value: "false"
+      # Chấm điểm phần nói của bài thi thử HSK. `sync: false` = Render hỏi giá
+      # trị trong dashboard và KHÔNG lưu vào repo — khoá không bao giờ nằm ở đây.
+      # Bỏ trống thì bài thi tự chuyển sang chế độ tự chấm, app vẫn chạy.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
