@@ -173,14 +173,16 @@ export default function Hskk() {
     }
   }
 
-  function toggleRecording() {
+  async function toggleRecording() {
     if (!slot) return;
     if (recorder.recording) {
       recorder.stop();
       setRemaining(null);
       return;
     }
-    void recorder.start();
+    // The countdown only runs if the microphone actually opened; otherwise the
+    // clock would tick down against a recording that never started.
+    if (!(await recorder.start())) return;
     setRemaining(slot.part.answer_seconds);
     // Once you have spoken there is no reason to hide the prompt any more.
     setRevealed(true);
@@ -416,7 +418,7 @@ export default function Hskk() {
 
       <Card className="mt-4 flex flex-col items-center gap-3 p-6">
         <button
-          onClick={toggleRecording}
+          onClick={() => void toggleRecording()}
           disabled={!recorder.supported}
           className={clsx(
             "flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-200 active:scale-95",

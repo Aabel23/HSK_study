@@ -41,10 +41,11 @@ export function useRecorder() {
     setRecording(false);
   }, [stopTimer]);
 
-  const start = useCallback(async () => {
+  /** Resolves to whether recording actually began, so callers can skip the timer. */
+  const start = useCallback(async (): Promise<boolean> => {
     if (!supported) {
       setError("Trình duyệt này không cho phép ghi âm.");
-      return;
+      return false;
     }
     revokeClip();
     setError(null);
@@ -69,8 +70,17 @@ export function useRecorder() {
       recorder.start();
       setRecording(true);
       timerRef.current = window.setInterval(() => setSeconds((value) => value + 1), 1000);
-    } catch {
-      setError("Không truy cập được micro. Hãy cho phép quyền ghi âm rồi thử lại.");
+      return true;
+    } catch (reason) {
+      // A blocked Permissions-Policy header and a user who clicked "Block" both
+      // land here, but they need different advice, so they are told apart.
+      const denied = reason instanceof DOMException && reason.name === "NotAllowedError";
+      setError(
+        denied
+          ? "Micro đang bị chặn. Bấm vào biểu tượng khoá trên thanh địa chỉ và cho phép micro cho trang này, rồi tải lại."
+          : "Không tìm thấy micro nào. Hãy kiểm tra thiết bị thu âm rồi thử lại."
+      );
+      return false;
     }
   }, [revokeClip, supported]);
 

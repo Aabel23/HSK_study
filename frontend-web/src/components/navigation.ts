@@ -52,7 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/hskk", label: "Thi thử HSKK", description: "Đề nói mô phỏng kỳ thi khẩu ngữ", icon: IconMic, section: "luyện tập" },
   { to: "/writing", label: "Luyện viết", description: "Tập viết chữ Hán đúng nét", icon: IconPencil, section: "luyện tập", hidden: true },
   { to: "/progress", label: "Tiến độ", description: "Thống kê và lịch sử học", icon: IconChart, section: "tiến độ" },
-  { to: "/achievements", label: "Thành tích", description: "Huy hiệu và cột mốc", icon: IconTrophy, section: "tiến độ", hidden: true },
+  { to: "/achievements", label: "Thành tích", description: "Huy hiệu, chuỗi ngày và cấp độ", icon: IconTrophy, section: "tiến độ" },
   { to: "/settings", label: "Cài đặt", description: "Tuỳ chọn, sao lưu và khôi phục", icon: IconSettings, section: "tiến độ" },
   { to: "/donate", label: "Donate cho anh Ba", description: "Ủng hộ tác giả qua QR ngân hàng", icon: IconHeart, section: "tiến độ" },
 ];

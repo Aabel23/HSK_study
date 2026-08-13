@@ -23,6 +23,16 @@ def test_responses_carry_request_id_and_security_headers(client):
     assert "Content-Security-Policy" in response.headers
 
 
+def test_permissions_policy_allows_the_microphone_for_hskk(client):
+    """The HSKK mock exam records the learner; blocking the mic here made the
+    browser refuse getUserMedia without even prompting. Camera and location
+    must stay blocked — nothing in the app uses them."""
+    policy = client.get("/api/health").headers["Permissions-Policy"]
+    assert "microphone=(self)" in policy
+    assert "camera=()" in policy
+    assert "geolocation=()" in policy
+
+
 def test_frontend_is_served(client):
     response = client.get("/")
     assert response.status_code == 200

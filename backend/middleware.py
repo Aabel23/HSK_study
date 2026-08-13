@@ -28,7 +28,11 @@ SECURITY_HEADERS = {
     "X-Frame-Options": "SAMEORIGIN",
     "Referrer-Policy": "same-origin",
     "Cross-Origin-Opener-Policy": "same-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    # The HSKK mock exam records the learner's own answer, so the microphone has
+    # to be allowed for this origin — `microphone=()` made the browser refuse
+    # getUserMedia before it even showed a permission prompt. Camera and location
+    # stay fully blocked because nothing in the app uses them.
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=(), interest-cohort=()",
     "Content-Security-Policy": (
         "default-src 'self'; "
         "img-src 'self' data: blob:; "
