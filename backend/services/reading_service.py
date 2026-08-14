@@ -22,6 +22,7 @@ import random
 from functools import lru_cache
 from typing import Any
 
+from backend.services import item_pool
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from scripts.seed_data import FULL_DATA_DIR
 
@@ -107,8 +108,10 @@ def build_section(exam_level: str) -> dict[str, Any]:
     total = 0
 
     for config in level["parts"]:
-        count = min(config["count"], len(config["pool"]))
-        chosen = random.sample(config["pool"], count)
+        # Unseen questions first, so a second sitting is a genuinely new paper
+        # rather than a reshuffle of the one before it.
+        chosen = item_pool.take(config["pool"], config["count"])
+        count = len(chosen)
         part: dict[str, Any] = {
             "part_id": config["part_id"],
             "part_number": config["part_number"],

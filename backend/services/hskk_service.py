@@ -22,12 +22,17 @@ each pool per attempt, so two sittings are never the same paper.
 from __future__ import annotations
 
 import json
-import random
 from functools import lru_cache
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import gemini_service, quiz_service, reading_service, streak_service
+from backend.services import (
+    gemini_service,
+    item_pool,
+    quiz_service,
+    reading_service,
+    streak_service,
+)
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from scripts.seed_data import FULL_DATA_DIR
 
@@ -273,8 +278,7 @@ def _build_speaking_parts(level: dict[str, Any]) -> list[dict[str, Any]]:
     parts = []
     for config in level["parts"]:
         pool = level["pools"][str(config["part"])]
-        count = min(config["count"], len(pool))
-        chosen = random.sample(pool, count)
+        chosen = item_pool.take(pool, config["count"])
         parts.append(
             {
                 "part": config["part"],
@@ -431,7 +435,6 @@ def record_reading_answer(
     with get_connection() as connection:
         session = _get_open_session(connection, session_id)
         exam_level = session["exam_level"]
-        quiz_session_id = session["quiz_session_id"]
 
     outcome = reading_service.check_answer(exam_level, question_id, answer)
     is_correct = outcome["is_correct"]

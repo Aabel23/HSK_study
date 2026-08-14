@@ -7,14 +7,15 @@ import random
 from typing import Any
 
 from backend.database import get_connection, utc_now
+from backend.services import mcq, session_store
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
-from backend.services.vocabulary_service import get_random_vocabulary
-from backend.services import streak_service
+from backend.services.session_store import SessionKind
 
 
 DEFAULT_QUESTION_TYPES = ["mcq_meaning", "mcq_hanzi", "mcq_pinyin", "mcq_audio"]
-OPTION_COUNT = 4
+OPTION_COUNT = mcq.OPTION_COUNT
 
+#: Which field of the word each mode puts on the buttons.
 LABEL_FIELD_BY_TYPE = {
     "mcq_meaning": "meaning",
     "mcq_hanzi": "hanzi",
@@ -22,8 +23,16 @@ LABEL_FIELD_BY_TYPE = {
     "mcq_audio": "meaning",
 }
 
+SESSION = SessionKind(
+    table="quiz_sessions",
+    not_found="Không tìm thấy phiên kiểm tra.",
+    already_ended="Phiên kiểm tra này đã kết thúc.",
+    completed="Đã hoàn tất bài kiểm tra.",
+)
+
 
 def _build_prompt(question_type: str, target: dict[str, Any]) -> dict[str, Any]:
+    """What the learner is shown. Never includes the field they must choose."""
     if question_type == "mcq_meaning":
         return {"hanzi": target["hanzi"], "pinyin": target["pinyin"]}
     if question_type == "mcq_hanzi":
@@ -36,30 +45,29 @@ def _build_prompt(question_type: str, target: dict[str, Any]) -> dict[str, Any]:
 
 
 def _generate_one(hsk_level: str | None, question_type: str) -> dict[str, Any]:
-    targets = get_random_vocabulary(1, hsk_level=hsk_level)
-    if not targets:
-        raise InvalidOperationError("Không có từ phù hợp để tạo câu hỏi.")
-    target = targets[0]
-
-    distractors = get_random_vocabulary(
-        OPTION_COUNT - 1, hsk_level=hsk_level, exclude_ids=[target["id"]]
+    if question_type not in LABEL_FIELD_BY_TYPE:
+        raise InvalidOperationError("Loại câu hỏi không hợp lệ.")
+    question = mcq.draw(
+        hsk_level,
+        LABEL_FIELD_BY_TYPE[question_type],
+        empty_message="Không có từ phù hợp để tạo câu hỏi.",
     )
-    if len(distractors) < OPTION_COUNT - 1:
-        distractors = get_random_vocabulary(OPTION_COUNT - 1, exclude_ids=[target["id"]])
-    if len(distractors) < OPTION_COUNT - 1:
-        raise InvalidOperationError("Không đủ từ vựng để tạo các lựa chọn.")
-
-    label_field = LABEL_FIELD_BY_TYPE[question_type]
-    options = [{"vocabulary_id": target["id"], "label": target[label_field]}]
-    options.extend({"vocabulary_id": d["id"], "label": d[label_field]} for d in distractors)
-    random.shuffle(options)
-
     return {
         "question_type": question_type,
-        "target_vocabulary_id": target["id"],
-        "prompt": _build_prompt(question_type, target),
-        "options": options,
+        "target_vocabulary_id": question.target["id"],
+        "prompt": _build_prompt(question_type, question.target),
+        "options": question.options,
     }
+
+
+def _batch(
+    count: int, question_types: list[str], pick_level: Any
+) -> list[dict[str, Any]]:
+    active_types = question_types or list(DEFAULT_QUESTION_TYPES)
+    return [
+        {**_generate_one(pick_level(), random.choice(active_types)), "question_id": index}
+        for index in range(count)
+    ]
 
 
 def generate_questions(
@@ -72,57 +80,35 @@ def generate_questions(
     (HSK 1-2, HSK 3-4) rather than a single level. No session row is written, so
     the caller owns the bookkeeping.
     """
-    active_types = question_types or list(DEFAULT_QUESTION_TYPES)
-    questions = []
-    for index in range(count):
-        level = random.choice(hsk_levels) if hsk_levels else None
-        question = _generate_one(level, random.choice(active_types))
-        question["question_id"] = index
-        questions.append(question)
-    return questions
+    return _batch(
+        count,
+        question_types,
+        lambda: random.choice(hsk_levels) if hsk_levels else None,
+    )
 
 
 def create_session(
     hsk_level: str | None, question_types: list[str], count: int
 ) -> dict[str, Any]:
     active_types = question_types or list(DEFAULT_QUESTION_TYPES)
-    now = utc_now()
-    with get_connection() as connection:
-        cursor = connection.execute(
-            """
-            INSERT INTO quiz_sessions (hsk_level, question_types_json, started_at, total_items)
-            VALUES (?, ?, ?, ?)
-            """,
-            (hsk_level or "all", json.dumps(active_types), now, count),
-        )
-        session_id = cursor.lastrowid
-
-    questions = []
-    for index in range(count):
-        question = _generate_one(hsk_level, random.choice(active_types))
-        question["question_id"] = index
-        questions.append(question)
-
-    return {"session_id": session_id, "hsk_level": hsk_level or "all", "questions": questions}
-
-
-def _get_open_session(connection: Any, session_id: int) -> Any:
-    session = connection.execute(
-        "SELECT * FROM quiz_sessions WHERE id = ?", (session_id,)
-    ).fetchone()
-    if not session:
-        raise ResourceNotFoundError("Không tìm thấy phiên kiểm tra.")
-    if session["ended_at"]:
-        raise InvalidOperationError("Phiên kiểm tra này đã kết thúc.")
-    return session
+    session_id = session_store.start(
+        SESSION,
+        hsk_level=hsk_level or "all",
+        question_types_json=json.dumps(active_types),
+        total_items=count,
+    )
+    return {
+        "session_id": session_id,
+        "hsk_level": hsk_level or "all",
+        "questions": _batch(count, active_types, lambda: hsk_level),
+    }
 
 
 def record_attempt(
     session_id: int, vocabulary_id: int, question_type: str, is_correct: bool
 ) -> dict[str, Any]:
-    now = utc_now()
     with get_connection() as connection:
-        _get_open_session(connection, session_id)
+        session_store.require_open(connection, SESSION, session_id)
         exists = connection.execute(
             "SELECT 1 FROM vocabulary WHERE id = ?", (vocabulary_id,)
         ).fetchone()
@@ -134,7 +120,7 @@ def record_attempt(
                 session_id, vocabulary_id, question_type, is_correct, created_at
             ) VALUES (?, ?, ?, ?, ?)
             """,
-            (session_id, vocabulary_id, question_type, int(is_correct), now),
+            (session_id, vocabulary_id, question_type, int(is_correct), utc_now()),
         )
     return {
         "message": "Đã ghi nhận câu trả lời.",
@@ -147,19 +133,9 @@ def record_attempt(
 def complete_session(
     session_id: int, total_items: int, correct_items: int, incorrect_items: int
 ) -> dict[str, Any]:
-    now = utc_now()
-    with get_connection() as connection:
-        _get_open_session(connection, session_id)
-        connection.execute(
-            """
-            UPDATE quiz_sessions
-            SET ended_at = ?, total_items = ?, correct_items = ?, incorrect_items = ?
-            WHERE id = ?
-            """,
-            (now, total_items, correct_items, incorrect_items, session_id),
-        )
-    streak_service.record_session_result(correct_items, incorrect_items)
-    return {"message": "Đã hoàn tất bài kiểm tra.", "session_id": session_id}
+    return session_store.complete(
+        SESSION, session_id, total_items, correct_items, incorrect_items
+    )
 
 
 def get_stats() -> dict[str, Any]:
@@ -183,10 +159,9 @@ def get_stats() -> dict[str, Any]:
         ).fetchone()
     correct = row["correct"] or 0
     incorrect = row["incorrect"] or 0
-    total = correct + incorrect
     return {
         "sessions": row["sessions"] or 0,
         "correct": correct,
         "incorrect": incorrect,
-        "accuracy": round(correct / total * 100, 1) if total else 0,
+        "accuracy": session_store.accuracy(correct, incorrect),
     }

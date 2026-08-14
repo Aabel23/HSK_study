@@ -14,8 +14,16 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import pinyin_utils, streak_service
+from backend.services import pinyin_utils, session_store, streak_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
+from backend.services.session_store import SessionKind
+
+SESSION = SessionKind(
+    table="dictation_sessions",
+    not_found="Không tìm thấy phiên nghe chép.",
+    already_ended="Phiên nghe chép đã kết thúc.",
+    completed="Đã hoàn tất phiên nghe chép.",
+)
 
 MODES = {
     "word_pinyin": "Nghe từ, gõ pinyin",
@@ -64,15 +72,10 @@ def create_session(hsk_level: str | None, mode: str, count: int) -> dict[str, An
         rows = connection.execute(query, [*parameters, count]).fetchall()
         if not rows:
             raise InvalidOperationError("Không có nội dung phù hợp để nghe chép.")
-        cursor = connection.execute(
-            """
-            INSERT INTO dictation_sessions (hsk_level, mode, started_at, total_items)
-            VALUES (?, ?, ?, ?)
-            """,
-            (hsk_level or "all", mode, utc_now(), len(rows)),
-        )
-        session_id = cursor.lastrowid
 
+    session_id = session_store.start(
+        SESSION, hsk_level=hsk_level or "all", mode=mode, total_items=len(rows)
+    )
     is_sentence = mode in SENTENCE_MODES
     items = [
         {
@@ -180,24 +183,11 @@ def check_answer(
 def complete_session(
     session_id: int, total_items: int, correct_items: int, incorrect_items: int
 ) -> dict[str, Any]:
-    now = utc_now()
-    with get_connection() as connection:
-        session = connection.execute(
-            "SELECT id, ended_at FROM dictation_sessions WHERE id = ?", (session_id,)
-        ).fetchone()
-        if not session:
-            raise ResourceNotFoundError("Không tìm thấy phiên nghe chép.")
-        if session["ended_at"]:
-            raise InvalidOperationError("Phiên nghe chép đã kết thúc.")
-        connection.execute(
-            """
-            UPDATE dictation_sessions
-            SET ended_at = ?, total_items = ?, correct_items = ?, incorrect_items = ?
-            WHERE id = ?
-            """,
-            (now, total_items, correct_items, incorrect_items, session_id),
-        )
-    return {"message": "Đã hoàn tất phiên nghe chép.", "session_id": session_id}
+    # `check_answer` already credited the streak for each item heard.
+    return session_store.complete(
+        SESSION, session_id, total_items, correct_items, incorrect_items,
+        record_streak=False,
+    )
 
 
 def get_stats() -> dict[str, Any]:

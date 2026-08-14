@@ -40,7 +40,7 @@
             { "id": "br2-02", "sentence_zh": "他(  )回家了，你明天再来吧。", "answer": "已经", "explanation_vi": "已经 = đã, diễn tả việc đã xảy ra." },
             { "id": "br2-03", "sentence_zh": "我(  )这本书很有意思。", "answer": "觉得", "explanation_vi": "觉得 = cảm thấy/thấy rằng, dẫn vào một nhận xét." },
             { "id": "br2-04", "sentence_zh": "(  )下雨，所以我没去公园。", "answer": "因为", "explanation_vi": "Cặp 因为…所以… là kết cấu nhân quả." },
-            { "id": "br2-05", "sentence_zh": "你(  )在这儿吃饭，也可以带回家。", "answer": "可以", "explanation_vi": "可以 = có thể, chỉ sự cho phép." },
+            { "id": "br2-05", "sentence_zh": "你(  )在这儿吃饭，也能带回家。", "answer": "可以", "explanation_vi": "可以 = có thể, chỉ sự cho phép." },
             { "id": "br2-06", "sentence_zh": "他(  )去图书馆看书。", "answer": "常常", "explanation_vi": "常常 = thường xuyên, chỉ tần suất." },
             { "id": "br2-07", "sentence_zh": "这个问题我不(  )回答。", "answer": "知道", "explanation_vi": "不知道 = không biết." },
             { "id": "br2-08", "sentence_zh": "外面很冷，你(  )穿点儿衣服。", "answer": "多", "explanation_vi": "多穿点儿 = mặc thêm chút nữa." },

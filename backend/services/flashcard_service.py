@@ -5,9 +5,22 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
+from backend.services import session_store
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
+from backend.services.session_store import SessionKind
 from backend.services.vocabulary_service import get_random_vocabulary
-from backend.services import streak_service
+
+
+# Flashcard and Nối từ share the original `study_sessions` table and are told
+# apart by `session_type`, so both kinds carry the discriminator.
+SESSION = SessionKind(
+    table="study_sessions",
+    not_found="Không tìm thấy phiên học.",
+    already_ended="Phiên học này đã kết thúc.",
+    completed="Đã hoàn tất phiên Flashcard.",
+    type_column="session_type",
+    type_value="flashcard",
+)
 
 
 def create_session(
@@ -20,13 +33,7 @@ def create_session(
     )
     if not items:
         raise InvalidOperationError("Không có từ phù hợp để tạo phiên Flashcard.")
-    now = utc_now()
-    with get_connection() as connection:
-        cursor = connection.execute(
-            "INSERT INTO study_sessions (session_type, started_at, total_items) VALUES ('flashcard', ?, ?)",
-            (now, len(items)),
-        )
-        session_id = cursor.lastrowid
+    session_id = session_store.start(SESSION, total_items=len(items))
     # hsk_level is part of the payload because the card shows it as a badge;
     # without it the badge rendered "HSK undefined".
     fields = (
@@ -39,23 +46,10 @@ def create_session(
     }
 
 
-def _validate_session(connection: Any, session_id: int, expected_type: str) -> Any:
-    session = connection.execute(
-        "SELECT * FROM study_sessions WHERE id = ?", (session_id,)
-    ).fetchone()
-    if not session:
-        raise ResourceNotFoundError("Không tìm thấy phiên học.")
-    if session["session_type"] != expected_type:
-        raise InvalidOperationError("Loại phiên học không hợp lệ cho thao tác này.")
-    if session["ended_at"]:
-        raise InvalidOperationError("Phiên học này đã kết thúc.")
-    return session
-
-
 def review_card(session_id: int, vocabulary_id: int, result: str) -> dict[str, Any]:
     now = utc_now()
     with get_connection() as connection:
-        _validate_session(connection, session_id, "flashcard")
+        session_store.require_open(connection, SESSION, session_id)
         vocabulary = connection.execute(
             "SELECT id FROM vocabulary WHERE id = ?", (vocabulary_id,)
         ).fetchone()
@@ -116,17 +110,7 @@ def complete_session(
     correct_items: int,
     incorrect_items: int,
 ) -> dict[str, Any]:
-    now = utc_now()
-    with get_connection() as connection:
-        _validate_session(connection, session_id, "flashcard")
-        connection.execute(
-            """
-            UPDATE study_sessions
-            SET ended_at = ?, total_items = ?, correct_items = ?, incorrect_items = ?
-            WHERE id = ?
-            """,
-            (now, total_items, correct_items, incorrect_items, session_id),
-        )
-    streak_service.record_session_result(correct_items, incorrect_items)
-    return {"message": "Đã hoàn tất phiên Flashcard.", "session_id": session_id}
+    return session_store.complete(
+        SESSION, session_id, total_items, correct_items, incorrect_items
+    )
 

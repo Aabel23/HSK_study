@@ -66,6 +66,16 @@ class _Unauthorized(Exception):
     """Internal signal that the credential was rejected, so the header can flip."""
 
 
+class TransientError(InvalidOperationError):
+    """A failure worth retrying: the endpoint was busy, throttled or unreachable.
+
+    Separated from the permanent failures (bad key, retired model) so a caller
+    that can afford to wait — the offline bank generator — retries only what
+    waiting can actually fix. The learner-facing grader treats it like any other
+    error and reports it immediately.
+    """
+
+
 def _post(payload: dict[str, Any], use_bearer: bool) -> dict[str, Any]:
     settings = get_settings()
     url = f"{API_ROOT}/{settings.gemini_model}:generateContent"
@@ -99,15 +109,19 @@ def _post(payload: dict[str, Any], use_bearer: bool) -> dict[str, Any]:
                 "(ví dụ gemini-flash-latest)."
             ) from error
         if error.code == 429:
-            raise InvalidOperationError(
+            raise TransientError(
                 "Gemini đang giới hạn số lượt gọi. Chờ một lát rồi chấm lại."
+            ) from error
+        if error.code in {500, 502, 503, 504}:
+            raise TransientError(
+                "Gemini đang quá tải. Chờ một lát rồi thử lại."
             ) from error
         raise InvalidOperationError(
             f"Gemini trả lỗi {error.code}. {detail}".strip()
         ) from error
     except urllib.error.URLError as error:
         logger.warning("Cannot reach Gemini: %s", error.reason)
-        raise InvalidOperationError(
+        raise TransientError(
             "Không kết nối được tới Gemini. Kiểm tra mạng rồi thử lại."
         ) from error
 

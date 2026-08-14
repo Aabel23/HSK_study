@@ -319,6 +319,16 @@ CREATE TABLE IF NOT EXISTS hskk_answers (
     FOREIGN KEY (session_id) REFERENCES hskk_sessions(id) ON DELETE CASCADE
 );
 
+-- Which exam-bank items the learner has already been shown. The bank itself
+-- ships as JSON in scripts/data/; this table is the per-machine memory that
+-- lets the sampler hand out unseen questions before ever repeating one.
+CREATE TABLE IF NOT EXISTS item_exposure (
+    item_key TEXT PRIMARY KEY,
+    seen_count INTEGER NOT NULL DEFAULT 0,
+    last_seen_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_item_exposure_seen ON item_exposure(seen_count);
 CREATE INDEX IF NOT EXISTS idx_hskk_sessions_started ON hskk_sessions(started_at);
 CREATE INDEX IF NOT EXISTS idx_hskk_answers_session ON hskk_answers(session_id);
 CREATE INDEX IF NOT EXISTS idx_donations_created ON donations(created_at);

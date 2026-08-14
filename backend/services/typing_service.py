@@ -12,8 +12,16 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import pinyin_utils, streak_service
+from backend.services import pinyin_utils, session_store, streak_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
+from backend.services.session_store import SessionKind
+
+SESSION = SessionKind(
+    table="typing_sessions",
+    not_found="Không tìm thấy phiên luyện gõ.",
+    already_ended="Phiên luyện gõ đã kết thúc.",
+    completed="Đã hoàn tất phiên luyện gõ.",
+)
 
 MODES = {
     "hanzi_to_pinyin": "Nhìn chữ Hán, gõ pinyin",
@@ -78,15 +86,10 @@ def create_session(
         ).fetchall()
         if not rows:
             raise InvalidOperationError("Không có từ phù hợp để luyện gõ.")
-        cursor = connection.execute(
-            """
-            INSERT INTO typing_sessions (hsk_level, mode, started_at, total_items)
-            VALUES (?, ?, ?, ?)
-            """,
-            (hsk_level or "all", mode, utc_now(), len(rows)),
-        )
-        session_id = cursor.lastrowid
 
+    session_id = session_store.start(
+        SESSION, hsk_level=hsk_level or "all", mode=mode, total_items=len(rows)
+    )
     items = [
         {
             "item_id": index,
@@ -162,24 +165,12 @@ def check_answer(
 def complete_session(
     session_id: int, total_items: int, correct_items: int, incorrect_items: int
 ) -> dict[str, Any]:
-    now = utc_now()
-    with get_connection() as connection:
-        session = connection.execute(
-            "SELECT id, ended_at FROM typing_sessions WHERE id = ?", (session_id,)
-        ).fetchone()
-        if not session:
-            raise ResourceNotFoundError("Không tìm thấy phiên luyện gõ.")
-        if session["ended_at"]:
-            raise InvalidOperationError("Phiên luyện gõ đã kết thúc.")
-        connection.execute(
-            """
-            UPDATE typing_sessions
-            SET ended_at = ?, total_items = ?, correct_items = ?, incorrect_items = ?
-            WHERE id = ?
-            """,
-            (now, total_items, correct_items, incorrect_items, session_id),
-        )
-    return {"message": "Đã hoàn tất phiên luyện gõ.", "session_id": session_id}
+    # Every typed answer already credited the streak in `check_answer`, so the
+    # session must not credit it a second time.
+    return session_store.complete(
+        SESSION, session_id, total_items, correct_items, incorrect_items,
+        record_streak=False,
+    )
 
 
 def get_stats() -> dict[str, Any]:

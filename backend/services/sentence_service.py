@@ -7,8 +7,17 @@ import random
 from typing import Any
 
 from backend.database import get_connection, utc_now
+from backend.services import session_store
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
-from backend.services import streak_service
+from backend.services.session_store import SessionKind
+
+
+SESSION = SessionKind(
+    table="sentence_sessions",
+    not_found="Không tìm thấy phiên luyện câu.",
+    already_ended="Phiên luyện câu này đã kết thúc.",
+    completed="Đã hoàn tất phiên luyện câu.",
+)
 
 
 def list_topics() -> list[str]:
@@ -67,12 +76,8 @@ def create_session(
         ).fetchall()
         if not rows:
             raise InvalidOperationError("Không có câu phù hợp để tạo phiên luyện tập.")
-        cursor = connection.execute(
-            "INSERT INTO sentence_sessions (started_at, total_items) VALUES (?, ?)",
-            (utc_now(), len(rows)),
-        )
-        session_id = cursor.lastrowid
 
+    session_id = session_store.start(SESSION, total_items=len(rows))
     items = []
     for row in rows:
         tokens = json.loads(row["tokens_json"])
@@ -106,24 +111,13 @@ def create_session(
     return {"session_id": session_id, "items": items}
 
 
-def _get_open_session(connection: Any, session_id: int) -> Any:
-    session = connection.execute(
-        "SELECT * FROM sentence_sessions WHERE id = ?", (session_id,)
-    ).fetchone()
-    if not session:
-        raise ResourceNotFoundError("Không tìm thấy phiên luyện câu.")
-    if session["ended_at"]:
-        raise InvalidOperationError("Phiên luyện câu này đã kết thúc.")
-    return session
-
-
 def record_attempt(
     session_id: int,
     sentence_id: int,
     ordered_positions: list[int],
 ) -> dict[str, Any]:
     with get_connection() as connection:
-        _get_open_session(connection, session_id)
+        session_store.require_open(connection, SESSION, session_id)
         sentence = connection.execute(
             """
             SELECT id, hanzi, pinyin, meaning, tokens_json
@@ -170,38 +164,11 @@ def complete_session(
     correct_items: int,
     incorrect_items: int,
 ) -> dict[str, Any]:
-    with get_connection() as connection:
-        _get_open_session(connection, session_id)
-        connection.execute(
-            """
-            UPDATE sentence_sessions
-            SET ended_at = ?, total_items = ?, correct_items = ?, incorrect_items = ?
-            WHERE id = ?
-            """,
-            (utc_now(), total_items, correct_items, incorrect_items, session_id),
-        )
-    streak_service.record_session_result(correct_items, incorrect_items)
-    return {"message": "Đã hoàn tất phiên luyện câu.", "session_id": session_id}
+    return session_store.complete(
+        SESSION, session_id, total_items, correct_items, incorrect_items
+    )
 
 
 def get_stats() -> dict[str, Any]:
-    with get_connection() as connection:
-        row = connection.execute(
-            """
-            SELECT COUNT(DISTINCT s.id) AS sessions,
-                   COALESCE(SUM(CASE WHEN a.is_correct = 1 THEN 1 ELSE 0 END), 0) AS correct,
-                   COALESCE(SUM(CASE WHEN a.is_correct = 0 THEN 1 ELSE 0 END), 0) AS incorrect
-            FROM sentence_sessions s
-            LEFT JOIN sentence_attempts a ON a.session_id = s.id
-            """
-        ).fetchone()
-    correct = row["correct"] or 0
-    incorrect = row["incorrect"] or 0
-    total_attempts = correct + incorrect
-    return {
-        "sessions": row["sessions"] or 0,
-        "correct": correct,
-        "incorrect": incorrect,
-        "accuracy": round(correct / total_attempts * 100, 1) if total_attempts else 0,
-    }
+    return session_store.attempt_stats(SESSION, "sentence_attempts")
 
