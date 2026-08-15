@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../lib/api";
 import { useLevel } from "../lib/levelContext";
 import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { useApi } from "../lib/useApi";
-import { formatNumber } from "../lib/format";
+import { formatNumber, shortMeaning } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { HskLevel, VocabularyItem } from "../lib/types";
 import {
   AudioButton,
@@ -14,6 +15,7 @@ import {
   Card,
   InlineSwitch,
   Kbd,
+  PracticeBar,
   PageHeader,
   SessionSizePicker,
   Switch,
@@ -117,29 +119,17 @@ export default function Flashcards() {
     [busy, finished, index, items, results, sessionId, toast, wrapUp]
   );
 
-  // Rating a long run of cards with the mouse gets tiring fast, so space flips
-  // and 1/2/3 grade. Fields are never hijacked -- there are none on this page,
-  // but the guard keeps the behaviour true if one is ever added.
-  useEffect(() => {
-    if (!sessionId || finished) return;
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable) {
-        return;
-      }
-      if (event.key === " " || event.key === "Enter") {
-        event.preventDefault();
-        setFlipped((value) => !value);
-        return;
-      }
+  // Rating a long run of cards with the mouse gets tiring fast. Space flips,
+  // 1/2/3 grade — the same contract every other practice screen follows.
+  useShortcuts({
+    enabled: Boolean(sessionId) && !finished,
+    onAdvance: () => setFlipped((value) => !value),
+    onPick: (choice) => {
       if (!flipped) return;
-      if (event.key === "1") void rate("forgot");
-      if (event.key === "2") void rate("hard");
-      if (event.key === "3") void rate("remembered");
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [sessionId, finished, flipped, rate]);
+      const result = (["forgot", "hard", "remembered"] as const)[choice - 1];
+      if (result) void rate(result);
+    },
+  });
 
   if (!sessionId) {
     return (
@@ -201,20 +191,19 @@ export default function Flashcards() {
 
   return (
     <div className="animate-float-in mx-auto max-w-xl">
-      <div className="mb-4 flex items-center justify-between gap-3 text-sm text-ink-soft">
-        <span className="tnum">
-          Thẻ {index + 1}/{items.length}
-        </span>
-        <div className="flex items-center gap-2">
-          <Badge tone="neutral">HSK {item.hsk_level}</Badge>
-          <InlineSwitch
-            checked={settings.show_pinyin}
-            onChange={(next) => void update({ show_pinyin: next })}
-            label="Pinyin"
-            title="Bật/tắt phiên âm pinyin trên thẻ"
-          />
-        </div>
-      </div>
+      <PracticeBar
+        unit="Thẻ"
+        position={index + 1}
+        total={items.length}
+        badge={<Badge tone="neutral">HSK {item.hsk_level}</Badge>}
+      >
+        <InlineSwitch
+          checked={settings.show_pinyin}
+          onChange={(next) => void update({ show_pinyin: next })}
+          label="Pinyin"
+          title="Bật/tắt phiên âm pinyin trên thẻ"
+        />
+      </PracticeBar>
 
       <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
         <div
@@ -246,7 +235,7 @@ export default function Flashcards() {
           >
             <span className="hanzi text-3xl font-bold text-ink">{item.hanzi}</span>
             <span className="text-sm text-gold">{item.pinyin}</span>
-            <span className="text-lg font-semibold text-accent">{item.meaning}</span>
+            <span className="text-lg font-semibold text-accent">{shortMeaning(item.meaning, { senses: 3, chars: 100 })}</span>
             {item.example && (
               <div className="mt-2 text-center text-sm text-ink-soft">
                 <p className="hanzi">{item.example}</p>

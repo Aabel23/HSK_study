@@ -7,7 +7,8 @@ import { useApi } from "../lib/useApi";
 import { useLevel } from "../lib/levelContext";
 import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
-import { formatInterval, formatNumber, formatPercent } from "../lib/format";
+import { formatInterval, formatNumber, formatPercent, shortMeaning } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { HskLevel, ReviewRating, VocabularyItem } from "../lib/types";
 import {
   AudioButton,
@@ -130,28 +131,15 @@ export default function Review() {
   }, [current, toast]);
 
   // Space reveals, 1-4 rate. Only bound while a card is on screen.
-  useEffect(() => {
-    if (!current) return;
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable) {
-        return;
-      }
-      if (event.key === " " || event.key === "Enter") {
-        event.preventDefault();
-        setRevealed(true);
-        return;
-      }
+  useShortcuts({
+    enabled: Boolean(current),
+    onAdvance: () => setRevealed(true),
+    onPick: (choice) => {
       if (!revealed) return;
-      const rating = RATINGS.find((entry) => entry.key === event.key);
-      if (rating) {
-        event.preventDefault();
-        void submit(rating.value);
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [current, revealed, submit]);
+      const rating = RATINGS[choice - 1];
+      if (rating) void submit(rating.value);
+    },
+  });
 
   const sessionAccuracy = tally.reviewed ? (tally.correct / tally.reviewed) * 100 : 0;
   const progressPercent = queue.length ? (Math.min(index, queue.length) / queue.length) * 100 : 0;
@@ -339,8 +327,18 @@ function ReviewCard({
 
         {revealed ? (
           <div className="mt-2 w-full max-w-lg border-t border-border-soft pt-4">
-            <p className="text-xl font-semibold text-ink">{item.meaning}</p>
-            {item.meaning_en && <p className="mt-1 text-sm text-ink-faint">{item.meaning_en}</p>}
+            <p className="text-xl font-semibold text-ink">
+              {shortMeaning(item.meaning, { senses: 3, chars: 110 })}
+            </p>
+            {/* Labelled, and quieter than the Vietnamese. The project rule is
+                that a learner reads Vietnamese; English is a reference they can
+                consult, never a second definition competing for attention. */}
+            {item.meaning_en && (
+              <p className="mt-2 text-xs text-ink-faint">
+                <span className="font-semibold">Tiếng Anh: </span>
+                {shortMeaning(item.meaning_en, { senses: 2, chars: 90 })}
+              </p>
+            )}
             {item.pos_vi && (
               <p className="mt-2 text-xs uppercase tracking-wide text-ink-faint">{item.pos_vi}</p>
             )}

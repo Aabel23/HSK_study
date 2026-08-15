@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
@@ -30,10 +31,13 @@ export function Card({
    *
    * A flag rather than a choice of motif, and that is the whole point. An
    * earlier version let each card pick — hexagons here, circles there, a corner
-   * mark elsewhere — and a grid of eight cards wearing three different patterns
-   * reads as clutter no matter how faint each one is. One motif for every card
-   * in the app makes the surfaces look like one material; making it structural
-   * means nobody can reintroduce the mix by passing a different string.
+   * mark elsewhere — and a grid of cards wearing three different patterns reads
+   * as clutter no matter how faint each one is. Making it structural means
+   * nobody can reintroduce the mix by passing a different string.
+   *
+   * Use it on the few cards that lead a page — today's goal, the headline
+   * figures — and leave the rest plain. Texture on every card is texture on
+   * nothing: it stops marking anything out and just makes the page busy.
    */
   ornament?: boolean;
   /** Raises the card towards the pointer on hover. */
@@ -784,6 +788,44 @@ export function SessionSizePicker({
   );
 }
 
+/**
+ * The bar that sits above every running exercise.
+ *
+ * Counter on the left, toggles on the right, same place on every screen. It
+ * exists because the Pinyin switch had drifted: on one page it sat beside an
+ * HSK badge, on another it was paired with a second toggle, and on a third it
+ * was somewhere else entirely — so a learner who turned pinyin off had to go
+ * looking for the switch again on the next exercise. A control that means the
+ * same thing everywhere should be in the same place everywhere.
+ */
+export function PracticeBar({
+  position,
+  total,
+  unit = "Câu",
+  badge,
+  children,
+}: {
+  position: number;
+  total: number;
+  /** "Câu", "Thẻ", "Từ" — whatever this drill counts. */
+  unit?: string;
+  badge?: ReactNode;
+  /** The toggles, right-aligned. */
+  children?: ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <span className="tnum text-sm text-ink-soft">
+        {unit} {position}/{total}
+      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        {badge}
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /** Keyboard hint chip. */
 export function Kbd({ children }: { children: ReactNode }) {
   return (
@@ -862,14 +904,13 @@ export function Modal({
   }, [open, onClose]);
 
   if (!open) return null;
-  return (
+  return createPortal(
     // Two nested elements on purpose. Centring the dialog with `items-center`
     // directly on the scrolling element is the classic flexbox trap: once the
     // dialog is taller than the viewport its top overflows *above* the scroll
-    // range and can never be reached — which is what put the donation QR out of
-    // reach on phones. Scrolling on the outer element and centring inside a
-    // `min-h-full` wrapper centres short dialogs and scrolls tall ones from the
-    // top.
+    // range and can never be reached. Scrolling on the outer element and
+    // centring inside a `min-h-full` wrapper centres short dialogs and scrolls
+    // tall ones from the top.
     <div className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain">
       <button
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -877,7 +918,17 @@ export function Modal({
         aria-label="Đóng hộp thoại"
         tabIndex={-1}
       />
-      <div className="flex min-h-full items-center justify-center p-4">
+      {/* `index.html` opts into `viewport-fit=cover`, so on a notched phone the
+          bottom of the viewport sits under the home indicator and the footer
+          button goes with it. The safe-area inset is the floor for the bottom
+          padding; on every other device `max()` just picks the 1rem. */}
+      <div
+        className="flex min-h-full items-center justify-center p-4"
+        style={{
+          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          paddingTop: "max(1rem, env(safe-area-inset-top))",
+        }}
+      >
         <div
           role="dialog"
           aria-modal="true"
@@ -902,7 +953,20 @@ export function Modal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    // Rendered into <body>, and this is not a stylistic choice.
+    //
+    // `position: fixed` resolves against the viewport only while no ancestor
+    // has a transform — and every page in this app is wrapped in
+    // `.animate-float-in`, whose `animation-fill-mode: both` leaves
+    // `transform: translateY(0)` on the element permanently. Any transform
+    // other than `none` makes that element the containing block for fixed
+    // descendants, so the dialog was being positioned against the *page*
+    // rather than the screen. On a laptop the page is about viewport-sized and
+    // it looked correct; on a phone the page is several screens tall, so the
+    // dialog was centred somewhere far below the fold with no way to scroll to
+    // it. A portal puts the dialog outside every one of those wrappers.
+    document.body
   );
 }
 

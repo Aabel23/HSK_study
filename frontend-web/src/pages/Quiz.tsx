@@ -3,6 +3,8 @@ import clsx from "clsx";
 import { api } from "../lib/api";
 import { useLevel } from "../lib/levelContext";
 import { usePlayAudio } from "../lib/useAudio";
+import { distinctOptionLabels } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { QuestionType, QuizOption, QuizQuestion } from "../lib/types";
 import { Button, Card, PageHeader, ProgressBar } from "../components/ui";
 import { IconCheckSquare, IconPlay, IconRefresh } from "../components/icons";
@@ -63,6 +65,21 @@ export default function Quiz() {
     setSelectedTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
   }
 
+  // This page had no keyboard at all, which is what made the shortcuts feel
+  // arbitrary: Space advanced a flashcard and then did nothing here. Bound
+  // above the early returns because hooks cannot be called conditionally.
+  useShortcuts({
+    enabled: Boolean(sessionId) && !finished,
+    onAdvance: () => {
+      if (picked !== null) void next();
+    },
+    onPick: (choice) => {
+      if (picked !== null || !current) return;
+      const option = current.options[choice - 1];
+      if (option) void choose(option);
+    },
+  });
+
   if (!sessionId) {
     return (
       <div className="animate-float-in">
@@ -106,6 +123,10 @@ export default function Quiz() {
     );
   }
 
+  // Shortened together rather than one by one: two options that collapse to the
+  // same text would leave the question with no answerable difference.
+  const labels = distinctOptionLabels(current.options.map((option) => option.label));
+
   return (
     <div className="animate-float-in mx-auto max-w-xl">
       <div className="mb-3 flex items-center justify-between text-sm text-ink-soft">
@@ -136,7 +157,7 @@ export default function Quiz() {
       </Card>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {current.options.map((option) => {
+        {current.options.map((option, position) => {
           const isTarget = option.vocabulary_id === current.target_vocabulary_id;
           const isPicked = picked === option.vocabulary_id;
           const revealed = picked !== null;
@@ -154,7 +175,7 @@ export default function Quiz() {
                 revealed && !isPicked && !isTarget && "border-border bg-surface text-ink-faint opacity-60"
               )}
             >
-              {option.label}
+              {labels[position]}
             </button>
           );
         })}

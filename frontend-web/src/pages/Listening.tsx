@@ -7,7 +7,7 @@ import { useLevel } from "../lib/levelContext";
 import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { PLAYBACK_RATES, usePlayAudio, type PlaybackRate } from "../lib/useAudio";
-import { formatNumber, formatPercent } from "../lib/format";
+import { distinctOptionLabels, formatNumber, formatPercent } from "../lib/format";
 import type {
   AnswerResult,
   DictationItem,
@@ -79,6 +79,11 @@ export default function Listening() {
   const isDictation = drill.kind === "dictation";
   const total = isDictation ? dictationItems.length : choiceItems.length;
   const currentChoice = choiceItems[index];
+  // Shortened as a set: two options collapsing to the same text would leave the
+  // question with no answerable difference between them.
+  const choiceLabels = distinctOptionLabels(
+    (currentChoice?.options ?? []).map((option) => option.label)
+  );
   const currentDictation = dictationItems[index];
   const audioText = isDictation ? currentDictation?.audio_text : currentChoice?.audio_text;
 
@@ -441,7 +446,7 @@ export default function Listening() {
       ) : (
         <>
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {currentChoice?.options.map((option) => {
+            {currentChoice?.options.map((option, position) => {
               const isTarget = option.vocabulary_id === currentChoice.target_vocabulary_id;
               const isPicked = picked === option.vocabulary_id;
               const revealed = picked !== null;
@@ -459,7 +464,7 @@ export default function Listening() {
                     revealed && !isPicked && !isTarget && "border-border bg-surface text-ink-faint opacity-60"
                   )}
                 >
-                  {option.label}
+                  {choiceLabels[position]}
                 </button>
               );
             })}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { api } from "../lib/api";
@@ -171,7 +172,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[90] flex items-start justify-center p-4 pt-[12vh]">
       <button className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-label="Đóng bảng lệnh" tabIndex={-1} />
       <div
@@ -253,7 +254,11 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
           </span>
         </div>
       </div>
-    </div>
+    </div>,
+    // Same reason as `Modal`: every page sits inside `.animate-float-in`, whose
+    // lingering `transform` would otherwise make the page — not the viewport —
+    // the containing block for this fixed overlay.
+    document.body
   );
 }
 

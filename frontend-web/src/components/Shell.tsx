@@ -8,7 +8,7 @@ import { useApi } from "../lib/useApi";
 import { formatNumber } from "../lib/format";
 import { LevelPicker } from "./LevelPicker";
 import { CommandPalette } from "./CommandPalette";
-import { AmbientOrnament, BoBoCamField } from "./Ornament";
+import { AmbientOrnament } from "./Ornament";
 import { Kbd } from "./ui";
 import { MOBILE_NAV, SECTION_LABELS, VISIBLE_NAV_ITEMS, type NavItem } from "./navigation";
 import { IconBolt, IconFlame, IconMenu, IconMoon, IconSearch, IconSun, IconX } from "./icons";
@@ -77,15 +77,13 @@ export function Shell({ children }: { children: ReactNode }) {
               curves at that width read as clutter while a window lattice reads
               as joinery. Carried at 0.10 — a step up from the barely-there
               first pass, still well under the text. */}
-          {/* One motif only. A 288px panel cannot carry three: the earlier
-              版本 stacked a lattice ground, a vertical 回纹 strip and a ripple
-              band on the goal card, and at that width the 20px strip could only
-              ever read as a pattern that had been sliced. A single quiet ground
-              is what a narrow panel wants. */}
-          <BoBoCamField
-            className="pointer-events-none absolute inset-0 h-full w-full text-gold"
-            opacity={0.1}
-          />
+          {/* No ground here at all, and the reason is specific rather than a
+              general preference for less. 步步锦 is a lattice of rectangles, and
+              the sidebar's content is a column of rectangular nav pills. Two
+              grids of rectangles that do not share a rhythm read as a
+              misalignment — the eye keeps trying to line them up and cannot.
+              A pattern behind a menu has to be either round or absent, and the
+              round one is already doing duty on the cards. */}
 
           <div className="relative flex items-center justify-between">
             <a href="#/" className="group flex items-center gap-3">

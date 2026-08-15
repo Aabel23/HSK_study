@@ -165,7 +165,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card ornament lift inlay className="p-6 lg:col-span-2">
+        <Card lift inlay className="p-6 lg:col-span-2">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Lịch ôn 10 ngày tới</p>
@@ -200,7 +200,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <Card ornament lift inlay className="p-6 lg:col-span-2">
+        <Card lift inlay className="p-6 lg:col-span-2">
           <h2 className="font-display text-lg font-bold text-ink">Tiến độ theo cấp độ</h2>
           <div className="mt-5 flex flex-col gap-4">
             {data.hsk_levels.map((level) => {
@@ -220,7 +220,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card ornament lift inlay className="p-6">
+        <Card lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Độ chính xác</h2>
           <div className="mt-4 flex flex-col gap-3 text-sm">
             <ResultRow label="Nối từ" correct={data.matching_correct} incorrect={data.matching_incorrect} accuracy={data.matching_accuracy} />
@@ -233,7 +233,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card ornament lift inlay className="p-6">
+        <Card lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Hoạt động 14 ngày</h2>
           <div className="mt-4 h-40">
             <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
@@ -242,7 +242,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card ornament lift inlay className="p-6">
+        <Card lift inlay className="p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-ink">Chuỗi ngày học</h2>
             <Badge tone="accent">
@@ -270,7 +270,6 @@ export default function Dashboard() {
           <Reveal key={feature.to} index={index}>
             <Link to={feature.to} className="block h-full">
               <Card
-                ornament
                 lift
                 inlay
                 className="flex h-full flex-col justify-between p-5"

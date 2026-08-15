@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "../lib/api";
@@ -7,6 +7,7 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { usePlayAudio } from "../lib/useAudio";
 import { useRecorder } from "../lib/useRecorder";
+import { useShortcuts } from "../lib/useShortcuts";
 import { useSpeechLog } from "../lib/useSpeechLog";
 import { blobToWavBase64 } from "../lib/wav";
 import { ReadingRunner } from "../components/ReadingRunner";
@@ -269,20 +270,14 @@ export default function Hskk() {
     setRevealed(true);
   }
 
-  const ratingRef = useRef(rate);
-  ratingRef.current = rate;
-  useEffect(() => {
-    if (stage !== "speaking") return;
-    function onKey(event: KeyboardEvent) {
-      const target = event.target as HTMLElement | null;
-      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
-      if (event.key === "1") void ratingRef.current("good");
-      if (event.key === "2") void ratingRef.current("ok");
-      if (event.key === "3") void ratingRef.current("bad");
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [stage]);
+  // Self-rating a spoken answer, on the same 1..n contract the other drills use.
+  useShortcuts({
+    enabled: stage === "speaking",
+    onPick: (choice) => {
+      const rating = (["good", "ok", "bad"] as const)[choice - 1];
+      if (rating) void rate(rating);
+    },
+  });
 
   if (levels.error) return <ErrorState message={levels.error} onRetry={levels.reload} />;
   if (levels.loading && !levels.data) return <PageSkeleton tiles={4} rows={2} />;

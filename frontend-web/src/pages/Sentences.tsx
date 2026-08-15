@@ -14,6 +14,7 @@ import {
   EmptyState,
   InlineSwitch,
   PageHeader,
+  PracticeBar,
   SessionSizePicker,
 } from "../components/ui";
 import { IconRefresh } from "../components/icons";
@@ -188,25 +189,20 @@ export default function Sentences() {
 
   return (
     <div className="animate-float-in mx-auto max-w-2xl">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <span className="tnum text-sm text-ink-soft">
-          Câu {index + 1}/{items.length}
-        </span>
-        <div className="flex gap-2">
-          <InlineSwitch
-            checked={showPinyin}
-            onChange={setShowPinyin}
-            label="Pinyin"
-            title="Bật/tắt phiên âm pinyin"
-          />
-          <InlineSwitch
-            checked={showMeaning}
-            onChange={setShowMeaning}
-            label="Nghĩa"
-            title="Bật/tắt bản dịch tiếng Việt"
-          />
-        </div>
-      </div>
+      <PracticeBar position={index + 1} total={items.length}>
+        <InlineSwitch
+          checked={showPinyin}
+          onChange={setShowPinyin}
+          label="Pinyin"
+          title="Bật/tắt phiên âm pinyin"
+        />
+        <InlineSwitch
+          checked={showMeaning}
+          onChange={setShowMeaning}
+          label="Nghĩa"
+          title="Bật/tắt bản dịch tiếng Việt"
+        />
+      </PracticeBar>
 
       {/* The Vietnamese sentence is the prompt: without it there is nothing to
           tell the learner which sentence the shuffled chunks should form. */}
