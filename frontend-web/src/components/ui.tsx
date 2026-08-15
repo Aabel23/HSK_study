@@ -81,10 +81,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="animate-rise relative mb-8">
-      {/* No flower here. A 宝相花 sat in this corner once and collided with the
-          one the ambient layer was drawing; both are gone now, and the motif is
-          kept for the card shown at the end of a session. */}
+    <div className="animate-rise relative mb-6">
       <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
@@ -96,13 +93,21 @@ export function PageHeader({
             <p className="mt-2 max-w-2xl text-sm text-ink-soft sm:text-base">{description}</p>
           )}
         </div>
-        {action}
+        {/* A page with a button uses its right-hand side; a page without one was
+            leaving the whole half empty, which is what made these headers read
+            as under-filled. The medallion fills it — and only ever when there is
+            no action, so it can never crowd a control. */}
+        {action ?? (
+          <BaoTuongHoa
+            className="pointer-events-none -mb-6 -mt-10 hidden h-40 w-40 shrink-0 text-gold opacity-[0.22] lg:block"
+          />
+        )}
       </div>
       {/* A hairline, nothing more. A band of lotus petals lived here briefly and
           was wrong: repeated across the full width of every page it stopped
           reading as a divider and became a chain competing with the title.
           A divider's job is to separate two things quietly. */}
-      <div className="rule-foil mt-6" />
+      <div className="rule-foil mt-5" />
     </div>
   );
 }

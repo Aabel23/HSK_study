@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { HIDDEN_ROUTES } from "../components/navigation";
+import { BaoTuongHoa } from "../components/Ornament";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import { formatNumber, formatPercent } from "../lib/format";
@@ -143,6 +144,11 @@ export default function Dashboard() {
           leads the layout ahead of the lifetime totals. */}
       <div className="grid gap-6 lg:grid-cols-3">
         <Card ornament lift inlay className="flex items-center gap-6 p-6">
+          {/* The ring and the two badges leave the card's lower right empty, and
+              on a card this tall the void was the first thing you noticed. Same
+              line-art medallion the rest of the app uses — drawn whole, tucked
+              under the content, and cropped by nothing. */}
+          <BaoTuongHoa className="pointer-events-none absolute bottom-0 right-0 -z-10 h-36 w-36 text-gold opacity-[0.2]" />
           <ProgressRing value={streak.data?.goal_percentage ?? 0} accent="gold" size={116} stroke={9}>
             <span className="font-display tnum text-2xl font-bold text-gold">
               <CountUp value={streak.data?.today_reviews ?? 0} />
