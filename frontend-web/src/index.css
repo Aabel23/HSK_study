@@ -129,10 +129,14 @@
   --c-ink-faint: #677371;
 
   /* Teal leads here, where red leads in the dark theme. Both are the reference
-     palettes' own choice, and the two themes are read one at a time. */
-  --c-accent: #047672;
-  --c-accent-hover: #03605d;
-  --c-accent-soft: rgba(4, 118, 114, 0.1);
+     palettes' own choice, and the two themes are read one at a time.
+     True Tiffany blue (#0ABAB5) manages only 2.31:1 on ivory, so it cannot be
+     a text colour; #07807D is the brightest point on that same hue that still
+     clears 4.5:1, and it is where the small labels live. The heading gradient
+     below is large text, so it gets to go brighter. */
+  --c-accent: #07807d;
+  --c-accent-hover: #05615f;
+  --c-accent-soft: rgba(7, 128, 125, 0.1);
   --c-accent-ink: #ffffff;
   --c-gold: #936b0d;
   --c-gold-soft: rgba(147, 107, 13, 0.12);
@@ -145,31 +149,34 @@
   --c-danger: #cd3c35;
   --c-danger-soft: rgba(205, 60, 53, 0.12);
 
-  /* Teal running into gold — the reference's idea, rebuilt so it survives being
-     read. Two things were wrong with taking it verbatim.
+  /* Tiffany with a gold tail. Two problems had to be solved at once.
 
-     **It disappeared.** Sampled along its length on ivory, the original clears
-     3:1 for only its first tenth; from 20% onwards the lettering washes out,
-     bottoming at 1.23:1. So every stop here is held in the dark half of the
-     range: measured across the gradient, contrast stays between 5.14:1 and
-     7.08:1 end to end.
+     **Reach.** The reference gradient clears 3:1 for only its first tenth and
+     bottoms out at 1.23:1, so most of a heading washed out. Headings here are
+     30–36px bold, which is large text and needs 3:1 rather than 4.5:1 — that
+     headroom is what lets the peaks be bright. Measured end to end this runs
+     3.31:1 to 6.46:1, so the brightest point still has margin.
 
-     **It went muddy.** Teal and gold sit almost opposite each other, and a
-     straight sRGB blend crosses the grey axis between them — the original's
-     midpoint is #98C286, a chalky olive whose saturation has collapsed to 0.33.
-     The fix is to route the path through hues that stay chromatic rather than
-     through the middle: teal → sea green → green → olive gold → gold. Saturation
-     never drops below 0.58 along the whole run, so the transition reads as
-     metal catching light instead of as two colours cancelling out. */
+     **The muddy crossing.** Teal and gold are near-complements; blending them
+     in sRGB crosses the grey axis, and the reference's midpoint is #98C286, a
+     chalky olive at 0.33 saturation. Two things avoid it. The run stays inside
+     the Tiffany family for its first half, peaking twice so the teal itself
+     reads as metal catching light; and the single crossing into gold is put at
+     a *dark* stop, because desaturation is invisible in shadow. Saturation does
+     dip to 0.27 at that seam — and there is no point on the whole run where a
+     dip below 0.45 happens anywhere bright enough to be seen. */
   --foil: linear-gradient(
     115deg,
-    #04605d 0%,
-    #047672 28%,
-    #0a7a3c 52%,
-    #3a7410 72%,
+    #06736f 0%,
+    #089a96 15%,
+    #067a76 30%,
+    #089a96 45%,
+    #2f6644 58%,
+    #7e5d10 72%,
+    #ac840d 86%,
     #8a6410 100%
   );
-  --foil-line: linear-gradient(90deg, transparent, rgba(4, 118, 114, 0.42), transparent);
+  --foil-line: linear-gradient(90deg, transparent, rgba(7, 128, 125, 0.42), transparent);
   --glass: rgba(255, 255, 255, 0.72);
 }
 
@@ -435,7 +442,10 @@ button:disabled,
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: sheen 7s linear infinite;
+  /* Slow. The gradient now has two peaks rather than one, so at 7s two
+     highlights crossed a short heading in quick succession and read as a
+     flicker; at 13s each one drifts past on its own. */
+  animation: sheen 13s linear infinite;
   line-height: 1.3;
   padding-bottom: 0.12em;
 }
