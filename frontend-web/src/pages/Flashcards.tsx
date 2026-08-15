@@ -18,6 +18,7 @@ import {
   PracticeBar,
   PageHeader,
   SessionSizePicker,
+  SessionComplete,
   Switch,
 } from "../components/ui";
 import { IconCheck, IconRefresh, IconX } from "../components/icons";
@@ -173,17 +174,18 @@ export default function Flashcards() {
 
   if (finished) {
     const correct = results.filter((entry) => entry === "remembered").length;
-    const total = Math.max(1, results.length);
     return (
-      <div className="animate-float-in flex flex-col items-center py-12 text-center">
-        <p className="font-display text-4xl font-bold text-ink">Hoàn thành!</p>
-        <p className="mt-2 text-ink-soft">
-          Bạn nhớ đúng {correct}/{results.length} thẻ ({Math.round((correct / total) * 100)}%)
-        </p>
-        <Button className="mt-6" onClick={() => setSessionId(null)}>
-          <IconRefresh className="h-4 w-4" /> Học phiên mới
-        </Button>
-      </div>
+      <SessionComplete
+        correct={correct}
+        total={results.length}
+        unit="thẻ"
+        detail={`Bạn nhớ đúng ${correct} trên ${results.length} thẻ.`}
+        primary={
+          <Button size="lg" onClick={() => setSessionId(null)}>
+            <IconRefresh className="h-4 w-4" /> Học phiên mới
+          </Button>
+        }
+      />
     );
   }
 

@@ -17,7 +17,7 @@ import clsx from "clsx";
  *
  * | Role                       | Motif                | In use |
  * | -------------------------- | -------------------- | ------ |
- * | Ground, whole page         | 鱼鳞 ngư lân         | yes    |
+ * | Ground, whole page         | 青海波 seigaiha      | yes    |
  * | Ground, side panel         | 步步锦 bộ bộ cẩm     | yes    |
  * | One focal point per screen | 宝相花 bảo tương hoa | yes    |
  * | Card corner, on hover only | 如意 như ý           | yes    |
@@ -211,43 +211,62 @@ export const BoBoCamField = memo(function BoBoCamField({
 });
 
 /**
- * 鱼鳞纹 — fish scales, the ground behind the whole application.
+ * 青海波 seigaiha — the wave, and the ground behind the whole application.
  *
- * Rows of downward arcs, every other row shifted half a scale. The arc radius
- * equals the row spacing, so each scale lands exactly on the next row's line:
- * scales that sit tangent read as a woven surface, while scales that overlap
- * read as noise once there are thousands of them behind a page.
+ * What makes this motif read as water is that each scale is a *nest* of
+ * concentric arcs, not one arc: the repeated rings are what the eye takes for
+ * the rings of a ripple. An earlier version drew a single arc per scale, which
+ * is 鱼鳞 (fish scale) — a different motif that reads as a hide rather than as
+ * a sea.
  *
- * Seamless by the same argument as 七宝: the arc clipped at x=0 is the arc the
- * left-hand tile draws at x=40, which is the same point on the page.
+ * ## The geometry, since it is the whole job
+ *
+ * Fans of radius `R` sit on baselines `R` apart. Within a row the fans are
+ * spaced `R`, so each overlaps its neighbour by half; every other row is
+ * shifted by `R/2`, which is what staggers them into the classic brick. That
+ * makes the pattern repeat over `R` horizontally and `2R` vertically, and that
+ * rectangle is the tile.
+ *
+ * Fans whose centres fall outside the tile are still drawn, because the part
+ * of them that reaches *into* the tile is exactly the part the neighbouring
+ * tile clips away. Draw only the ones inside and every seam shows a row of
+ * arcs stopping dead against a straight edge.
  */
-export const NguLanField = memo(function NguLanField({
+export const SeigaihaField = memo(function SeigaihaField({
   className,
   opacity,
 }: {
   className?: string;
   opacity?: number;
 }) {
-  const r = 20;
-  // Row at y, scales centred every 2r, offset by r on alternate rows.
-  const scale = (cx: number, cy: number) =>
-    `M${cx - r} ${cy} A${r} ${r} 0 0 0 ${cx + r} ${cy}`;
+  const R = 24;
+  const rings = [R, R * 0.75, R * 0.5, R * 0.25];
+
+  /** One fan: concentric upper half-circles about (cx, cy). */
+  const fan = (cx: number, cy: number) =>
+    rings.map((r) => `M${cx - r} ${cy} A${r} ${r} 0 0 0 ${cx + r} ${cy}`).join(" ");
+
+  const fans: Array<[number, number]> = [
+    // Row A, on the tile's mid-line. The two are the same fan across the seam.
+    [0, R],
+    [R, R],
+    // Row B, on the tile's foot, shifted half a fan.
+    [-R / 2, R * 2],
+    [R / 2, R * 2],
+    [R * 1.5, R * 2],
+  ];
+
   return (
     <PatternField
       className={className}
       opacity={opacity}
-      width={40}
-      height={40}
+      width={R}
+      height={R * 2}
       tile={
-        <g fill="none" stroke="currentColor" strokeWidth={0.7} strokeLinecap="round">
-          {/* Top row, and the neighbour reaching in from the left. */}
-          <path d={scale(0, 0)} />
-          <path d={scale(40, 0)} />
-          {/* Half-offset row. */}
-          <path d={scale(20, 20)} />
-          {/* Bottom edge, so the tile is covered to its last pixel. */}
-          <path d={scale(0, 40)} />
-          <path d={scale(40, 40)} />
+        <g fill="none" stroke="currentColor" strokeWidth={0.75} strokeLinecap="round">
+          {fans.map(([cx, cy]) => (
+            <path key={`${cx}-${cy}`} d={fan(cx, cy)} />
+          ))}
         </g>
       }
     />
@@ -636,7 +655,7 @@ export function AmbientOrnament() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden text-gold"
     >
-      <NguLanField className="absolute inset-0 h-full w-full" opacity={0.055} />
+      <SeigaihaField className="absolute inset-0 h-full w-full" opacity={0.05} />
       {/* The screen's single focal ornament. It lives here rather than in
           `PageHeader` because two flowers on one screen — one from the ambient
           layer, one from the header — landed on top of each other. Whole, in

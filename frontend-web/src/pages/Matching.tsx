@@ -2,7 +2,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import { api } from "../lib/api";
 import type { MatchingItem } from "../lib/types";
-import { Button, Card, PageHeader } from "../components/ui";
+import { Button, Card, PageHeader, SessionComplete } from "../components/ui";
 import { IconRefresh } from "../components/icons";
 
 type Mode = "meaning" | "pinyin";
@@ -84,15 +84,17 @@ export default function Matching() {
 
   if (finished) {
     return (
-      <div className="animate-float-in flex flex-col items-center py-12 text-center">
-        <p className="font-display text-4xl font-bold text-ink">Hoàn thành!</p>
-        <p className="mt-2 text-ink-soft">
-          {attempts.correct} đúng / {attempts.incorrect} sai
-        </p>
-        <Button className="mt-6" onClick={() => setSessionId(null)}>
-          <IconRefresh className="h-4 w-4" /> Vòng mới
-        </Button>
-      </div>
+      <SessionComplete
+        correct={attempts.correct}
+        total={attempts.correct + attempts.incorrect}
+        unit="cặp"
+        detail={`${attempts.correct} đúng · ${attempts.incorrect} sai`}
+        primary={
+          <Button size="lg" onClick={() => setSessionId(null)}>
+            <IconRefresh className="h-4 w-4" /> Vòng mới
+          </Button>
+        }
+      />
     );
   }
 

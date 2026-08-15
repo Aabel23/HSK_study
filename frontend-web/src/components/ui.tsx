@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
-import { CardOrnament } from "./Ornament";
+import { CardOrnament, HaiThuyBand } from "./Ornament";
 import {
   IconAlert,
   IconBookmark,
@@ -784,6 +784,80 @@ export function SessionSizePicker({
         />
         <span className="text-sm text-ink-soft">{unit}</span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The screen a learner sees when they finish a session.
+ *
+ * Every drill had written its own: a bold line, a fraction, and a button on a
+ * bare background. That is the least ceremonious moment in the app attached to
+ * the most earned one, and it made finishing feel like nothing had happened.
+ *
+ * So this is where 海水江崖 — standing water over cliffs, the hem of a court
+ * robe, the most formal motif in the set — finally gets used. It appears on
+ * this screen and nowhere else, which is exactly why it still means something
+ * when it does.
+ */
+export function SessionComplete({
+  title = "Hoàn thành!",
+  correct,
+  total,
+  unit,
+  detail,
+  primary,
+  secondary,
+}: {
+  title?: string;
+  correct: number;
+  total: number;
+  /** "thẻ", "câu", "từ" — what was counted. */
+  unit: string;
+  /** An extra line under the score, when the drill has more to report. */
+  detail?: ReactNode;
+  primary: ReactNode;
+  secondary?: ReactNode;
+}) {
+  const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+  // The band of colour is the honest signal here; the words stay warm either
+  // way, because a session that went badly is still a session that happened.
+  const tone: Accent = percentage >= 80 ? "jade" : percentage >= 50 ? "gold" : "accent";
+
+  return (
+    <div className="animate-float-in mx-auto max-w-lg">
+      <Card className="relative isolate overflow-hidden px-6 pb-0 pt-10 text-center">
+        <div
+          aria-hidden="true"
+          className={clsx(
+            "pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full blur-[80px]",
+            GLOW_ACCENT[tone]
+          )}
+        />
+
+        <div className="animate-bloom-in relative inline-flex">
+          <ProgressRing value={percentage} accent={tone} size={148} stroke={10}>
+            <span className={clsx("font-display text-4xl font-bold", TEXT_ACCENT[tone])}>
+              <CountUp value={percentage} suffix="%" />
+            </span>
+            <span className="text-[11px] text-ink-faint">
+              {correct}/{total} {unit}
+            </span>
+          </ProgressRing>
+        </div>
+
+        <h2 className="font-display text-foil relative mt-5 text-3xl font-bold">{title}</h2>
+        {detail && <div className="relative mt-2 text-sm text-ink-soft">{detail}</div>}
+
+        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
+          {primary}
+          {secondary}
+        </div>
+
+        {/* The band sits on the card's foot and bleeds off both sides — it is a
+            band, so being cut is how it is meant to be read. */}
+        <HaiThuyBand className="relative mt-8 -mb-px h-20 w-full text-gold opacity-30" />
+      </Card>
     </div>
   );
 }

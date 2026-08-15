@@ -16,6 +16,7 @@ import {
   PageHeader,
   PracticeBar,
   SessionSizePicker,
+  SessionComplete,
 } from "../components/ui";
 import { IconRefresh } from "../components/icons";
 
@@ -173,15 +174,17 @@ export default function Sentences() {
 
   if (finished) {
     return (
-      <div className="animate-float-in flex flex-col items-center py-12 text-center">
-        <p className="font-display text-4xl font-bold text-ink">Hoàn thành!</p>
-        <p className="mt-2 text-ink-soft">
-          {stats.correct} đúng / {stats.incorrect} sai
-        </p>
-        <Button className="mt-6" onClick={() => setSessionId(null)}>
-          <IconRefresh className="h-4 w-4" /> Luyện thêm
-        </Button>
-      </div>
+      <SessionComplete
+        correct={stats.correct}
+        total={stats.correct + stats.incorrect}
+        unit="câu"
+        detail={`${stats.correct} đúng · ${stats.incorrect} sai`}
+        primary={
+          <Button size="lg" onClick={() => setSessionId(null)}>
+            <IconRefresh className="h-4 w-4" /> Luyện thêm
+          </Button>
+        }
+      />
     );
   }
 

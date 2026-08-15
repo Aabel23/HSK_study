@@ -6,7 +6,7 @@ import { usePlayAudio } from "../lib/useAudio";
 import { distinctOptionLabels } from "../lib/format";
 import { useShortcuts } from "../lib/useShortcuts";
 import type { QuestionType, QuizOption, QuizQuestion } from "../lib/types";
-import { Button, Card, PageHeader, ProgressBar } from "../components/ui";
+import { Button, Card, PageHeader, ProgressBar, SessionComplete } from "../components/ui";
 import { IconCheckSquare, IconPlay, IconRefresh } from "../components/icons";
 
 const TYPE_LABEL: Record<QuestionType, string> = {
@@ -109,17 +109,18 @@ export default function Quiz() {
   }
 
   if (finished) {
-    const pct = Math.round((stats.correct / questions.length) * 100);
     return (
-      <div className="animate-float-in flex flex-col items-center py-12 text-center">
-        <p className="font-display text-4xl font-bold text-ink">Kết quả: {pct}%</p>
-        <p className="mt-2 text-ink-soft">
-          {stats.correct} đúng / {stats.incorrect} sai trên {questions.length} câu
-        </p>
-        <Button className="mt-6" onClick={() => setSessionId(null)}>
-          <IconRefresh className="h-4 w-4" /> Làm bài mới
-        </Button>
-      </div>
+      <SessionComplete
+        correct={stats.correct}
+        total={questions.length}
+        unit="câu"
+        detail={`${stats.correct} đúng · ${stats.incorrect} sai`}
+        primary={
+          <Button size="lg" onClick={() => setSessionId(null)}>
+            <IconRefresh className="h-4 w-4" /> Làm bài mới
+          </Button>
+        }
+      />
     );
   }
 
