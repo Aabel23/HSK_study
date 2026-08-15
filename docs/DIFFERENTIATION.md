@@ -156,7 +156,7 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
 | Hạng mục | Hiện trạng | Ghi chú |
 | --- | --- | --- |
 | Tra bằng chữ viết tay / ảnh / giọng nói | Không có | Hanzii có cả ba. Cần model on-device, chi phí lớn. |
-| Số lượng đề thi thử | Ít hơn nhiều | Hanzii có 200+ đề biên soạn tay. |
+| Số lượng đề thi thử | Ít hơn nhiều | Hanzii có 200+ đề biên soạn tay. Ngân hàng của ta hiện 397 câu, mọi pool đủ cho ít nhất 4 lượt thi không lặp câu nào. |
 | Câu ví dụ cho từ | **Chỉ 150 / 10.969 từ (1,4%)** | Khoảng trống lớn nhất về dữ liệu hiện nay. |
 | SRS dùng chung mọi hoạt động | Chưa | Lịch SM-2 chỉ chạy ở màn hình Ôn tập; thẻ ghi nhớ, kiểm tra, luyện nghe ghi trạng thái nhưng không đẩy lịch. |
 | Di động | Chỉ web | Không có app native. |

@@ -53,6 +53,17 @@ Ba tab:
 Chữ nào không có cách đọc đáng tin thì để trống chứ không đoán; xem phần ghi chú
 về Unihan trong `README.md`.
 
+## Độ sâu ngân hàng đề
+
+Mỗi pool phải chứa **ít nhất gấp bốn số câu rút ra mỗi lượt thi**. Trước đây
+phần đọc HSK4 rút 5/3/4 câu từ pool 10/6/6, và phần nói HSKK Sơ cấp rút 15 câu
+từ pool 24 — nghĩa là thi lại lần hai gặp gần như đúng đề cũ, biến bài thi thử
+thành bài kiểm tra trí nhớ về chính đề đó.
+
+Quy tắc "gấp bốn" được `tests/test_reading_bank.py` canh cho cả phần đọc lẫn
+phần nói, nên thêm dạng câu mới mà quên nạp đủ đề sẽ làm đỏ test. `item_pool`
+phát câu chưa gặp trước, nên pool sâu chuyển thẳng thành đề mới.
+
 ## Độ dài đáp án trắc nghiệm
 
 Kho từ giữ nguyên mục từ điển đầy đủ, nên nghĩa dài từ 1 tới 472 ký tự. Rút bốn
