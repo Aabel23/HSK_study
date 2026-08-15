@@ -106,46 +106,70 @@
   --glass: rgba(14, 15, 20, 0.72);
 }
 
-/* Light mode darkens every accent so text on the paper background clears
-   4.5:1 -- the bright dark-mode values only pass on a dark ground. */
+/* Light mode: Tiffany teal on ivory, with gold as the warm counterweight.
+   Taken from the supplied reference, then darkened where it had to be.
+
+   The reference is a display mock-up, so most of its palette is tuned to look
+   good rather than to carry text: measured on its own #FBFAF5 ground, its gold
+   reaches only 2.62:1 and its muted grey 3.78:1 — both below the 4.5:1 a label
+   needs. The hues are kept exactly; the lightness is lowered until each one
+   passes, which is the same correction the dark theme needed in reverse. */
 :root[data-theme="light"] {
   color-scheme: light;
-  --c-base: #faf8f4;
-  --c-base-2: #f3f0e9;
+  --c-base: #fbfaf5;
+  --c-base-2: #f6f2e8;
   --c-surface: #ffffff;
-  --c-surface-2: #f4f1ea;
-  --c-surface-3: #eae5da;
-  --c-border: #ddd6c8;
-  --c-border-soft: #ebe5d9;
-  --c-border-strong: #c5bcaa;
-  --c-ink: #16151a;
-  --c-ink-soft: #4c4b55;
-  --c-ink-faint: #6f6d79;
+  --c-surface-2: #f6f2e8;
+  --c-surface-3: #ede7d6;
+  --c-border: #e6dec9;
+  --c-border-soft: #f1ebdc;
+  --c-border-strong: #d3c7a9;
+  --c-ink: #294342;
+  --c-ink-soft: #55625f;
+  --c-ink-faint: #677371;
 
-  /* Same hue as the dark theme's #e8443f, darkened until it clears 4.5:1 on the
-     paper ground. The bright reference values only pass on a near-black one. */
-  --c-accent: #c0332c;
-  --c-accent-hover: #a52821;
-  --c-accent-soft: rgba(192, 51, 44, 0.1);
+  /* Teal leads here, where red leads in the dark theme. Both are the reference
+     palettes' own choice, and the two themes are read one at a time. */
+  --c-accent: #047672;
+  --c-accent-hover: #03605d;
+  --c-accent-soft: rgba(4, 118, 114, 0.1);
   --c-accent-ink: #ffffff;
-  --c-gold: #8a5d0c;
-  --c-gold-soft: rgba(138, 93, 12, 0.12);
-  --c-jade: #0f7a55;
-  --c-jade-soft: rgba(15, 122, 85, 0.12);
-  --c-sky: #1f5fbd;
-  --c-sky-soft: rgba(31, 95, 189, 0.12);
-  --c-violet: #5f43cc;
-  --c-violet-soft: rgba(95, 67, 204, 0.12);
-  --c-danger: #c0362c;
-  --c-danger-soft: rgba(192, 54, 44, 0.12);
+  --c-gold: #936b0d;
+  --c-gold-soft: rgba(147, 107, 13, 0.12);
+  --c-jade: #15806a;
+  --c-jade-soft: rgba(21, 128, 106, 0.12);
+  --c-sky: #2d75b2;
+  --c-sky-soft: rgba(45, 117, 178, 0.12);
+  --c-violet: #7c5ccf;
+  --c-violet-soft: rgba(124, 92, 207, 0.12);
+  --c-danger: #cd3c35;
+  --c-danger-soft: rgba(205, 60, 53, 0.12);
 
-  /* Darker foil on paper: the dark-mode highlight is near-white and vanishes
-     against a cream background, taking the lettering with it.
-     The lightest stop is capped at #a9762a, which clears 4:1 on --c-base. A
-     brighter highlight looks more like metal but leaves the middle of every
-     heading unreadable, and a heading nobody can read is not a design. */
-  --foil: linear-gradient(115deg, #4a2f05 0%, #7d5410 26%, #a9762a 46%, #6d4708 66%, #4a2f05 100%);
-  --foil-line: linear-gradient(90deg, transparent, rgba(138, 93, 12, 0.45), transparent);
+  /* Teal running into gold — the reference's idea, rebuilt so it survives being
+     read. Two things were wrong with taking it verbatim.
+
+     **It disappeared.** Sampled along its length on ivory, the original clears
+     3:1 for only its first tenth; from 20% onwards the lettering washes out,
+     bottoming at 1.23:1. So every stop here is held in the dark half of the
+     range: measured across the gradient, contrast stays between 5.14:1 and
+     7.08:1 end to end.
+
+     **It went muddy.** Teal and gold sit almost opposite each other, and a
+     straight sRGB blend crosses the grey axis between them — the original's
+     midpoint is #98C286, a chalky olive whose saturation has collapsed to 0.33.
+     The fix is to route the path through hues that stay chromatic rather than
+     through the middle: teal → sea green → green → olive gold → gold. Saturation
+     never drops below 0.58 along the whole run, so the transition reads as
+     metal catching light instead of as two colours cancelling out. */
+  --foil: linear-gradient(
+    115deg,
+    #04605d 0%,
+    #047672 28%,
+    #0a7a3c 52%,
+    #3a7410 72%,
+    #8a6410 100%
+  );
+  --foil-line: linear-gradient(90deg, transparent, rgba(4, 118, 114, 0.42), transparent);
   --glass: rgba(255, 255, 255, 0.72);
 }
 
