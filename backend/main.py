@@ -25,10 +25,12 @@ from backend.middleware import (
 from backend.routes import (
     audio,
     backup,
+    content,
     dashboard,
     dictation,
     donate,
     flashcard,
+    grammar,
     health,
     hskk,
     listening,
@@ -166,6 +168,8 @@ def create_app() -> FastAPI:
     application.include_router(typing.router)
     application.include_router(dictation.router)
     application.include_router(hskk.router)
+    application.include_router(grammar.router)
+    application.include_router(content.router)
     application.include_router(donate.router)
 
     if WEB_DIST_DIR.exists():

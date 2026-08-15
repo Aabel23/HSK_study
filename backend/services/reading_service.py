@@ -74,6 +74,23 @@ def describe(exam_level: str) -> dict[str, Any]:
     }
 
 
+def list_pools(exam_level: str) -> list[dict[str, Any]]:
+    """The question pools behind one reading section, for the bank inventory.
+
+    Answers are included — this is server-side bookkeeping, not part of any exam
+    paper — so callers must never pass the result to a client untouched.
+    """
+    return [
+        {
+            "label": part["instruction_vi"],
+            "question_type": part["question_type"],
+            "draw_per_exam": part["count"],
+            "items": part["pool"],
+        }
+        for part in _get_level(exam_level)["parts"]
+    ]
+
+
 def _public_question(part: dict[str, Any], item: dict[str, Any], index: int) -> dict[str, Any]:
     """Strip a bank entry down to what the exam paper may show."""
     question: dict[str, Any] = {"id": item["id"], "question_index": index}
@@ -165,6 +182,53 @@ def _normalise(value: Any) -> str:
     return str(value).strip().replace(" ", "").replace("　", "")
 
 
+#: Which parts of a question are worth reading back once it has been answered,
+#: per question type, in the order they should be shown. The learner has just
+#: worked through this Chinese without help; the review is where they get to see
+#: how it is pronounced and what it actually said.
+_REVEAL_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
+    "judge_true_false": (("passage_zh", "Đoạn văn"), ("statement_zh", "Nhận định")),
+    "fill_in_blank_sentence": (("sentence_zh", "Câu đầy đủ"), ("answer", "Từ cần điền")),
+    "multiple_choice_dialogue": (
+        ("passage_zh", "Hội thoại"),
+        ("question_zh", "Câu hỏi"),
+        ("answer", "Đáp án"),
+    ),
+    "reading_comprehension": (
+        ("passage_zh", "Đoạn văn"),
+        ("question_zh", "Câu hỏi"),
+        ("answer", "Đáp án"),
+    ),
+    "sentence_reordering": (("answer", "Câu hoàn chỉnh"),),
+}
+
+
+def _reveal(part: dict[str, Any], item: dict[str, Any], answer_text: str) -> list[dict[str, str]]:
+    """Pinyin and Vietnamese for the Chinese in a question, for the review card.
+
+    Reads the ``gloss`` block the bank carries per item. Entries with no gloss
+    are skipped rather than shown bare, so an item that has not been glossed yet
+    simply reveals less instead of rendering an empty row.
+    """
+    gloss = item.get("gloss") or {}
+    lines = []
+    for name, label in _REVEAL_FIELDS.get(part["question_type"], ()):
+        # The reordering answer is stored clause-separated; show it as a sentence.
+        text = answer_text if name == "answer" else item.get(name, "")
+        entry = gloss.get(name) or {}
+        if not text or not (entry.get("pinyin") or entry.get("vi")):
+            continue
+        lines.append(
+            {
+                "label_vi": label,
+                "zh": str(text),
+                "pinyin": str(entry.get("pinyin", "")),
+                "vi": str(entry.get("vi", "")),
+            }
+        )
+    return lines
+
+
 def check_answer(exam_level: str, question_id: str, answer: Any) -> dict[str, Any]:
     """Decide whether one submitted answer is right, and explain why."""
     part, item = _find(exam_level, question_id)
@@ -182,6 +246,7 @@ def check_answer(exam_level: str, question_id: str, answer: Any) -> dict[str, An
                 given = text in {"true", "1", "đúng"}
         is_correct = given is not None and given == expected
         correct_answer = "Đúng" if expected else "Sai"
+        reveal_text = ""
     elif part["question_type"] == "sentence_reordering":
         # The client sends the clauses in the order the learner arranged them.
         given_order = answer if isinstance(answer, list) else str(answer).split(ORDER_SEPARATOR)
@@ -189,13 +254,16 @@ def check_answer(exam_level: str, question_id: str, answer: Any) -> dict[str, An
             _normalise(clause) for clause in expected.split(ORDER_SEPARATOR)
         ]
         correct_answer = " → ".join(expected.split(ORDER_SEPARATOR))
+        reveal_text = "".join(expected.split(ORDER_SEPARATOR))
     else:
         is_correct = _normalise(answer) == _normalise(expected)
         correct_answer = str(expected)
+        reveal_text = str(expected)
 
     return {
         "question_id": question_id,
         "is_correct": is_correct,
         "correct_answer": correct_answer,
         "explanation_vi": item["explanation_vi"],
+        "reveal": _reveal(part, item, reveal_text),
     }

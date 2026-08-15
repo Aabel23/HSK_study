@@ -274,6 +274,28 @@ def list_levels() -> dict[str, Any]:
     return {"items": items}
 
 
+def list_pools(exam_level: str) -> list[dict[str, Any]]:
+    """The speaking pools behind one exam level, for the bank inventory."""
+    level = _get_level(exam_level)
+    return [
+        {
+            "label": part["title"],
+            "question_type": part["kind"],
+            "draw_per_exam": part["count"],
+            "items": level["pools"][str(part["part"])],
+        }
+        for part in level["parts"]
+    ]
+
+
+def list_exam_levels() -> list[dict[str, str]]:
+    """Code, label and HSK range of each exam band, without loading any items."""
+    return [
+        {"code": code, "label": level["label"], "hsk_range": level["hsk_range"]}
+        for code, level in _load_bank()["levels"].items()
+    ]
+
+
 def _build_speaking_parts(level: dict[str, Any]) -> list[dict[str, Any]]:
     parts = []
     for config in level["parts"]:
@@ -389,14 +411,15 @@ def _store_answer(
     ai_score: float | None = None,
     ai_feedback: str | None = None,
     transcript: str | None = None,
+    given_answer: str = "",
 ) -> None:
     connection.execute(
         """
         INSERT INTO hskk_answers (
             session_id, part, question_index, question_id, self_rating,
             score, max_score, spoken_seconds, created_at,
-            graded_by, ai_score, ai_feedback, transcript
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            graded_by, ai_score, ai_feedback, transcript, given_answer
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT (session_id, part, question_index) DO UPDATE SET
             question_id = excluded.question_id,
             self_rating = excluded.self_rating,
@@ -407,7 +430,8 @@ def _store_answer(
             graded_by = excluded.graded_by,
             ai_score = excluded.ai_score,
             ai_feedback = excluded.ai_feedback,
-            transcript = excluded.transcript
+            transcript = excluded.transcript,
+            given_answer = excluded.given_answer
         """,
         (
             session_id,
@@ -423,6 +447,7 @@ def _store_answer(
             ai_score,
             ai_feedback,
             transcript,
+            given_answer,
         ),
     )
 

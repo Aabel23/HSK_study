@@ -1,0 +1,582 @@
+{
+  "version": 1,
+  "note": "Điểm ngữ pháp HSK, giải thích bằng tiếng Việt. Seed vào bảng grammar_points bởi scripts/seed_data.py; mở rộng bằng scripts/generate_bank.py --bank grammar.",
+  "points": [
+    {
+      "code": "g1-shi",
+      "hsk_level": "1",
+      "title_vi": "Câu với 是: A là B",
+      "pattern_zh": "A + 是 + B",
+      "summary_vi": "是 nối hai danh từ để nói A chính là B.",
+      "explanation_vi": "是 chỉ dùng để nối hai danh từ hoặc cụm danh từ. Đây là chỗ người Việt hay sai nhất: trong tiếng Việt ta nói \"Tôi là mệt\" nghe rất lạ, nhưng lại quen tay viết 我是累 trong tiếng Trung. Với tính từ, tiếng Trung không dùng 是 mà dùng 很 (xem điểm 'Câu vị ngữ tính từ'). Phủ định đặt 不 ngay trước 是, thành 不是.",
+      "pitfall_vi": "Không dùng 是 trước tính từ. Nói 我很高 chứ không nói 我是高.",
+      "examples": [
+        { "hanzi": "我是学生。", "pinyin": "Wǒ shì xuésheng.", "vi": "Tôi là học sinh." },
+        { "hanzi": "他不是老师。", "pinyin": "Tā bú shì lǎoshī.", "vi": "Anh ấy không phải giáo viên." },
+        { "hanzi": "这是我的书。", "pinyin": "Zhè shì wǒ de shū.", "vi": "Đây là sách của tôi." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )中国人。", "options": ["是", "很", "在"], "answer": "是", "explanation_vi": "中国人 là danh từ nên dùng 是." },
+        { "question_zh": "她(  )我的妈妈。", "options": ["不是", "不很", "没是"], "answer": "不是", "explanation_vi": "Phủ định của 是 là 不是, không bao giờ là 没是." }
+      ]
+    },
+    {
+      "code": "g1-hen-adj",
+      "hsk_level": "1",
+      "title_vi": "Câu vị ngữ tính từ với 很",
+      "pattern_zh": "Chủ ngữ + 很 + tính từ",
+      "summary_vi": "Tính từ làm vị ngữ cần một phó từ đứng trước, thường là 很.",
+      "explanation_vi": "Trong tiếng Trung, tính từ tự nó đã làm được vị ngữ, không cần 是. Nhưng một tính từ đứng trơ trọi mang nghĩa so sánh ngầm (他高 nghe như 'anh ấy cao hơn ai đó'), nên người ta thêm 很 vào cho câu trọn vẹn. 很 ở vị trí này thường đã nhạt nghĩa 'rất' — 他很高 chỉ là 'anh ấy cao'. Phủ định dùng 不, bỏ 很: 他不高.",
+      "pitfall_vi": "很 ở đây phần lớn không còn nghĩa 'rất'. Muốn nhấn mạnh thật sự thì dùng 非常 hoặc 太…了.",
+      "examples": [
+        { "hanzi": "今天很热。", "pinyin": "Jīntiān hěn rè.", "vi": "Hôm nay nóng." },
+        { "hanzi": "这个菜不好吃。", "pinyin": "Zhège cài bù hǎochī.", "vi": "Món này không ngon." },
+        { "hanzi": "她非常漂亮。", "pinyin": "Tā fēicháng piàoliang.", "vi": "Cô ấy rất xinh đẹp." }
+      ],
+      "exercises": [
+        { "question_zh": "今天天气(  )好。", "options": ["很", "是", "在"], "answer": "很", "explanation_vi": "好 là tính từ nên đi với 很, không dùng 是." },
+        { "question_zh": "这本书(  )贵。", "options": ["不", "不是", "没"], "answer": "不", "explanation_vi": "Phủ định tính từ dùng 不, không dùng 没." }
+      ]
+    },
+    {
+      "code": "g1-ma",
+      "hsk_level": "1",
+      "title_vi": "Câu hỏi với 吗",
+      "pattern_zh": "Câu trần thuật + 吗？",
+      "summary_vi": "Thêm 吗 vào cuối câu trần thuật để thành câu hỏi có/không.",
+      "explanation_vi": "Đây là cách hỏi dễ nhất trong tiếng Trung: giữ nguyên trật tự câu trần thuật rồi thêm 吗 ở cuối. Không đảo từ, không đổi gì cả. Lưu ý: 吗 không dùng chung với câu đã có từ để hỏi như 什么, 谁, 几 — hỏi 你叫什么名字吗？là sai, vì 什么 đã làm nhiệm vụ hỏi rồi.",
+      "pitfall_vi": "Câu đã có 什么/谁/哪儿/几 thì không thêm 吗 nữa.",
+      "examples": [
+        { "hanzi": "你是学生吗？", "pinyin": "Nǐ shì xuésheng ma?", "vi": "Bạn là học sinh phải không?" },
+        { "hanzi": "你喝茶吗？", "pinyin": "Nǐ hē chá ma?", "vi": "Bạn uống trà không?" },
+        { "hanzi": "他在家吗？", "pinyin": "Tā zài jiā ma?", "vi": "Anh ấy có ở nhà không?" }
+      ],
+      "exercises": [
+        { "question_zh": "你今天忙(  )？", "options": ["吗", "什么", "谁"], "answer": "吗", "explanation_vi": "Hỏi có/không thì dùng 吗 ở cuối câu." },
+        { "question_zh": "你叫什么名字(  )", "options": ["？", "吗？", "呢吗？"], "answer": "？", "explanation_vi": "Đã có 什么 thì không thêm 吗." }
+      ]
+    },
+    {
+      "code": "g1-de-possessive",
+      "hsk_level": "1",
+      "title_vi": "Trợ từ sở hữu 的",
+      "pattern_zh": "Người/vật + 的 + danh từ",
+      "summary_vi": "的 nối phần sở hữu với vật được sở hữu, tương đương 'của'.",
+      "explanation_vi": "Trật tự ngược với tiếng Việt: tiếng Việt nói 'sách của tôi', tiếng Trung nói 我的书 — người sở hữu đứng trước. Với quan hệ thân thiết và cơ quan nơi mình thuộc về, 的 thường được lược bỏ: 我妈妈, 我家, 我们学校 nghe tự nhiên hơn 我的妈妈.",
+      "pitfall_vi": "Với người thân và tập thể của mình thì bỏ 的 cho tự nhiên: 我爸爸 chứ ít khi 我的爸爸.",
+      "examples": [
+        { "hanzi": "这是我的电脑。", "pinyin": "Zhè shì wǒ de diànnǎo.", "vi": "Đây là máy tính của tôi." },
+        { "hanzi": "他是我哥哥。", "pinyin": "Tā shì wǒ gēge.", "vi": "Anh ấy là anh trai tôi." },
+        { "hanzi": "老师的书在桌子上。", "pinyin": "Lǎoshī de shū zài zhuōzi shàng.", "vi": "Sách của giáo viên ở trên bàn." }
+      ],
+      "exercises": [
+        { "question_zh": "这是老师(  )书。", "options": ["的", "得", "地"], "answer": "的", "explanation_vi": "Quan hệ sở hữu dùng 的." },
+        { "question_zh": "他是我(  )朋友。", "options": ["的", "是", "在"], "answer": "的", "explanation_vi": "的 nối người sở hữu với danh từ." }
+      ]
+    },
+    {
+      "code": "g1-zai-place",
+      "hsk_level": "1",
+      "title_vi": "在 chỉ nơi chốn",
+      "pattern_zh": "Chủ ngữ + 在 + nơi chốn",
+      "summary_vi": "在 làm động từ, nghĩa là 'ở tại'.",
+      "explanation_vi": "在 đứng một mình làm động từ chính, nghĩa 'ở': 我在家 = tôi ở nhà. Khi đi kèm động từ khác, cụm 在 + nơi chốn phải đứng TRƯỚC động từ, ngược hẳn với tiếng Việt: tiếng Việt nói 'tôi học ở trường', tiếng Trung nói 我在学校学习 — nơi chốn trước, hành động sau. Phủ định của 在 là 不在.",
+      "pitfall_vi": "Không viết 我学习在学校. Cụm chỉ nơi chốn luôn đứng trước động từ.",
+      "examples": [
+        { "hanzi": "我在家。", "pinyin": "Wǒ zài jiā.", "vi": "Tôi ở nhà." },
+        { "hanzi": "他在医院工作。", "pinyin": "Tā zài yīyuàn gōngzuò.", "vi": "Anh ấy làm việc ở bệnh viện." },
+        { "hanzi": "老师不在学校。", "pinyin": "Lǎoshī bú zài xuéxiào.", "vi": "Giáo viên không ở trường." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )学校学习。", "options": ["在", "是", "的"], "answer": "在", "explanation_vi": "在 + nơi chốn đứng trước động từ 学习." },
+        { "question_zh": "妈妈(  )商店买东西。", "options": ["在", "很", "吗"], "answer": "在", "explanation_vi": "Nơi chốn 商店 cần 在 dẫn vào và đứng trước 买." }
+      ]
+    },
+    {
+      "code": "g1-you",
+      "hsk_level": "1",
+      "title_vi": "有 và phủ định 没有",
+      "pattern_zh": "Chủ ngữ + 有 / 没有 + tân ngữ",
+      "summary_vi": "有 nghĩa là 'có'; phủ định của nó luôn là 没有, không bao giờ là 不有.",
+      "explanation_vi": "有 là động từ duy nhất trong tiếng Trung không phủ định bằng 不. Phải nói 没有 hoặc rút gọn 没. Ngoài nghĩa sở hữu, 有 còn dùng để nói 'tồn tại': 桌子上有一本书 = trên bàn có một quyển sách — trong cấu trúc này nơi chốn đứng đầu câu.",
+      "pitfall_vi": "不有 là lỗi sai tuyệt đối. Luôn dùng 没有.",
+      "examples": [
+        { "hanzi": "我有两个孩子。", "pinyin": "Wǒ yǒu liǎng ge háizi.", "vi": "Tôi có hai đứa con." },
+        { "hanzi": "我没有钱。", "pinyin": "Wǒ méiyǒu qián.", "vi": "Tôi không có tiền." },
+        { "hanzi": "桌子上有一杯水。", "pinyin": "Zhuōzi shàng yǒu yì bēi shuǐ.", "vi": "Trên bàn có một cốc nước." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )哥哥。", "options": ["没有", "不有", "不是有"], "answer": "没有", "explanation_vi": "Phủ định của 有 là 没有." },
+        { "question_zh": "教室里(  )很多学生。", "options": ["有", "是", "在"], "answer": "有", "explanation_vi": "Nói sự tồn tại ở một nơi thì dùng 有." }
+      ]
+    },
+    {
+      "code": "g1-measure-word",
+      "hsk_level": "1",
+      "title_vi": "Lượng từ: số + lượng từ + danh từ",
+      "pattern_zh": "Số + lượng từ + danh từ",
+      "summary_vi": "Giữa số đếm và danh từ bắt buộc phải có lượng từ.",
+      "explanation_vi": "Tiếng Trung không cho phép ghép thẳng số với danh từ: 三书 là sai, phải là 三本书. Điều này giống tiếng Việt ('ba quyển sách') nên người Việt học nhanh, chỉ cần nhớ đúng lượng từ nào đi với danh từ nào. 个 là lượng từ chung, dùng được khi chưa chắc. Riêng số 2 khi đứng trước lượng từ phải đọc là 两 chứ không phải 二: 两个人.",
+      "pitfall_vi": "Số 2 trước lượng từ là 两 chứ không phải 二. Nói 两个 chứ không nói 二个.",
+      "examples": [
+        { "hanzi": "我买了三本书。", "pinyin": "Wǒ mǎi le sān běn shū.", "vi": "Tôi đã mua ba quyển sách." },
+        { "hanzi": "他有两个朋友。", "pinyin": "Tā yǒu liǎng ge péngyou.", "vi": "Anh ấy có hai người bạn." },
+        { "hanzi": "请给我一杯茶。", "pinyin": "Qǐng gěi wǒ yì bēi chá.", "vi": "Cho tôi một cốc trà." }
+      ],
+      "exercises": [
+        { "question_zh": "我有(  )个妹妹。", "options": ["两", "二", "第二"], "answer": "两", "explanation_vi": "Trước lượng từ, số 2 đọc là 两." },
+        { "question_zh": "桌子上有一(  )书。", "options": ["本", "个人", "杯"], "answer": "本", "explanation_vi": "Sách đi với lượng từ 本." }
+      ]
+    },
+    {
+      "code": "g1-time-position",
+      "hsk_level": "1",
+      "title_vi": "Vị trí của từ chỉ thời gian",
+      "pattern_zh": "Thời gian + chủ ngữ + động từ / Chủ ngữ + thời gian + động từ",
+      "summary_vi": "Từ chỉ thời gian đứng trước động từ, không bao giờ đứng sau.",
+      "explanation_vi": "Đây là khác biệt lớn với tiếng Việt. Tiếng Việt nói 'tôi đi Bắc Kinh ngày mai', tiếng Trung bắt buộc 我明天去北京. Từ chỉ thời gian có hai chỗ đứng hợp lệ: đầu câu (nhấn mạnh thời gian) hoặc ngay sau chủ ngữ. Khi có cả thời gian và nơi chốn thì thời gian đứng trước: 我明天在家学习.",
+      "pitfall_vi": "Không đặt thời gian ở cuối câu. 我去北京明天 là sai.",
+      "examples": [
+        { "hanzi": "我明天去北京。", "pinyin": "Wǒ míngtiān qù Běijīng.", "vi": "Ngày mai tôi đi Bắc Kinh." },
+        { "hanzi": "昨天我很忙。", "pinyin": "Zuótiān wǒ hěn máng.", "vi": "Hôm qua tôi rất bận." },
+        { "hanzi": "他每天七点起床。", "pinyin": "Tā měitiān qī diǎn qǐchuáng.", "vi": "Anh ấy dậy lúc bảy giờ mỗi ngày." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )去学校。", "options": ["每天", "了", "吗"], "answer": "每天", "explanation_vi": "Từ chỉ thời gian đứng trước động từ 去." },
+        { "question_zh": "选出正确的句子。", "options": ["我明天去中国。", "我去中国明天。", "明天去我中国。"], "answer": "我明天去中国。", "explanation_vi": "Thời gian phải đứng trước động từ." }
+      ]
+    },
+    {
+      "code": "g1-le-completed",
+      "hsk_level": "1",
+      "title_vi": "了 chỉ hành động đã hoàn thành",
+      "pattern_zh": "Động từ + 了",
+      "summary_vi": "了 đặt sau động từ cho biết hành động đã xảy ra xong.",
+      "explanation_vi": "了 không phải là 'thì quá khứ' — tiếng Trung không có thì. Nó đánh dấu một hành động đã hoàn tất, nên vẫn dùng được cho tương lai: 我下班了就回家 = tan làm xong tôi về nhà. Phủ định thì bỏ 了 và thêm 没: 我没吃饭 (tôi chưa ăn cơm), tuyệt đối không viết 没吃了.",
+      "pitfall_vi": "Phủ định thì bỏ 了. Viết 我没吃饭 chứ không viết 我没吃饭了.",
+      "examples": [
+        { "hanzi": "我吃了三个苹果。", "pinyin": "Wǒ chī le sān ge píngguǒ.", "vi": "Tôi đã ăn ba quả táo." },
+        { "hanzi": "他昨天买了一辆车。", "pinyin": "Tā zuótiān mǎi le yí liàng chē.", "vi": "Hôm qua anh ấy đã mua một chiếc xe." },
+        { "hanzi": "我没看这个电影。", "pinyin": "Wǒ méi kàn zhège diànyǐng.", "vi": "Tôi chưa xem bộ phim này." }
+      ],
+      "exercises": [
+        { "question_zh": "我昨天买(  )一本书。", "options": ["了", "着", "过"], "answer": "了", "explanation_vi": "Hành động đã hoàn thành dùng 了 sau động từ." },
+        { "question_zh": "我(  )吃饭。", "options": ["没", "不了", "没了"], "answer": "没", "explanation_vi": "Phủ định hành động đã hoàn thành dùng 没 và bỏ 了." }
+      ]
+    },
+    {
+      "code": "g1-question-words",
+      "hsk_level": "1",
+      "title_vi": "Từ để hỏi: 什么, 谁, 哪儿, 几",
+      "pattern_zh": "Giữ nguyên trật tự câu, thay chỗ cần hỏi bằng từ để hỏi",
+      "summary_vi": "Tiếng Trung không đảo trật tự khi hỏi — từ để hỏi đứng đúng chỗ của câu trả lời.",
+      "explanation_vi": "Đây là điểm khiến người học tiếng Anh bối rối nhưng người Việt thấy quen: câu hỏi giữ nguyên trật tự câu trần thuật. Muốn hỏi tân ngữ thì đặt 什么 ngay chỗ tân ngữ: 你吃什么？ Trả lời chỉ việc thay lại: 我吃米饭。 几 hỏi số lượng nhỏ (dưới 10) và luôn đi kèm lượng từ; 多少 hỏi số lượng bất kỳ và không cần lượng từ.",
+      "pitfall_vi": "几 luôn cần lượng từ (几个人), còn 多少 thì không (多少钱).",
+      "examples": [
+        { "hanzi": "你吃什么？", "pinyin": "Nǐ chī shénme?", "vi": "Bạn ăn gì?" },
+        { "hanzi": "他是谁？", "pinyin": "Tā shì shéi?", "vi": "Anh ấy là ai?" },
+        { "hanzi": "你有几个孩子？", "pinyin": "Nǐ yǒu jǐ ge háizi?", "vi": "Bạn có mấy đứa con?" }
+      ],
+      "exercises": [
+        { "question_zh": "你去(  )？", "options": ["哪儿", "什么人", "几"], "answer": "哪儿", "explanation_vi": "Hỏi nơi chốn dùng 哪儿." },
+        { "question_zh": "这个(  )钱？", "options": ["多少", "几", "什么少"], "answer": "多少", "explanation_vi": "Hỏi giá tiền dùng 多少, không cần lượng từ." }
+      ]
+    },
+    {
+      "code": "g1-xiang-yao",
+      "hsk_level": "1",
+      "title_vi": "想 và 要: muốn làm gì",
+      "pattern_zh": "Chủ ngữ + 想/要 + động từ",
+      "summary_vi": "想 là 'muốn, dự định'; 要 mạnh hơn, là 'cần, sẽ, đòi'.",
+      "explanation_vi": "想 diễn tả mong muốn còn nhẹ, có thể chưa thực hiện: 我想去中国 = tôi muốn đi Trung Quốc (một ngày nào đó). 要 dứt khoát hơn, gần với ý định chắc chắn hoặc yêu cầu: 我要一杯咖啡 = cho tôi một cốc cà phê. Phủ định của 要 trong nghĩa 'muốn' là 不想 chứ không phải 不要 — 不要 mang nghĩa 'đừng', là câu mệnh lệnh.",
+      "pitfall_vi": "不要 nghĩa là 'đừng', không phải 'không muốn'. Muốn nói 'không muốn' thì dùng 不想.",
+      "examples": [
+        { "hanzi": "我想吃中国菜。", "pinyin": "Wǒ xiǎng chī Zhōngguó cài.", "vi": "Tôi muốn ăn món Trung Quốc." },
+        { "hanzi": "我要一杯咖啡。", "pinyin": "Wǒ yào yì bēi kāfēi.", "vi": "Cho tôi một cốc cà phê." },
+        { "hanzi": "我不想去。", "pinyin": "Wǒ bù xiǎng qù.", "vi": "Tôi không muốn đi." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )去看电影。", "options": ["想", "是", "的"], "answer": "想", "explanation_vi": "想 + động từ diễn tả mong muốn." },
+        { "question_zh": "我(  )喝酒。", "options": ["不想", "不要想", "没想"], "answer": "不想", "explanation_vi": "'Không muốn' là 不想; 不要 nghĩa là 'đừng'." }
+      ]
+    },
+    {
+      "code": "g1-neng-hui-keyi",
+      "hsk_level": "1",
+      "title_vi": "能, 会, 可以: ba kiểu 'có thể'",
+      "pattern_zh": "Chủ ngữ + 能/会/可以 + động từ",
+      "summary_vi": "会 là biết do học, 能 là đủ điều kiện làm, 可以 là được phép.",
+      "explanation_vi": "Tiếng Việt gộp cả ba vào 'có thể' nên đây là điểm dễ lẫn. 会 chỉ kỹ năng học được: 我会说汉语 (tôi biết nói tiếng Trung). 能 chỉ khả năng do hoàn cảnh: 我今天不能来 (hôm nay tôi không đến được — vì bận, chứ không phải vì không biết đi). 可以 xin phép hoặc cho phép: 我可以进来吗？(tôi vào được không?).",
+      "pitfall_vi": "Kỹ năng học được thì dùng 会. Nói 我能说汉语 nghe như 'hôm nay tôi nói tiếng Trung được' chứ không phải 'tôi biết tiếng Trung'.",
+      "examples": [
+        { "hanzi": "我会说汉语。", "pinyin": "Wǒ huì shuō Hànyǔ.", "vi": "Tôi biết nói tiếng Trung." },
+        { "hanzi": "我今天不能去。", "pinyin": "Wǒ jīntiān bù néng qù.", "vi": "Hôm nay tôi không đi được." },
+        { "hanzi": "我可以坐这儿吗？", "pinyin": "Wǒ kěyǐ zuò zhèr ma?", "vi": "Tôi ngồi đây được không?" }
+      ],
+      "exercises": [
+        { "question_zh": "他(  )开车，学了三年了。", "options": ["会", "可以", "想"], "answer": "会", "explanation_vi": "Kỹ năng học được thì dùng 会." },
+        { "question_zh": "我病了，明天(  )来。", "options": ["不能", "不会", "不可以"], "answer": "不能", "explanation_vi": "Hoàn cảnh không cho phép thì dùng 不能." }
+      ]
+    },
+    {
+      "code": "g2-zai-progressive",
+      "hsk_level": "2",
+      "title_vi": "在 + động từ: đang làm gì",
+      "pattern_zh": "Chủ ngữ + 在 + động từ (+ 呢)",
+      "summary_vi": "在 đứng trước động từ diễn tả hành động đang diễn ra.",
+      "explanation_vi": "Cùng chữ 在 nhưng khác vai: đứng trước danh từ chỉ nơi chốn thì nghĩa là 'ở', đứng trước động từ thì nghĩa là 'đang'. Có thể thêm 呢 ở cuối câu cho tự nhiên hơn, hoặc dùng 正在 để nhấn mạnh 'đúng lúc này đang'. Phủ định dùng 没在 hoặc 没有在.",
+      "pitfall_vi": "Đừng nhầm với 在 chỉ nơi chốn. 我在看书 = tôi đang đọc sách, còn 我在家 = tôi ở nhà.",
+      "examples": [
+        { "hanzi": "他在看电视呢。", "pinyin": "Tā zài kàn diànshì ne.", "vi": "Anh ấy đang xem tivi." },
+        { "hanzi": "妈妈正在做饭。", "pinyin": "Māma zhèngzài zuò fàn.", "vi": "Mẹ đang nấu cơm." },
+        { "hanzi": "我没在睡觉。", "pinyin": "Wǒ méi zài shuìjiào.", "vi": "Tôi không có đang ngủ." }
+      ],
+      "exercises": [
+        { "question_zh": "他(  )打电话呢。", "options": ["在", "了", "过"], "answer": "在", "explanation_vi": "Hành động đang diễn ra dùng 在 trước động từ." },
+        { "question_zh": "我(  )做作业，别叫我。", "options": ["正在", "已经", "要"], "answer": "正在", "explanation_vi": "正在 nhấn mạnh đúng lúc này đang làm." }
+      ]
+    },
+    {
+      "code": "g2-bi-comparison",
+      "hsk_level": "2",
+      "title_vi": "So sánh với 比",
+      "pattern_zh": "A + 比 + B + tính từ",
+      "summary_vi": "比 dùng để nói A hơn B, và tính từ đứng trần không có 很.",
+      "explanation_vi": "Cấu trúc so sánh cơ bản nhất. Điểm phải nhớ: trong câu 比, tuyệt đối không dùng 很, 非常 trước tính từ — 他比我很高 là sai. Muốn nói hơn bao nhiêu thì đặt mức độ SAU tính từ: 他比我高一点儿 (cao hơn một chút), 他比我高得多 (cao hơn nhiều). Phủ định dùng 没有: 我没有他高 = tôi không cao bằng anh ấy.",
+      "pitfall_vi": "Không dùng 很 trong câu 比. Nói 他比我高, không nói 他比我很高.",
+      "examples": [
+        { "hanzi": "今天比昨天热。", "pinyin": "Jīntiān bǐ zuótiān rè.", "vi": "Hôm nay nóng hơn hôm qua." },
+        { "hanzi": "他比我大两岁。", "pinyin": "Tā bǐ wǒ dà liǎng suì.", "vi": "Anh ấy hơn tôi hai tuổi." },
+        { "hanzi": "我没有他高。", "pinyin": "Wǒ méiyǒu tā gāo.", "vi": "Tôi không cao bằng anh ấy." }
+      ],
+      "exercises": [
+        { "question_zh": "他比我(  )。", "options": ["高", "很高", "非常高"], "answer": "高", "explanation_vi": "Trong câu 比 không dùng phó từ mức độ trước tính từ." },
+        { "question_zh": "这个(  )那个便宜。", "options": ["比", "跟", "和"], "answer": "比", "explanation_vi": "So sánh hơn kém dùng 比." }
+      ]
+    },
+    {
+      "code": "g2-guo-experience",
+      "hsk_level": "2",
+      "title_vi": "过 chỉ kinh nghiệm đã từng",
+      "pattern_zh": "Động từ + 过",
+      "summary_vi": "过 cho biết người nói đã từng trải qua việc đó ít nhất một lần.",
+      "explanation_vi": "过 khác 了 ở chỗ nó nói về kinh nghiệm sống chứ không phải một sự việc cụ thể đã xong. 我去过中国 = tôi đã từng đến Trung Quốc (không quan tâm khi nào, mấy lần). 我去了中国 = tôi đã đi Trung Quốc (một chuyến cụ thể, có thể còn đang ở đó). Phủ định là 没…过, và 过 được giữ lại: 我没去过中国.",
+      "pitfall_vi": "Phủ định của 过 giữ nguyên 过: 我没吃过 chứ không phải 我没吃.",
+      "examples": [
+        { "hanzi": "我去过北京。", "pinyin": "Wǒ qù guo Běijīng.", "vi": "Tôi đã từng đến Bắc Kinh." },
+        { "hanzi": "你吃过中国菜吗？", "pinyin": "Nǐ chī guo Zhōngguó cài ma?", "vi": "Bạn đã từng ăn món Trung Quốc chưa?" },
+        { "hanzi": "我没看过这个电影。", "pinyin": "Wǒ méi kàn guo zhège diànyǐng.", "vi": "Tôi chưa từng xem bộ phim này." }
+      ],
+      "exercises": [
+        { "question_zh": "我没去(  )上海。", "options": ["过", "了", "着"], "answer": "过", "explanation_vi": "Phủ định kinh nghiệm vẫn giữ 过." },
+        { "question_zh": "你学(  )汉语吗？", "options": ["过", "了", "在"], "answer": "过", "explanation_vi": "Hỏi về kinh nghiệm từng làm dùng 过." }
+      ]
+    },
+    {
+      "code": "g2-yinwei-suoyi",
+      "hsk_level": "2",
+      "title_vi": "因为…所以… : vì… nên…",
+      "pattern_zh": "因为 + nguyên nhân, 所以 + kết quả",
+      "summary_vi": "Cặp liên từ chỉ nguyên nhân - kết quả, và tiếng Trung dùng cả hai vế.",
+      "explanation_vi": "Khác tiếng Anh (không nói 'because... so...'), tiếng Trung dùng đủ cặp 因为…所以… và điều này hoàn toàn tự nhiên — giống hệt 'vì… nên…' trong tiếng Việt. Có thể lược một trong hai vế. Nếu chủ ngữ hai vế giống nhau thì 因为 đứng sau chủ ngữ cũng được: 他因为生病所以没来.",
+      "pitfall_vi": "Dùng cả 因为 lẫn 所以 là đúng và tự nhiên, đừng bỏ bớt vì thói quen tiếng Anh.",
+      "examples": [
+        { "hanzi": "因为下雨，所以我没去。", "pinyin": "Yīnwèi xià yǔ, suǒyǐ wǒ méi qù.", "vi": "Vì trời mưa nên tôi đã không đi." },
+        { "hanzi": "因为他很忙，所以不能来。", "pinyin": "Yīnwèi tā hěn máng, suǒyǐ bù néng lái.", "vi": "Vì anh ấy bận nên không đến được." },
+        { "hanzi": "我喜欢这儿，因为很安静。", "pinyin": "Wǒ xǐhuan zhèr, yīnwèi hěn ānjìng.", "vi": "Tôi thích ở đây vì rất yên tĩnh." }
+      ],
+      "exercises": [
+        { "question_zh": "(  )天气不好，所以我们没去公园。", "options": ["因为", "但是", "虽然"], "answer": "因为", "explanation_vi": "Vế nêu nguyên nhân dùng 因为, đi cặp với 所以." },
+        { "question_zh": "因为我生病了，(  )没上课。", "options": ["所以", "可是", "还是"], "answer": "所以", "explanation_vi": "因为 đi cặp với 所以." }
+      ]
+    },
+    {
+      "code": "g2-suiran-danshi",
+      "hsk_level": "2",
+      "title_vi": "虽然…但是… : tuy… nhưng…",
+      "pattern_zh": "虽然 + sự thật, 但是 + điều trái ngược",
+      "summary_vi": "Cặp liên từ nhượng bộ, cũng dùng đủ cả hai vế.",
+      "explanation_vi": "Giống 因为…所以…, tiếng Trung giữ cả 虽然 lẫn 但是 trong một câu, khác với tiếng Anh. 可是 dùng thay 但是 được, sắc thái nhẹ hơn một chút và thiên về khẩu ngữ. 虽然 có thể đứng trước hoặc sau chủ ngữ của vế đầu.",
+      "pitfall_vi": "Dùng cả hai vế 虽然…但是… là chuẩn, không phải thừa.",
+      "examples": [
+        { "hanzi": "虽然很累，但是我很高兴。", "pinyin": "Suīrán hěn lèi, dànshì wǒ hěn gāoxìng.", "vi": "Tuy rất mệt nhưng tôi rất vui." },
+        { "hanzi": "虽然他很忙，可是每天都运动。", "pinyin": "Suīrán tā hěn máng, kěshì měitiān dōu yùndòng.", "vi": "Tuy anh ấy bận nhưng ngày nào cũng tập thể dục." },
+        { "hanzi": "这个房子虽然小，但是很干净。", "pinyin": "Zhège fángzi suīrán xiǎo, dànshì hěn gānjìng.", "vi": "Ngôi nhà này tuy nhỏ nhưng rất sạch." }
+      ],
+      "exercises": [
+        { "question_zh": "(  )很贵，但是我还是买了。", "options": ["虽然", "因为", "如果"], "answer": "虽然", "explanation_vi": "虽然 đi cặp với 但是 diễn tả ý nhượng bộ." },
+        { "question_zh": "虽然下雨了，(  )我们还去。", "options": ["但是", "所以", "因为"], "answer": "但是", "explanation_vi": "虽然 đi cặp với 但是." }
+      ]
+    },
+    {
+      "code": "g2-ba-object",
+      "hsk_level": "2",
+      "title_vi": "Câu chữ 把",
+      "pattern_zh": "Chủ ngữ + 把 + tân ngữ + động từ + thành phần khác",
+      "summary_vi": "把 đưa tân ngữ lên trước động từ để nói ta đã xử lý nó thế nào.",
+      "explanation_vi": "Câu 把 dùng khi muốn nhấn mạnh kết quả tác động lên một vật cụ thể. Hai điều kiện bắt buộc: tân ngữ phải xác định (thứ mà cả người nói và người nghe đều biết là cái nào), và sau động từ phải có thành phần khác — 了, một bổ ngữ, một nơi chốn. Nói 我把书看 là sai vì động từ đứng trần; phải là 我把书看完了.",
+      "pitfall_vi": "Sau động từ trong câu 把 luôn phải có thêm thành phần, không được để động từ đứng một mình.",
+      "examples": [
+        { "hanzi": "我把作业做完了。", "pinyin": "Wǒ bǎ zuòyè zuò wán le.", "vi": "Tôi đã làm xong bài tập." },
+        { "hanzi": "请把门关上。", "pinyin": "Qǐng bǎ mén guān shàng.", "vi": "Vui lòng đóng cửa lại." },
+        { "hanzi": "他把书放在桌子上。", "pinyin": "Tā bǎ shū fàng zài zhuōzi shàng.", "vi": "Anh ấy đặt sách lên bàn." }
+      ],
+      "exercises": [
+        { "question_zh": "我把饭吃(  )。", "options": ["完了", "", "吗"], "answer": "完了", "explanation_vi": "Câu 把 cần thành phần sau động từ." },
+        { "question_zh": "请(  )窗户打开。", "options": ["把", "被", "在"], "answer": "把", "explanation_vi": "Đưa tân ngữ lên trước động từ dùng 把." }
+      ]
+    },
+    {
+      "code": "g2-yao-le-future",
+      "hsk_level": "2",
+      "title_vi": "要…了: sắp sửa",
+      "pattern_zh": "要 / 快要 / 就要 + động từ + 了",
+      "summary_vi": "Khung 要…了 báo một việc sắp xảy ra ngay.",
+      "explanation_vi": "了 ở đây không chỉ quá khứ mà đánh dấu một thay đổi sắp đến. 快要…了 nhấn mạnh sắp lắm rồi. Khác biệt cần nhớ: 就要…了 dùng được với thời gian cụ thể (明天就要考试了), còn 快要…了 thì không (không nói 明天快要考试了).",
+      "pitfall_vi": "Có mốc thời gian cụ thể thì dùng 就要…了, không dùng 快要…了.",
+      "examples": [
+        { "hanzi": "火车要开了。", "pinyin": "Huǒchē yào kāi le.", "vi": "Tàu sắp chạy rồi." },
+        { "hanzi": "快要下雨了。", "pinyin": "Kuài yào xià yǔ le.", "vi": "Sắp mưa rồi." },
+        { "hanzi": "明天就要考试了。", "pinyin": "Míngtiān jiù yào kǎoshì le.", "vi": "Ngày mai là thi rồi." }
+      ],
+      "exercises": [
+        { "question_zh": "他快要回国(  )。", "options": ["了", "过", "着"], "answer": "了", "explanation_vi": "Khung 快要…了 cần 了 ở cuối." },
+        { "question_zh": "下个星期(  )放假了。", "options": ["就要", "快要", "刚要"], "answer": "就要", "explanation_vi": "Có mốc thời gian cụ thể thì dùng 就要…了." }
+      ]
+    },
+    {
+      "code": "g2-de-complement",
+      "hsk_level": "2",
+      "title_vi": "Bổ ngữ trình độ với 得",
+      "pattern_zh": "Động từ + 得 + tính từ",
+      "summary_vi": "得 nối động từ với lời nhận xét về việc làm đó tốt hay dở.",
+      "explanation_vi": "得 (de) đánh giá cách thức hoặc mức độ của hành động: 他跑得很快 = anh ấy chạy rất nhanh. Khi động từ có tân ngữ thì phải lặp lại động từ: 他说汉语说得很好 — không thể nói 他说汉语得很好. Phủ định đặt 不 sau 得: 他跑得不快.",
+      "pitfall_vi": "Ba chữ 的 / 得 / 地 đọc giống nhau nhưng khác vai: 的 sở hữu, 得 bổ ngữ trình độ, 地 bổ nghĩa cho động từ.",
+      "examples": [
+        { "hanzi": "他跑得很快。", "pinyin": "Tā pǎo de hěn kuài.", "vi": "Anh ấy chạy rất nhanh." },
+        { "hanzi": "她说汉语说得很好。", "pinyin": "Tā shuō Hànyǔ shuō de hěn hǎo.", "vi": "Cô ấy nói tiếng Trung rất giỏi." },
+        { "hanzi": "我昨天睡得不好。", "pinyin": "Wǒ zuótiān shuì de bù hǎo.", "vi": "Hôm qua tôi ngủ không ngon." }
+      ],
+      "exercises": [
+        { "question_zh": "他写字写(  )很漂亮。", "options": ["得", "的", "地"], "answer": "得", "explanation_vi": "Nhận xét mức độ của hành động dùng 得." },
+        { "question_zh": "她唱歌唱得(  )。", "options": ["很好", "好的", "得好"], "answer": "很好", "explanation_vi": "Sau 得 là tính từ, thường kèm 很." }
+      ]
+    },
+    {
+      "code": "g3-ba-vs-bei",
+      "hsk_level": "3",
+      "title_vi": "Câu bị động với 被",
+      "pattern_zh": "Đối tượng + 被 + người thực hiện + động từ + thành phần khác",
+      "summary_vi": "被 đánh dấu câu bị động, và giống câu 把, động từ không được đứng trần.",
+      "explanation_vi": "被 là mặt kia của 把: cùng một sự việc, 把 nhìn từ phía người làm, 被 nhìn từ phía vật bị tác động. 我的自行车被偷了 = xe đạp của tôi bị lấy mất. Người thực hiện có thể lược đi nếu không rõ hoặc không quan trọng. Trong tiếng Trung, câu 被 thường mang sắc thái không may — dùng cho việc tốt nghe hơi lạ, khác với tiếng Việt vốn dùng 'được' cho việc tốt.",
+      "pitfall_vi": "Câu 被 thường dùng cho chuyện không hay. Việc tốt thì diễn đạt cách khác thay vì dùng 被.",
+      "examples": [
+        { "hanzi": "我的钱包被偷了。", "pinyin": "Wǒ de qiánbāo bèi tōu le.", "vi": "Ví của tôi bị mất trộm." },
+        { "hanzi": "杯子被弟弟打破了。", "pinyin": "Bēizi bèi dìdi dǎ pò le.", "vi": "Cái cốc bị em trai làm vỡ." },
+        { "hanzi": "他被老师批评了。", "pinyin": "Tā bèi lǎoshī pīpíng le.", "vi": "Anh ấy bị giáo viên phê bình." }
+      ],
+      "exercises": [
+        { "question_zh": "我的手机(  )人拿走了。", "options": ["被", "把", "让我"], "answer": "被", "explanation_vi": "Chủ ngữ là vật bị tác động nên dùng 被." },
+        { "question_zh": "作业被他做(  )。", "options": ["完了", "", "吗"], "answer": "完了", "explanation_vi": "Câu 被 cũng cần thành phần sau động từ." }
+      ]
+    },
+    {
+      "code": "g3-ruguo-jiu",
+      "hsk_level": "3",
+      "title_vi": "如果…就… : nếu… thì…",
+      "pattern_zh": "如果 + điều kiện, 就 + kết quả",
+      "summary_vi": "Cặp từ diễn tả điều kiện giả định.",
+      "explanation_vi": "如果 nêu điều kiện, 就 dẫn kết quả và bắt buộc đứng SAU chủ ngữ của vế hai: 如果你来，我就很高兴 — không nói 如果你来，就我很高兴. 要是 là biến thể khẩu ngữ của 如果, dùng thay được hoàn toàn. Có thể thêm 的话 ở cuối vế điều kiện: 如果明天下雨的话…",
+      "pitfall_vi": "就 phải đứng sau chủ ngữ vế hai, không đứng đầu vế.",
+      "examples": [
+        { "hanzi": "如果你有时间，就来我家吧。", "pinyin": "Rúguǒ nǐ yǒu shíjiān, jiù lái wǒ jiā ba.", "vi": "Nếu bạn có thời gian thì đến nhà tôi nhé." },
+        { "hanzi": "要是下雨，我们就不去了。", "pinyin": "Yàoshi xià yǔ, wǒmen jiù bú qù le.", "vi": "Nếu mưa thì chúng ta không đi nữa." },
+        { "hanzi": "如果他不来的话，我们先开始。", "pinyin": "Rúguǒ tā bù lái dehuà, wǒmen xiān kāishǐ.", "vi": "Nếu anh ấy không đến thì chúng ta bắt đầu trước." }
+      ],
+      "exercises": [
+        { "question_zh": "(  )明天不下雨，我们就去爬山。", "options": ["如果", "虽然", "因为"], "answer": "如果", "explanation_vi": "Nêu điều kiện giả định dùng 如果." },
+        { "question_zh": "如果你想去，我们(  )一起去。", "options": ["就", "才", "还"], "answer": "就", "explanation_vi": "如果 đi cặp với 就, và 就 đứng sau chủ ngữ." }
+      ]
+    },
+    {
+      "code": "g3-yijing-le",
+      "hsk_level": "3",
+      "title_vi": "已经…了 : đã… rồi",
+      "pattern_zh": "已经 + động từ/tính từ + 了",
+      "summary_vi": "已经 nhấn mạnh việc đã xảy ra hoặc đã đạt tới mức nào đó.",
+      "explanation_vi": "已经 gần như luôn đi cùng 了 ở cuối câu, thành một khung hoàn chỉnh. Nó dùng được cả với động từ (他已经走了) lẫn với tính từ và số lượng (他已经三十岁了). Phủ định không dùng 已经 mà chuyển sang 还没…呢: 他还没来呢 = anh ấy vẫn chưa đến.",
+      "pitfall_vi": "Phủ định của 已经…了 là 还没…呢, không phải 已经不….",
+      "examples": [
+        { "hanzi": "他已经走了。", "pinyin": "Tā yǐjīng zǒu le.", "vi": "Anh ấy đã đi rồi." },
+        { "hanzi": "我已经吃过午饭了。", "pinyin": "Wǒ yǐjīng chī guo wǔfàn le.", "vi": "Tôi đã ăn trưa rồi." },
+        { "hanzi": "他还没来呢。", "pinyin": "Tā hái méi lái ne.", "vi": "Anh ấy vẫn chưa đến." }
+      ],
+      "exercises": [
+        { "question_zh": "我(  )做完作业了。", "options": ["已经", "还没", "刚才没"], "answer": "已经", "explanation_vi": "已经…了 diễn tả việc đã hoàn thành." },
+        { "question_zh": "他(  )来呢。", "options": ["还没", "已经", "已经不"], "answer": "还没", "explanation_vi": "Phủ định dùng 还没…呢." }
+      ]
+    },
+    {
+      "code": "g3-yue-lai-yue",
+      "hsk_level": "3",
+      "title_vi": "越来越… : ngày càng…",
+      "pattern_zh": "越来越 + tính từ / 越 A 越 B",
+      "summary_vi": "越来越 diễn tả mức độ tăng dần theo thời gian.",
+      "explanation_vi": "越来越 + tính từ nghĩa là 'càng ngày càng': 天气越来越冷了 = trời ngày càng lạnh. Lưu ý không dùng 很 sau 越来越 vì bản thân nó đã mang nghĩa mức độ. Dạng thứ hai 越 A 越 B nói hai việc tăng cùng nhau: 越说越快 = càng nói càng nhanh.",
+      "pitfall_vi": "Không nói 越来越很冷. 越来越 đã chứa nghĩa mức độ rồi.",
+      "examples": [
+        { "hanzi": "天气越来越冷了。", "pinyin": "Tiānqì yuè lái yuè lěng le.", "vi": "Trời ngày càng lạnh." },
+        { "hanzi": "他的汉语越来越好了。", "pinyin": "Tā de Hànyǔ yuè lái yuè hǎo le.", "vi": "Tiếng Trung của anh ấy ngày càng tốt." },
+        { "hanzi": "雨越下越大。", "pinyin": "Yǔ yuè xià yuè dà.", "vi": "Mưa càng lúc càng to." }
+      ],
+      "exercises": [
+        { "question_zh": "他跑得(  )快。", "options": ["越来越", "越来越很", "很越来越"], "answer": "越来越", "explanation_vi": "越来越 không đi kèm 很." },
+        { "question_zh": "我(  )喜欢这个城市了。", "options": ["越来越", "越是", "更越"], "answer": "越来越", "explanation_vi": "Mức độ tăng dần theo thời gian dùng 越来越." }
+      ]
+    },
+    {
+      "code": "g3-chule",
+      "hsk_level": "3",
+      "title_vi": "除了…以外 : ngoài… ra",
+      "pattern_zh": "除了 A 以外, 都/也/还 + …",
+      "summary_vi": "除了 có hai nghĩa ngược nhau, phân biệt bằng từ đứng ở vế sau.",
+      "explanation_vi": "Đây là điểm dễ hiểu sai nhất ở HSK3, vì cùng một 除了 có thể mang nghĩa loại trừ hoặc bao gồm — quyết định nằm ở vế sau. Đi với 都 là loại trừ: 除了他以外，我们都去了 = trừ anh ấy ra, chúng tôi đều đi. Đi với 也/还 là bao gồm: 除了汉语以外，他还会英语 = ngoài tiếng Trung ra anh ấy còn biết tiếng Anh. 以外 có thể lược bỏ.",
+      "pitfall_vi": "Nhìn vào 都 hay 也/还 ở vế sau để biết là loại trừ hay bao gồm.",
+      "examples": [
+        { "hanzi": "除了他以外，我们都去了。", "pinyin": "Chúle tā yǐwài, wǒmen dōu qù le.", "vi": "Trừ anh ấy ra, chúng tôi đều đã đi." },
+        { "hanzi": "除了汉语，他还会说英语。", "pinyin": "Chúle Hànyǔ, tā hái huì shuō Yīngyǔ.", "vi": "Ngoài tiếng Trung, anh ấy còn biết nói tiếng Anh." },
+        { "hanzi": "除了周末以外，我每天都上班。", "pinyin": "Chúle zhōumò yǐwài, wǒ měitiān dōu shàngbān.", "vi": "Ngoài cuối tuần ra, ngày nào tôi cũng đi làm." }
+      ],
+      "exercises": [
+        { "question_zh": "除了小王，别人(  )来了。", "options": ["都", "还", "也不"], "answer": "都", "explanation_vi": "Đi với 都 thì 除了 mang nghĩa loại trừ." },
+        { "question_zh": "除了苹果，我(  )喜欢吃香蕉。", "options": ["还", "都", "才"], "answer": "还", "explanation_vi": "Đi với 还 thì 除了 mang nghĩa bao gồm thêm." }
+      ]
+    },
+    {
+      "code": "g3-yibian",
+      "hsk_level": "3",
+      "title_vi": "一边…一边… : vừa… vừa…",
+      "pattern_zh": "一边 + động từ 1 + 一边 + động từ 2",
+      "summary_vi": "Diễn tả hai hành động xảy ra đồng thời.",
+      "explanation_vi": "Cấu trúc này chỉ dùng cho hai hành động kéo dài xảy ra cùng lúc do cùng một người thực hiện: 他一边吃饭一边看电视. Không dùng cho trạng thái hay tính chất — muốn nói 'vừa rẻ vừa ngon' thì dùng 又…又…: 又便宜又好吃. Trong khẩu ngữ có thể rút gọn thành 边…边….",
+      "pitfall_vi": "Với tính từ thì dùng 又…又… chứ không dùng 一边…一边….",
+      "examples": [
+        { "hanzi": "他一边吃饭，一边看电视。", "pinyin": "Tā yìbiān chī fàn, yìbiān kàn diànshì.", "vi": "Anh ấy vừa ăn cơm vừa xem tivi." },
+        { "hanzi": "我喜欢一边走路一边听音乐。", "pinyin": "Wǒ xǐhuan yìbiān zǒulù yìbiān tīng yīnyuè.", "vi": "Tôi thích vừa đi bộ vừa nghe nhạc." },
+        { "hanzi": "这个菜又便宜又好吃。", "pinyin": "Zhège cài yòu piányi yòu hǎochī.", "vi": "Món này vừa rẻ vừa ngon." }
+      ],
+      "exercises": [
+        { "question_zh": "她(  )唱歌(  )跳舞。", "options": ["一边…一边", "又…又", "越…越"], "answer": "一边…一边", "explanation_vi": "Hai hành động đồng thời dùng 一边…一边…." },
+        { "question_zh": "这个房子(  )大(  )干净。", "options": ["又…又", "一边…一边", "先…再"], "answer": "又…又", "explanation_vi": "Với tính từ thì dùng 又…又…." }
+      ]
+    },
+    {
+      "code": "g3-jiu-cai",
+      "hsk_level": "3",
+      "title_vi": "就 và 才: sớm hay muộn hơn mong đợi",
+      "pattern_zh": "Thời gian + 就/才 + động từ",
+      "summary_vi": "就 nói việc xảy ra sớm/dễ hơn tưởng, 才 nói muộn/khó hơn tưởng.",
+      "explanation_vi": "Cặp này không nói về thời gian khách quan mà về thái độ người nói. 他六点就来了 = mới sáu giờ anh ấy đã đến (sớm thế). 他六点才来 = mãi sáu giờ anh ấy mới đến (muộn quá). Cùng một mốc sáu giờ, hai đánh giá trái ngược. Một khác biệt hình thức quan trọng: câu có 就 thường kết thúc bằng 了, câu có 才 thì không.",
+      "pitfall_vi": "Câu với 才 không dùng 了 ở cuối. Nói 他才来 chứ không nói 他才来了.",
+      "examples": [
+        { "hanzi": "他六点就起床了。", "pinyin": "Tā liù diǎn jiù qǐchuáng le.", "vi": "Mới sáu giờ anh ấy đã dậy rồi." },
+        { "hanzi": "他九点才起床。", "pinyin": "Tā jiǔ diǎn cái qǐchuáng.", "vi": "Mãi chín giờ anh ấy mới dậy." },
+        { "hanzi": "我学了三年才学会。", "pinyin": "Wǒ xué le sān nián cái xuéhuì.", "vi": "Tôi học ba năm mới biết." }
+      ],
+      "exercises": [
+        { "question_zh": "他七点(  )到了，比我早。", "options": ["就", "才", "还"], "answer": "就", "explanation_vi": "Sớm hơn mong đợi thì dùng 就." },
+        { "question_zh": "我等了一个小时他(  )来。", "options": ["才", "就", "已经"], "answer": "才", "explanation_vi": "Muộn hơn mong đợi thì dùng 才, và không thêm 了." }
+      ]
+    },
+    {
+      "code": "g4-budan-erqie",
+      "hsk_level": "4",
+      "title_vi": "不但…而且… : không những… mà còn…",
+      "pattern_zh": "不但 A, 而且 B",
+      "summary_vi": "Cặp liên từ tăng tiến, vế sau mạnh hơn vế trước.",
+      "explanation_vi": "Dùng khi hai vế cùng chiều và vế sau nâng mức độ lên. Quy tắc vị trí: nếu hai vế cùng chủ ngữ thì 不但 đứng sau chủ ngữ (他不但会说汉语，而且说得很好); nếu khác chủ ngữ thì 不但 đứng trước chủ ngữ (不但他去，而且我也去). Có thể thay 而且 bằng 还 hoặc 也.",
+      "pitfall_vi": "Vị trí của 不但 phụ thuộc vào việc hai vế có cùng chủ ngữ hay không.",
+      "examples": [
+        { "hanzi": "他不但会说汉语，而且说得很好。", "pinyin": "Tā búdàn huì shuō Hànyǔ, érqiě shuō de hěn hǎo.", "vi": "Anh ấy không những biết nói tiếng Trung mà còn nói rất giỏi." },
+        { "hanzi": "这个东西不但便宜，而且质量很好。", "pinyin": "Zhège dōngxi búdàn piányi, érqiě zhìliàng hěn hǎo.", "vi": "Thứ này không những rẻ mà chất lượng còn tốt." },
+        { "hanzi": "不但他来了，我们也都来了。", "pinyin": "Búdàn tā lái le, wǒmen yě dōu lái le.", "vi": "Không những anh ấy đến mà chúng tôi cũng đều đến." }
+      ],
+      "exercises": [
+        { "question_zh": "她(  )漂亮，而且很聪明。", "options": ["不但", "虽然", "因为"], "answer": "不但", "explanation_vi": "不但 đi cặp với 而且 để tăng tiến." },
+        { "question_zh": "他不但会开车，(  )会修车。", "options": ["还", "但是", "所以"], "answer": "还", "explanation_vi": "还 dùng thay 而且 được trong cấu trúc tăng tiến." }
+      ]
+    },
+    {
+      "code": "g4-zhiyao-zhiyou",
+      "hsk_level": "4",
+      "title_vi": "只要…就… và 只有…才…",
+      "pattern_zh": "只要 A 就 B / 只有 A 才 B",
+      "summary_vi": "只要 nêu điều kiện đủ, 只有 nêu điều kiện cần duy nhất.",
+      "explanation_vi": "只要…就… nghĩa 'chỉ cần… là…': điều kiện dễ, đủ để có kết quả — 只要你努力，就能成功. 只有…才… nghĩa 'chỉ có… mới…': đây là con đường duy nhất, gắt hơn nhiều — 只有努力，才能成功. Ghép sai cặp (只要…才… hoặc 只有…就…) là lỗi thường gặp trong đề HSK4.",
+      "pitfall_vi": "只要 luôn đi với 就; 只有 luôn đi với 才. Không ghép chéo.",
+      "examples": [
+        { "hanzi": "只要你努力，就一定能成功。", "pinyin": "Zhǐyào nǐ nǔlì, jiù yídìng néng chénggōng.", "vi": "Chỉ cần bạn cố gắng thì nhất định sẽ thành công." },
+        { "hanzi": "只有多练习，才能说好汉语。", "pinyin": "Zhǐyǒu duō liànxí, cái néng shuō hǎo Hànyǔ.", "vi": "Chỉ có luyện tập nhiều mới nói tốt tiếng Trung được." },
+        { "hanzi": "只要不下雨，我们就去。", "pinyin": "Zhǐyào bú xià yǔ, wǒmen jiù qù.", "vi": "Chỉ cần không mưa là chúng tôi đi." }
+      ],
+      "exercises": [
+        { "question_zh": "只要你来，我(  )很高兴。", "options": ["就", "才", "还"], "answer": "就", "explanation_vi": "只要 đi cặp với 就." },
+        { "question_zh": "只有努力学习，(  )能考上大学。", "options": ["才", "就", "也"], "answer": "才", "explanation_vi": "只有 đi cặp với 才." }
+      ]
+    },
+    {
+      "code": "g4-jishi",
+      "hsk_level": "4",
+      "title_vi": "即使…也… : cho dù… cũng…",
+      "pattern_zh": "即使 A, 也 B",
+      "summary_vi": "Nhượng bộ với một tình huống giả định chưa xảy ra.",
+      "explanation_vi": "Khác 虽然…但是… ở chỗ 虽然 nói về sự thật đã có, còn 即使 nói về giả định: 虽然下雨，但是我去了 (trời đã mưa thật) so với 即使下雨，我也去 (nếu có mưa đi nữa). 就是…也… là biến thể khẩu ngữ của 即使…也…. Vế sau bắt buộc có 也.",
+      "pitfall_vi": "即使 nói về giả định, 虽然 nói về sự thật đã xảy ra.",
+      "examples": [
+        { "hanzi": "即使下雨，我也要去。", "pinyin": "Jíshǐ xià yǔ, wǒ yě yào qù.", "vi": "Cho dù trời mưa tôi cũng vẫn đi." },
+        { "hanzi": "即使很难，我也不放弃。", "pinyin": "Jíshǐ hěn nán, wǒ yě bú fàngqì.", "vi": "Cho dù rất khó tôi cũng không bỏ cuộc." },
+        { "hanzi": "就是你不说，我也知道。", "pinyin": "Jiùshì nǐ bù shuō, wǒ yě zhīdào.", "vi": "Cho dù bạn không nói thì tôi cũng biết." }
+      ],
+      "exercises": [
+        { "question_zh": "(  )很累，他也坚持工作。", "options": ["即使", "因为", "所以"], "answer": "即使", "explanation_vi": "Giả định nhượng bộ dùng 即使…也…." },
+        { "question_zh": "即使他不来，我们(  )要开始。", "options": ["也", "就", "才"], "answer": "也", "explanation_vi": "即使 bắt buộc đi với 也 ở vế sau." }
+      ]
+    },
+    {
+      "code": "g4-buguan",
+      "hsk_level": "4",
+      "title_vi": "不管…都… : bất kể… đều…",
+      "pattern_zh": "不管 + từ để hỏi/A还是B, 都 + …",
+      "summary_vi": "Kết quả không đổi dù điều kiện thay đổi thế nào.",
+      "explanation_vi": "不管 đòi hỏi vế đầu phải chứa một khả năng để ngỏ — hoặc một từ để hỏi (谁, 什么, 怎么), hoặc một cặp lựa chọn A还是B, hoặc dạng khẳng định-phủ định (来不来). Viết 不管天气好 là sai vì không có gì để ngỏ; phải là 不管天气好不好. 无论 là dạng trang trọng hơn, dùng thay được.",
+      "pitfall_vi": "Vế sau 不管 phải để ngỏ khả năng: dùng từ để hỏi, A还是B, hoặc 好不好.",
+      "examples": [
+        { "hanzi": "不管多难，我都要试试。", "pinyin": "Bùguǎn duō nán, wǒ dōu yào shìshi.", "vi": "Bất kể khó thế nào tôi cũng phải thử." },
+        { "hanzi": "不管你来不来，我们都开始。", "pinyin": "Bùguǎn nǐ lái bu lái, wǒmen dōu kāishǐ.", "vi": "Bất kể bạn có đến hay không, chúng tôi đều bắt đầu." },
+        { "hanzi": "无论谁问，他都不回答。", "pinyin": "Wúlùn shéi wèn, tā dōu bù huídá.", "vi": "Bất kể ai hỏi anh ấy đều không trả lời." }
+      ],
+      "exercises": [
+        { "question_zh": "不管天气好(  )，我们都去。", "options": ["不好", "很好", "了"], "answer": "不好", "explanation_vi": "不管 cần dạng khẳng định-phủ định để ngỏ khả năng." },
+        { "question_zh": "不管他说什么，我(  )不相信。", "options": ["都", "就", "才"], "answer": "都", "explanation_vi": "不管 đi cặp với 都." }
+      ]
+    },
+    {
+      "code": "g4-directional-complement",
+      "hsk_level": "4",
+      "title_vi": "Bổ ngữ xu hướng: 出来, 起来, 下去",
+      "pattern_zh": "Động từ + bổ ngữ xu hướng",
+      "summary_vi": "Các bổ ngữ này ngoài nghĩa hướng di chuyển còn mang nghĩa trừu tượng.",
+      "explanation_vi": "Nghĩa đen dễ hiểu: 走出来 = đi ra. Nghĩa bóng mới là chỗ khó của HSK4. 出来 chỉ việc nhận ra, phân biệt được: 我听出来他的声音了 (tôi nhận ra giọng anh ấy). 起来 chỉ sự bắt đầu: 他笑起来了 (anh ấy bật cười); cũng dùng để đánh giá: 看起来很好 (trông có vẻ tốt). 下去 chỉ sự tiếp tục: 说下去 (nói tiếp đi).",
+      "pitfall_vi": "Khi có tân ngữ, nó chen vào giữa: 想起来 thành 想起他来.",
+      "examples": [
+        { "hanzi": "我听出来他的声音了。", "pinyin": "Wǒ tīng chūlái tā de shēngyīn le.", "vi": "Tôi nhận ra giọng của anh ấy rồi." },
+        { "hanzi": "这个菜看起来很好吃。", "pinyin": "Zhège cài kàn qǐlái hěn hǎochī.", "vi": "Món này trông rất ngon." },
+        { "hanzi": "请你说下去。", "pinyin": "Qǐng nǐ shuō xiàqù.", "vi": "Mời bạn nói tiếp." }
+      ],
+      "exercises": [
+        { "question_zh": "他一说我就想(  )了。", "options": ["起来", "下去", "出去"], "answer": "起来", "explanation_vi": "想起来 nghĩa là nhớ ra." },
+        { "question_zh": "这件衣服看(  )很贵。", "options": ["起来", "下来", "出去"], "answer": "起来", "explanation_vi": "看起来 dùng để đánh giá bề ngoài." }
+      ]
+    }
+  ]
+}

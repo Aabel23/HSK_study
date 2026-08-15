@@ -274,6 +274,20 @@ class HskkGradeRequest(BaseModel):
     spoken_seconds: int = Field(default=0, ge=0, le=600)
 
 
+class GrammarStatus(str, Enum):
+    # Grammar has no `review` state: a point is either untouched, being drilled,
+    # or mastered. Kept separate from ProgressStatus so the filter cannot offer
+    # a value the table can never hold.
+    new = "new"
+    learning = "learning"
+    mastered = "mastered"
+
+
+class GrammarExerciseCheck(BaseModel):
+    index: int = Field(ge=0, le=50)
+    answer: str = Field(min_length=1, max_length=200)
+
+
 class DonationCreate(BaseModel):
     # The real bounds live in Settings so they stay configurable; these are the
     # outer limits PayOS itself accepts.

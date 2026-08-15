@@ -426,16 +426,21 @@ def generate(
     return total_accepted
 
 
-def _ask(prompt: str) -> dict[str, Any] | None:
+def _ask(
+    prompt: str,
+    *,
+    system_instruction: str = SYSTEM_INSTRUCTION,
+    # Higher than the grader's 0.2 when writing questions: variety is the entire
+    # point there, and the validator catches what the extra freedom costs.
+    temperature: float = 0.9,
+) -> dict[str, Any] | None:
     """One batch request, waiting out a busy endpoint. ``None`` means give up."""
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             return gemini_service.generate_json(
-                system_instruction=SYSTEM_INSTRUCTION,
+                system_instruction=system_instruction,
                 prompt=prompt,
-                # Higher than the grader's 0.2: variety is the entire point here,
-                # and the validator catches what the extra freedom costs.
-                temperature=0.9,
+                temperature=temperature,
             )
         except gemini_service.TransientError as error:
             if attempt == MAX_RETRIES:
@@ -513,6 +518,125 @@ def _fill_pool(
     return accepted
 
 
+# ---------------------------------------------------------------------------
+# Glossing: pinyin and Vietnamese for the Chinese in an existing question
+# ---------------------------------------------------------------------------
+
+#: Which fields of each question type the review screen reads back to the
+#: learner, and therefore which ones need a gloss. Mirrors ``_REVEAL_FIELDS`` in
+#: :mod:`backend.services.reading_service`.
+GLOSS_FIELDS: dict[str, tuple[str, ...]] = {
+    "judge_true_false": ("passage_zh", "statement_zh"),
+    "fill_in_blank_sentence": ("sentence_zh", "answer"),
+    "multiple_choice_dialogue": ("passage_zh", "question_zh", "answer"),
+    "reading_comprehension": ("passage_zh", "question_zh", "answer"),
+    "sentence_reordering": ("answer",),
+}
+
+GLOSS_SYSTEM_INSTRUCTION = """\
+Bạn là giáo viên tiếng Trung dạy người Việt, chuyên phiên âm và dịch.
+
+Với mỗi đoạn chữ Hán được đưa, hãy trả về:
+- "pinyin": phiên âm CÓ DẤU THANH, viết theo từ (các âm tiết của cùng một từ \
+viết liền, giữa các từ có dấu cách), giữ nguyên dấu câu.
+- "vi": bản dịch tiếng Việt tự nhiên, đúng nghĩa, không dịch máy móc từng chữ.
+
+Nguyên tắc:
+- Dịch sang TIẾNG VIỆT, tuyệt đối không dùng tiếng Anh.
+- Giữ đúng số lượng và đúng thứ tự các mục được đưa vào.
+- Với đoạn hội thoại có 男：/ 女：, giữ nguyên nhãn người nói trong bản dịch \
+(Nam: / Nữ:).
+
+CHỈ trả về JSON đúng dạng: {"items": [{"id": "...", "pinyin": "...", "vi": "..."}]}"""
+
+
+def _needs_gloss(item: dict[str, Any], question_type: str) -> list[str]:
+    """Fields of this item that the review screen wants but the bank lacks."""
+    gloss = item.get("gloss") or {}
+    missing = []
+    for name in GLOSS_FIELDS.get(question_type, ()):
+        entry = gloss.get(name) or {}
+        if item.get(name) and not (entry.get("pinyin") and entry.get("vi")):
+            missing.append(name)
+    return missing
+
+
+def _gloss_text(item: dict[str, Any], name: str) -> str:
+    """The Chinese to gloss. Reordering answers are stored clause-separated."""
+    text = str(item.get(name, ""))
+    return text.replace(content_quality.ORDER_SEPARATOR, "") if name == "answer" else text
+
+
+def gloss(bank: str, level: str, part: str | None, *, dry_run: bool = False) -> int:
+    """Fill in pinyin and Vietnamese for questions that do not have them yet.
+
+    Run after generating, and after any hand-written question is added: the
+    review screen shown once a question has been answered reads these fields, so
+    an unglossed question simply reveals less than its neighbours.
+    """
+    data = _load(bank)
+    pools = _pools(data, bank, level)
+    targets = [part] if part else list(pools)
+    filled = 0
+
+    for name in targets:
+        pool = pools[name]
+        question_type = pool["question_type"]
+        if question_type not in GLOSS_FIELDS:
+            continue  # HSKK items already ship with pinyin and vi
+
+        # One request per field name keeps the returned list unambiguous.
+        for field_name in GLOSS_FIELDS[question_type]:
+            pending = [
+                item for item in pool["items"] if field_name in _needs_gloss(item, question_type)
+            ]
+            if not pending:
+                continue
+            print(f"\n=== {pool['label']} · {field_name}: {len(pending)} câu cần phiên âm")
+
+            for start in range(0, len(pending), BATCH_SIZE):
+                chunk = pending[start : start + BATCH_SIZE]
+                listing = "\n".join(
+                    f'{{"id": "{item["id"]}", "text": "{_gloss_text(item, field_name)}"}}'
+                    for item in chunk
+                )
+                response = _ask(
+                    f"Phiên âm và dịch sang tiếng Việt các đoạn sau:\n{listing}",
+                    system_instruction=GLOSS_SYSTEM_INSTRUCTION,
+                    temperature=0.2,
+                )
+                if response is None:
+                    break
+
+                by_id = {str(entry.get("id")): entry for entry in response.get("items", [])}
+                for item in chunk:
+                    entry = by_id.get(str(item["id"]))
+                    if not entry:
+                        continue
+                    pinyin = str(entry.get("pinyin", "")).strip()
+                    vietnamese = str(entry.get("vi", "")).strip()
+                    # A "pinyin" full of hanzi means the model echoed the input.
+                    if not pinyin or content_quality.chinese_characters(pinyin):
+                        print(f"  ✗ {item['id']}: pinyin không hợp lệ")
+                        continue
+                    if not vietnamese:
+                        print(f"  ✗ {item['id']}: thiếu bản dịch")
+                        continue
+                    item.setdefault("gloss", {})[field_name] = {
+                        "pinyin": pinyin,
+                        "vi": vietnamese,
+                    }
+                    filled += 1
+                print(f"  → xong {min(start + BATCH_SIZE, len(pending))}/{len(pending)}")
+
+    if filled and not dry_run:
+        _save(bank, data)
+        print(f"\n✓ Đã bổ sung phiên âm/bản dịch cho {filled} mục.")
+    else:
+        print(f"\n{filled} mục được phiên âm (dry-run)." if dry_run else "\nKhông có gì để bổ sung.")
+    return filled
+
+
 def _print_inventory() -> None:
     print("Ngân hàng đề hiện tại:\n")
     for bank in BANK_FILES:
@@ -536,6 +660,11 @@ def main() -> None:
     parser.add_argument("--count", type=int, default=20, help="số câu mới mỗi phần")
     parser.add_argument("--dry-run", action="store_true", help="chỉ kiểm thử, không ghi file")
     parser.add_argument("--list", action="store_true", help="xem quy mô ngân hàng đề")
+    parser.add_argument(
+        "--gloss",
+        action="store_true",
+        help="không sinh câu mới, chỉ bổ sung pinyin và bản dịch cho câu đã có",
+    )
     arguments = parser.parse_args()
 
     if arguments.list:
@@ -548,6 +677,10 @@ def main() -> None:
             "Chưa có GEMINI_API_KEY. Đặt biến môi trường rồi chạy lại — "
             "khoá chỉ đọc từ môi trường, không lưu vào repo."
         )
+
+    if arguments.gloss:
+        gloss(arguments.bank, arguments.level, arguments.part, dry_run=arguments.dry_run)
+        return
 
     generate(
         arguments.bank,

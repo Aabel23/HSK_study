@@ -319,6 +319,41 @@ CREATE TABLE IF NOT EXISTS hskk_answers (
     FOREIGN KEY (session_id) REFERENCES hskk_sessions(id) ON DELETE CASCADE
 );
 
+-- Grammar lessons. The content ships as scripts/data/grammar.json and is seeded
+-- into `grammar_points`; `grammar_progress` is the learner's own state, kept in
+-- a separate table so re-seeding new lessons never touches their history.
+CREATE TABLE IF NOT EXISTS grammar_points (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    hsk_level TEXT NOT NULL,
+    title_vi TEXT NOT NULL,
+    pattern_zh TEXT NOT NULL DEFAULT '',
+    summary_vi TEXT NOT NULL DEFAULT '',
+    explanation_vi TEXT NOT NULL DEFAULT '',
+    pitfall_vi TEXT NOT NULL DEFAULT '',
+    examples_json TEXT NOT NULL DEFAULT '[]',
+    exercises_json TEXT NOT NULL DEFAULT '[]',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS grammar_progress (
+    grammar_id INTEGER PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'new'
+        CHECK (status IN ('new', 'learning', 'mastered')),
+    practice_count INTEGER NOT NULL DEFAULT 0,
+    correct_count INTEGER NOT NULL DEFAULT 0,
+    incorrect_count INTEGER NOT NULL DEFAULT 0,
+    last_practiced_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (grammar_id) REFERENCES grammar_points(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_grammar_points_level ON grammar_points(hsk_level);
+CREATE INDEX IF NOT EXISTS idx_grammar_progress_status ON grammar_progress(status);
+
 -- Which exam-bank items the learner has already been shown. The bank itself
 -- ships as JSON in scripts/data/; this table is the per-machine memory that
 -- lets the sampler hand out unseen questions before ever repeating one.
@@ -380,6 +415,10 @@ HSKK_SESSION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("quiz_session_id", "INTEGER"),
     ("written_score", "REAL NOT NULL DEFAULT 0"),
     ("written_max", "REAL NOT NULL DEFAULT 0"),
+    # 'instant' shows the verdict after every question; 'deferred' withholds it
+    # until the paper is submitted, the way the real exam works. Existing rows
+    # default to the behaviour they were sat under.
+    ("feedback_mode", "TEXT NOT NULL DEFAULT 'instant'"),
 )
 
 HSKK_ANSWER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
@@ -387,6 +426,9 @@ HSKK_ANSWER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("ai_score", "REAL"),
     ("ai_feedback", "TEXT"),
     ("transcript", "TEXT"),
+    # What the learner actually picked, so the post-submission review can show
+    # their answer next to the right one. Only meaningful for reading questions.
+    ("given_answer", "TEXT NOT NULL DEFAULT ''"),
 )
 
 

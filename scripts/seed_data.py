@@ -287,8 +287,15 @@ def _repair_legacy_meanings(connection, records: list[dict], now: str) -> int:
     courteous 您)"), mojibake, or the headword echoed back would otherwise keep
     showing English forever in a database that already exists.
 
-    Hand-written Vietnamese is preserved: a row is only rewritten when it fails
-    `is_english_gloss`, the same rule the shipped dataset was built with.
+    A second class of correction goes through here too. `scripts/repair_meanings.py`
+    fixes dataset entries that read as fluent Vietnamese while meaning the wrong
+    thing — 少见 defined as "nhìn". Those pass `is_english_gloss` happily, so
+    without a second rule an installed database would keep the wrong gloss
+    forever no matter how often the dataset is corrected.
+
+    Hand-written Vietnamese is still preserved. The curated HSK 1 glosses are
+    tuned for beginners and deliberately narrower than the dictionary's, so they
+    are exempt; for every other word the shipped dataset is authoritative.
     """
     replacements = {
         record["hanzi"]: record["meaning"]
@@ -298,6 +305,7 @@ def _repair_legacy_meanings(connection, records: list[dict], now: str) -> int:
     if not replacements:
         return 0
 
+    curated = {record[0] for record in HSK1_VOCABULARY}
     rows = connection.execute(
         "SELECT id, hanzi, meaning, meaning_en FROM vocabulary"
     ).fetchall()
@@ -307,7 +315,11 @@ def _repair_legacy_meanings(connection, records: list[dict], now: str) -> int:
         if not replacement or replacement == row["meaning"]:
             continue
         stored = repair_mojibake(row["meaning"] or "")
-        if not is_english_gloss(stored, row["meaning_en"], row["hanzi"]):
+        # Curated words keep their beginner-tuned gloss — but only while that
+        # gloss is usable Vietnamese. One left in English is still repaired.
+        if row["hanzi"] in curated and not is_english_gloss(
+            stored, row["meaning_en"], row["hanzi"]
+        ):
             continue
         connection.execute(
             "UPDATE vocabulary SET meaning = ?, updated_at = ? WHERE id = ?",
@@ -431,6 +443,64 @@ def seed_leveled_sentences() -> int:
     return added
 
 
+GRAMMAR_FILE = "grammar.json"
+
+GRAMMAR_SQL = """
+    INSERT INTO grammar_points (
+        code, hsk_level, title_vi, pattern_zh, summary_vi, explanation_vi,
+        pitfall_vi, examples_json, exercises_json, sort_order, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(code) DO UPDATE SET
+        hsk_level = excluded.hsk_level,
+        title_vi = excluded.title_vi,
+        pattern_zh = excluded.pattern_zh,
+        summary_vi = excluded.summary_vi,
+        explanation_vi = excluded.explanation_vi,
+        pitfall_vi = excluded.pitfall_vi,
+        examples_json = excluded.examples_json,
+        exercises_json = excluded.exercises_json,
+        sort_order = excluded.sort_order,
+        updated_at = excluded.updated_at
+"""
+
+
+def seed_grammar() -> int:
+    """Load the grammar lessons, updating the text of ones already present.
+
+    Upserts rather than inserts so a corrected explanation reaches an installed
+    database. The learner's progress lives in `grammar_progress`, keyed by id,
+    and is never touched here.
+    """
+    path = FULL_DATA_DIR / GRAMMAR_FILE
+    if not path.exists():
+        return 0
+    with open(path, encoding="utf-8") as handle:
+        payload = json.load(handle)
+
+    now = utc_now()
+    points = payload.get("points", [])
+    with get_connection() as connection:
+        for order, point in enumerate(points):
+            connection.execute(
+                GRAMMAR_SQL,
+                (
+                    point["code"],
+                    str(point.get("hsk_level", "1")),
+                    point["title_vi"],
+                    point.get("pattern_zh", ""),
+                    point.get("summary_vi", ""),
+                    point.get("explanation_vi", ""),
+                    point.get("pitfall_vi", ""),
+                    json.dumps(point.get("examples", []), ensure_ascii=False),
+                    json.dumps(point.get("exercises", []), ensure_ascii=False),
+                    order,
+                    now,
+                    now,
+                ),
+            )
+    return len(points)
+
+
 def seed_database(return_details: bool = False) -> int | dict[str, int]:
     """Insert missing vocabulary and progress rows, preserving existing data."""
     initialize_database()
@@ -468,6 +538,7 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
             sentence_added += max(cursor.rowcount, 0)
     full_result = seed_full_vocabulary(return_details=True)
     leveled_sentences = seed_leveled_sentences()
+    grammar_points = seed_grammar()
     if return_details:
         return {
             "vocabulary_added": added,
@@ -475,6 +546,7 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
             "full_vocabulary_upserted": full_result["vocabulary_upserted"],
             "meanings_repaired": full_result["meanings_repaired"],
             "leveled_sentences_added": leveled_sentences,
+            "grammar_points": grammar_points,
         }
     return added
 
@@ -486,6 +558,7 @@ def main() -> None:
         f"{result['sentences_added']} sentence records. "
         f"Upserted {result['full_vocabulary_upserted']} full HSK 1-9 vocabulary records "
         f"and repaired {result['meanings_repaired']} English/mojibake meanings. "
+        f"Seeded {result['grammar_points']} grammar points. "
         f"Seed totals: {len(HSK1_VOCABULARY)} curated words, {len(HSK1_SENTENCES)} sentences."
     )
 
