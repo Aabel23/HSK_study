@@ -8,7 +8,7 @@ import { useApi } from "../lib/useApi";
 import { formatNumber } from "../lib/format";
 import { LevelPicker } from "./LevelPicker";
 import { CommandPalette } from "./CommandPalette";
-import { AmbientOrnament, BoBoCamField, HoiVanBand, ThuyBaBand } from "./Ornament";
+import { AmbientOrnament, BoBoCamField } from "./Ornament";
 import { Kbd } from "./ui";
 import { MOBILE_NAV, SECTION_LABELS, VISIBLE_NAV_ITEMS, type NavItem } from "./navigation";
 import { IconBolt, IconFlame, IconMenu, IconMoon, IconSearch, IconSun, IconX } from "./icons";
@@ -77,16 +77,14 @@ export function Shell({ children }: { children: ReactNode }) {
               curves at that width read as clutter while a window lattice reads
               as joinery. Carried at 0.10 — a step up from the barely-there
               first pass, still well under the text. */}
+          {/* One motif only. A 288px panel cannot carry three: the earlier
+              版本 stacked a lattice ground, a vertical 回纹 strip and a ripple
+              band on the goal card, and at that width the 20px strip could only
+              ever read as a pattern that had been sliced. A single quiet ground
+              is what a narrow panel wants. */}
           <BoBoCamField
             className="pointer-events-none absolute inset-0 h-full w-full text-gold"
             opacity={0.1}
-          />
-          {/* Bands are the only ornament allowed to be cut, so the sidebar's
-              inner edge gets one instead of a cropped flower. */}
-          <HoiVanBand
-            className="pointer-events-none absolute inset-y-0 right-0 h-full w-5 text-gold"
-            opacity={0.18}
-            rotate={90}
           />
 
           <div className="relative flex items-center justify-between">
@@ -200,12 +198,6 @@ export function Shell({ children }: { children: ReactNode }) {
             className="inlay relative isolate mt-5 overflow-hidden rounded-2xl border border-border-soft bg-surface-2 p-4"
             data-lit="true"
           >
-            {/* Ripples along the foot of the goal card — a band, so the crop at
-                both ends is part of the motif rather than damage to it. */}
-            <ThuyBaBand
-              className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-8 w-full text-gold"
-              opacity={0.22}
-            />
             <div className="relative flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-gold">Mục tiêu hôm nay</p>
               <span className="tnum text-xs font-semibold text-ink-soft">

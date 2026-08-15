@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
-import { BaoTuongHoa, CardOrnament, LienBienBand } from "./Ornament";
+import { CardOrnament } from "./Ornament";
 import {
   IconAlert,
   IconBookmark,
@@ -26,10 +26,16 @@ export function Card({
   className?: string;
   as?: "div" | "section";
   /**
-   * Decorates the card. `nhuy` is a ruyi head inset into the top-right corner;
-   * `thatbao` and `quyboi` are faint tiling grounds across the whole card.
+   * Gives the card its texture: 七宝, the interlocking-circle ground.
+   *
+   * A flag rather than a choice of motif, and that is the whole point. An
+   * earlier version let each card pick — hexagons here, circles there, a corner
+   * mark elsewhere — and a grid of eight cards wearing three different patterns
+   * reads as clutter no matter how faint each one is. One motif for every card
+   * in the app makes the surfaces look like one material; making it structural
+   * means nobody can reintroduce the mix by passing a different string.
    */
-  ornament?: "nhuy" | "thatbao" | "quyboi";
+  ornament?: boolean;
   /** Raises the card towards the pointer on hover. */
   lift?: boolean;
   /** Gold hairline just inside the border, lit on hover. */
@@ -53,7 +59,7 @@ export function Card({
       )}
       {...rest}
     >
-      {ornament && <CardOrnament motif={ornament} />}
+      {ornament && <CardOrnament />}
       {children}
     </Component>
   );
@@ -72,9 +78,9 @@ export function PageHeader({
 }) {
   return (
     <div className="animate-rise relative mb-8">
-      {/* The screen's one focal ornament, drawn whole in the right margin and
-          dropped entirely on narrow screens rather than shown half-cropped. */}
-      <BaoTuongHoa className="pointer-events-none absolute -top-20 right-0 -z-10 hidden h-56 w-56 text-gold opacity-[0.10] lg:block" />
+      {/* No flower here. The ambient layer already places one focal 宝相花 per
+          screen, and a second one in the header landed directly on top of it —
+          two overlapping flowers read as a rendering fault, not as ornament. */}
       <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
@@ -88,12 +94,11 @@ export function PageHeader({
         </div>
         {action}
       </div>
-      {/* A band of lotus petals under the title: the divider is where the lotus
-          identity survives now that the flower no longer bleeds off cards. */}
-      <div className="relative mt-6 h-[18px] overflow-hidden">
-        <LienBienBand className="absolute inset-0 h-full w-full text-gold" opacity={0.5} />
-        <span aria-hidden="true" className="rule-foil absolute inset-x-0 bottom-0" />
-      </div>
+      {/* A hairline, nothing more. A band of lotus petals lived here briefly and
+          was wrong: repeated across the full width of every page it stopped
+          reading as a divider and became a chain competing with the title.
+          A divider's job is to separate two things quietly. */}
+      <div className="rule-foil mt-6" />
     </div>
   );
 }
@@ -264,7 +269,7 @@ export function StatTile({
 }) {
   return (
     <Reveal index={index}>
-      <Card ornament="quyboi" lift inlay className="h-full p-5">
+      <Card ornament lift inlay className="h-full p-5">
         {/* A pool of the tile's own colour, so a row of tiles reads as five
             different things at a glance rather than five identical boxes. */}
         <div

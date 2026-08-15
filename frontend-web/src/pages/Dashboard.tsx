@@ -83,8 +83,7 @@ const FEATURE_GLOW: Record<FeatureAccent, string> = {
   violet: "bg-violet/25",
 };
 
-/** Cycled so neighbouring tiles never carry the same watermark. */
-const FEATURE_MOTIF = ["nhuy", "thatbao", "quyboi"] as const;
+
 
 const LEVEL_LABEL: Record<string, string> = {
   "1": "HSK 1", "2": "HSK 2", "3": "HSK 3", "4": "HSK 4",
@@ -143,7 +142,7 @@ export default function Dashboard() {
       {/* Today's goal is the single most actionable thing on this page, so it
           leads the layout ahead of the lifetime totals. */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card ornament="nhuy" lift inlay className="flex items-center gap-6 p-6">
+        <Card ornament lift inlay className="flex items-center gap-6 p-6">
           <ProgressRing value={streak.data?.goal_percentage ?? 0} accent="gold" size={116} stroke={9}>
             <span className="font-display tnum text-2xl font-bold text-gold">
               <CountUp value={streak.data?.today_reviews ?? 0} />
@@ -166,7 +165,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card lift inlay className="p-6 lg:col-span-2">
+        <Card ornament lift inlay className="p-6 lg:col-span-2">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Lịch ôn 10 ngày tới</p>
@@ -201,7 +200,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <Card ornament="thatbao" lift inlay className="p-6 lg:col-span-2">
+        <Card ornament lift inlay className="p-6 lg:col-span-2">
           <h2 className="font-display text-lg font-bold text-ink">Tiến độ theo cấp độ</h2>
           <div className="mt-5 flex flex-col gap-4">
             {data.hsk_levels.map((level) => {
@@ -221,7 +220,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card ornament="nhuy" lift inlay className="p-6">
+        <Card ornament lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Độ chính xác</h2>
           <div className="mt-4 flex flex-col gap-3 text-sm">
             <ResultRow label="Nối từ" correct={data.matching_correct} incorrect={data.matching_incorrect} accuracy={data.matching_accuracy} />
@@ -234,7 +233,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card lift inlay className="p-6">
+        <Card ornament lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Hoạt động 14 ngày</h2>
           <div className="mt-4 h-40">
             <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
@@ -243,7 +242,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card ornament="thatbao" lift inlay className="p-6">
+        <Card ornament lift inlay className="p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-ink">Chuỗi ngày học</h2>
             <Badge tone="accent">
@@ -271,7 +270,7 @@ export default function Dashboard() {
           <Reveal key={feature.to} index={index}>
             <Link to={feature.to} className="block h-full">
               <Card
-                ornament={FEATURE_MOTIF[index % FEATURE_MOTIF.length]}
+                ornament
                 lift
                 inlay
                 className="flex h-full flex-col justify-between p-5"

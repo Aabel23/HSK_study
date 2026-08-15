@@ -399,6 +399,21 @@ button:disabled,
   background: var(--foil-line);
 }
 
+/* Fades a band out at both ends.
+   A repeating motif that runs to a hard edge reads as cut off, however
+   seamlessly it tiles — the eye blames the frame, not the pattern. Masking the
+   ends turns the same band into something that was placed there deliberately.
+   Required on any band narrower than the surface it sits on. */
+.fade-x {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+
+.fade-y {
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent);
+}
+
 /* A gold hairline just inside a card's edge — the inlay on a lacquer box. */
 .inlay {
   position: relative;

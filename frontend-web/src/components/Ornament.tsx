@@ -15,28 +15,38 @@ import clsx from "clsx";
  * Ornament turns into noise the moment two motifs compete, so each one here has
  * **exactly one role** and is used nowhere else:
  *
- * | Role                      | Motif                        | Why that one              |
- * | ------------------------- | ---------------------------- | ------------------------- |
- * | Ground, whole page        | 冰裂 băng liệt               | No readable repeat        |
- * | Ground, side panel        | 步步锦 bộ bộ cẩm             | Straight lines, vertical  |
- * | Ground, wide surface      | 七宝 thất bảo / 龟背 quy bối | Quiet, even texture       |
- * | Edge band                 | 回纹 hồi văn                 | Built to be cut           |
- * | Section divider           | 莲瓣 liên biện               | Keeps the lotus identity  |
- * | Progress /水 band         | 水波 thủy ba                 | Reads as movement         |
- * | Card corner               | 如意 như ý                   | A corner by construction  |
- * | One focal point per screen| 宝相花 bảo tương hoa         | Symmetric, never cropped  |
- * | Celebration only          | 海水江崖 + 祥云              | Imperial, so kept rare    |
- * | Exam screens only         | 夔龙 quỳ long                | Strongest mark in the set |
+ * | Role                       | Motif                | In use |
+ * | -------------------------- | -------------------- | ------ |
+ * | Ground, whole page         | 鱼鳞 ngư lân         | yes    |
+ * | Ground, side panel         | 步步锦 bộ bộ cẩm     | yes    |
+ * | One focal point per screen | 宝相花 bảo tương hoa | yes    |
+ * | Card corner, on hover only | 如意 như ý           | yes    |
+ * | Alternate page ground      | 冰裂 băng liệt       | —      |
+ * | Wide-surface texture       | 七宝 · 龟背          | —      |
+ * | Edge band                  | 回纹 hồi văn         | —      |
+ * | Divider / progress band    | 莲瓣 · 水波          | —      |
+ * | Celebration screens        | 海水江崖 · 祥云      | —      |
+ * | Exam screens               | 夔龙 quỳ long        | —      |
  *
- * ## Two construction rules
+ * The unused half is a palette, not dead weight: each is drawn, seamless and
+ * ready, and the build drops whatever no screen imports.
+ *
+ * ## Four rules, three of them learned the hard way
  *
  * 1. **A tiling pattern must be seamless.** Every arc leaving a tile edge is
  *    continued by the neighbouring tile, so the field never shows the flat cut
- *    that a half-drawn circle leaves behind.
- * 2. **A centred motif is never clipped.** Radially symmetric ornament — a
- *    lotus, a 宝相花 — is ruined by cropping, because the eye reads the missing
- *    half as damage. Anything that bleeds off an edge is a band or a corner
- *    piece, both of which are *designed* to be cut.
+ *    a half-drawn circle leaves behind. Check the arithmetic, not the render:
+ *    two motifs here passed the eye and failed the numbers.
+ * 2. **A centred motif is never clipped.** Radially symmetric ornament is
+ *    ruined by cropping, because the eye reads the missing half as damage. Only
+ *    bands and corner pieces may run off an edge — they are built for it.
+ * 3. **A ground needs a large surface.** Tiling motifs live on the page and the
+ *    sidebar. Inside a 200px card the same motif reads as a busy card, never as
+ *    texture: a repeat needs room before it is accepted as a surface.
+ * 4. **One focal ornament per screen, and count the repeats.** Two flowers
+ *    placed by different components will eventually overlap; one small mark
+ *    repeated across eight cards in a grid is eight copies of one shape. That
+ *    is why the corner mark only appears under the pointer.
  *
  * All ornament is `aria-hidden`; nothing here carries meaning.
  */
@@ -201,7 +211,55 @@ export const BoBoCamField = memo(function BoBoCamField({
 });
 
 /**
+ * 鱼鳞纹 — fish scales, the ground behind the whole application.
+ *
+ * Rows of downward arcs, every other row shifted half a scale. The arc radius
+ * equals the row spacing, so each scale lands exactly on the next row's line:
+ * scales that sit tangent read as a woven surface, while scales that overlap
+ * read as noise once there are thousands of them behind a page.
+ *
+ * Seamless by the same argument as 七宝: the arc clipped at x=0 is the arc the
+ * left-hand tile draws at x=40, which is the same point on the page.
+ */
+export const NguLanField = memo(function NguLanField({
+  className,
+  opacity,
+}: {
+  className?: string;
+  opacity?: number;
+}) {
+  const r = 20;
+  // Row at y, scales centred every 2r, offset by r on alternate rows.
+  const scale = (cx: number, cy: number) =>
+    `M${cx - r} ${cy} A${r} ${r} 0 0 0 ${cx + r} ${cy}`;
+  return (
+    <PatternField
+      className={className}
+      opacity={opacity}
+      width={40}
+      height={40}
+      tile={
+        <g fill="none" stroke="currentColor" strokeWidth={0.7} strokeLinecap="round">
+          {/* Top row, and the neighbour reaching in from the left. */}
+          <path d={scale(0, 0)} />
+          <path d={scale(40, 0)} />
+          {/* Half-offset row. */}
+          <path d={scale(20, 20)} />
+          {/* Bottom edge, so the tile is covered to its last pixel. */}
+          <path d={scale(0, 40)} />
+          <path d={scale(40, 40)} />
+        </g>
+      }
+    />
+  );
+});
+
+/**
  * 冰裂纹 — cracked ice.
+ *
+ * Kept as the alternate ground. It was the first choice for the page because
+ * the eye cannot find its repeat, but 鱼鳞 reads as a woven textile where this
+ * reads as a web, and the app wanted the former.
  *
  * The ground for the whole page, chosen because the eye cannot find the repeat:
  * a regular grid behind a whole application starts to read as a table. The tile
@@ -578,11 +636,15 @@ export function AmbientOrnament() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden text-gold"
     >
-      <BangLietField className="absolute inset-0 h-full w-full" opacity={0.05} />
-      {/* Placed so the flower sits whole in the empty right margin on wide
-          screens, and is simply absent on narrow ones rather than half-cropped. */}
+      <NguLanField className="absolute inset-0 h-full w-full" opacity={0.055} />
+      {/* The screen's single focal ornament. It lives here rather than in
+          `PageHeader` because two flowers on one screen — one from the ambient
+          layer, one from the header — landed on top of each other. Whole, in
+          the empty right margin on wide screens; absent on narrow ones rather
+          than half-cropped. */}
       <BaoTuongHoa className="animate-drift-slower absolute -right-24 top-[12%] hidden h-[36rem] w-[36rem] opacity-[0.06] xl:block" />
-      <TuongVan className="animate-drift-slow absolute -left-16 bottom-[8%] hidden h-72 w-[30rem] opacity-[0.05] lg:block" />
+      {/* A 祥云 scroll used to sit in the opposite corner. One focal ornament per
+          screen means one, even when the second is faint and far away. */}
       <div className="absolute -left-1/4 top-0 h-[42rem] w-[42rem] rounded-full bg-gold/[0.05] blur-[120px]" />
       <div className="absolute -right-1/4 bottom-0 h-[38rem] w-[38rem] rounded-full bg-accent/[0.05] blur-[120px]" />
     </div>
@@ -590,39 +652,24 @@ export function AmbientOrnament() {
 }
 
 /**
- * A card's corner mark.
+ * The texture every card carries — 七宝, and nothing else.
  *
- * Replaces the cropped lotus. The ruyi head is inset rather than bled, so it is
- * whole at every card size, and the lattice ground gives the card a texture the
- * single mark cannot.
+ * There is no motif parameter on purpose. Cards are the most repeated surface
+ * in the app, so they are the surface where variety hurts most: a grid of eight
+ * cards wearing three different patterns reads as clutter, while the same
+ * pattern on all of them reads as one material. Kept faint, because a texture
+ * that competes with the number printed on top of it is not a texture.
  */
-export function CardOrnament({
-  motif = "nhuy",
-  className,
-}: {
-  motif?: "nhuy" | "thatbao" | "quyboi";
-  className?: string;
-}) {
-  if (motif === "thatbao" || motif === "quyboi") {
-    const Field = motif === "thatbao" ? ThatBaoField : QuyBoiField;
-    return (
-      <Field
-        className={clsx(
-          "pointer-events-none absolute inset-0 -z-10 h-full w-full text-gold",
-          className
-        )}
-        opacity={0.05}
-      />
-    );
-  }
+export function CardOrnament({ className }: { className?: string }) {
   return (
-    <NhuYCorner
+    <ThatBaoField
       className={clsx(
-        // Inset, not bled: `-z-10` keeps it under the text, and the offsets keep
-        // the whole drawing inside the card so nothing is ever cut.
-        "pointer-events-none absolute right-1 top-1 -z-10 h-20 w-20 text-gold opacity-[0.14] transition-[opacity,transform] duration-500 group-hover:scale-105 group-hover:opacity-[0.28]",
+        // `-z-10` puts it under the content; `Card` isolates itself so this
+        // still lands above the card's own background.
+        "pointer-events-none absolute inset-0 -z-10 h-full w-full text-gold",
         className
       )}
+      opacity={0.045}
     />
   );
 }
