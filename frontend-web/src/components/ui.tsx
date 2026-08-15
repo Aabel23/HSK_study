@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
-import { CardOrnament, HaiThuyBand } from "./Ornament";
+import { BaoTuongHoa, CardOrnament } from "./Ornament";
 import {
   IconAlert,
   IconBookmark,
@@ -82,9 +82,9 @@ export function PageHeader({
 }) {
   return (
     <div className="animate-rise relative mb-8">
-      {/* No flower here. The ambient layer already places one focal 宝相花 per
-          screen, and a second one in the header landed directly on top of it —
-          two overlapping flowers read as a rendering fault, not as ornament. */}
+      {/* No flower here. A 宝相花 sat in this corner once and collided with the
+          one the ambient layer was drawing; both are gone now, and the motif is
+          kept for the card shown at the end of a session. */}
       <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
@@ -826,7 +826,7 @@ export function SessionComplete({
 
   return (
     <div className="animate-float-in mx-auto max-w-lg">
-      <Card className="relative isolate overflow-hidden px-6 pb-0 pt-10 text-center">
+      <Card className="relative isolate overflow-hidden px-6 pb-10 pt-10 text-center">
         <div
           aria-hidden="true"
           className={clsx(
@@ -834,6 +834,11 @@ export function SessionComplete({
             GLOW_ACCENT[tone]
           )}
         />
+        {/* Placed whole in the bottom-right rather than bled off the edge. A
+            宝相花 is radially symmetric, so a cropped one reads as damage — the
+            reason it was taken off the cards in the first place. Inset, it reads
+            as a seal stamped in the corner. */}
+        <BaoTuongHoa className="pointer-events-none absolute bottom-3 right-3 -z-10 h-40 w-40 text-gold opacity-[0.18]" />
 
         <div className="animate-bloom-in relative inline-flex">
           <ProgressRing value={percentage} accent={tone} size={148} stroke={10}>
@@ -853,10 +858,6 @@ export function SessionComplete({
           {primary}
           {secondary}
         </div>
-
-        {/* The band sits on the card's foot and bleeds off both sides — it is a
-            band, so being cut is how it is meant to be read. */}
-        <HaiThuyBand className="relative mt-8 -mb-px h-20 w-full text-gold opacity-30" />
       </Card>
     </div>
   );

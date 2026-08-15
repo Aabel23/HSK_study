@@ -69,128 +69,144 @@ export function Shell({ children }: { children: ReactNode }) {
           id="app-sidebar"
           aria-label="Điều hướng chính"
           className={clsx(
-            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border bg-surface/95 p-5 backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:self-start",
+            // The scroll container. Its padding moved onto the inner wrapper so
+            // the pattern below can reach the panel's edges.
+            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border bg-surface/95 backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:self-start",
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          {/* Round, not the lattice that was here before. 步步锦 is a grid of
-              rectangles and the menu is a column of rectangular pills; two
-              rectangle grids that do not share a rhythm read as a misalignment,
-              because the eye keeps trying to line them up. Circles have no
-              rhythm to clash with. It is the same 七宝 the cards carry, which
-              also keeps the panel and the cards reading as one material. */}
-          <ThatBaoField
-            className="pointer-events-none absolute inset-0 h-full w-full text-gold"
-            opacity={0.07}
-          />
+          {/* This wrapper exists for one reason: it is as tall as the menu, not
+              as tall as the window.
 
-          <div className="relative flex items-center justify-between">
-            <a href="#/" className="group flex items-center gap-3">
-              <span className="relative">
-                {/* Halo behind the mark, brightening as the pointer nears it. */}
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 rounded-2xl bg-accent/40 blur-lg transition-opacity duration-500 group-hover:opacity-100 opacity-50"
-                />
-                <span className="font-display relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-hover to-accent text-xl font-bold text-accent-ink shadow-soft ring-1 ring-gold/30 transition-transform duration-500 group-hover:scale-105 group-hover:ring-gold/60">
-                  学
+              An absolutely positioned `inset-0` child of a *scrolling* element
+              resolves against that element's visible box, so `h-full` was one
+              screenful — and scrolling the menu ran off the bottom of the
+              pattern into bare panel. `min-h-full` makes this wrapper at least
+              the panel's height and then lets it grow with the nav, so the
+              pattern is measured against the content it is meant to sit behind.
+
+              `isolate` plus `-z-10` keeps it under the menu while still above
+              the panel's own background, which the <aside> paints. */}
+          <div className="relative isolate flex min-h-full flex-col p-5">
+            {/* Round, not the lattice that was here before. 步步锦 is a grid of
+                rectangles and the menu is a column of rectangular pills; two
+                rectangle grids that do not share a rhythm read as a
+                misalignment, because the eye keeps trying to line them up.
+                Circles have no rhythm to clash with. It is the same 七宝 the
+                cards carry, which also keeps the panel and the cards reading as
+                one material. */}
+            <ThatBaoField
+              className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-gold"
+              opacity={0.1}
+            />
+
+            <div className="relative flex items-center justify-between">
+              <a href="#/" className="group flex items-center gap-3">
+                <span className="relative">
+                  {/* Halo behind the mark, brightening as the pointer nears it. */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-2xl bg-accent/40 blur-lg transition-opacity duration-500 group-hover:opacity-100 opacity-50"
+                  />
+                  <span className="font-display relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-hover to-accent text-xl font-bold text-accent-ink shadow-soft ring-1 ring-gold/30 transition-transform duration-500 group-hover:scale-105 group-hover:ring-gold/60">
+                    学
+                  </span>
                 </span>
-              </span>
-              <span>
-                {/* Solid gold rather than the foil gradient: at 18px this is
-                    body-sized text needing 4.5:1, which a gradient with a light
-                    highlight cannot hold. The `gold` token is contrast-checked
-                    in both themes. */}
-                <span className="font-display block text-lg font-bold leading-tight text-gold">
-                  HSK Master
+                <span>
+                  {/* Solid gold rather than the foil gradient: at 18px this is
+                      body-sized text needing 4.5:1, which a gradient with a light
+                      highlight cannot hold. The `gold` token is contrast-checked
+                      in both themes. */}
+                  <span className="font-display block text-lg font-bold leading-tight text-gold">
+                    HSK Master
+                  </span>
+                  <span className="block text-xs text-ink-soft">HSK 1–9 · Tiếng Việt</span>
                 </span>
-                <span className="block text-xs text-ink-soft">HSK 1–9 · Tiếng Việt</span>
-              </span>
-            </a>
+              </a>
+              <button
+                className="rounded-lg p-1.5 text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Đóng menu"
+              >
+                <IconX />
+              </button>
+            </div>
+
             <button
-              className="rounded-lg p-1.5 text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
-              onClick={() => setDrawerOpen(false)}
-              aria-label="Đóng menu"
+              onClick={() => setPaletteOpen(true)}
+              className="group relative mt-5 flex w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-left text-sm text-ink-faint transition-all duration-300 hover:border-gold/40 hover:text-ink-soft"
             >
-              <IconX />
+              <IconSearch className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+              <span className="flex-1 truncate">Tìm kiếm nhanh</span>
+              <Kbd>Ctrl K</Kbd>
             </button>
-          </div>
 
-          <button
-            onClick={() => setPaletteOpen(true)}
-            className="group relative mt-5 flex w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-left text-sm text-ink-faint transition-all duration-300 hover:border-gold/40 hover:text-ink-soft"
-          >
-            <IconSearch className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-            <span className="flex-1 truncate">Tìm kiếm nhanh</span>
-            <Kbd>Ctrl K</Kbd>
-          </button>
+            <div className="relative mt-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Cấp độ đang học</p>
+              <LevelPicker />
+            </div>
 
-          <div className="relative mt-5">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Cấp độ đang học</p>
-            <LevelPicker />
-          </div>
-
-          <nav className="relative mt-5 flex flex-col gap-5 pb-6">
-            {SECTION_ORDER.map((section) => (
-              <div key={section}>
-                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                  {SECTION_LABELS[section]}
-                </p>
-                <div className="flex flex-col gap-0.5">
-                  {VISIBLE_NAV_ITEMS.filter((item) => item.section === section).map(
-                    ({ to, label, icon: Icon, end }) => (
-                      <NavLink
-                        key={to}
-                        to={to}
-                        end={end}
-                        className={({ isActive }) =>
-                          clsx(
-                            "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200",
-                            isActive ? "text-accent" : "text-ink-soft hover:bg-surface-2 hover:text-ink"
-                          )
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            {isActive && (
-                              // One shared element across every link, so the
-                              // highlight slides from the old page to the new
-                              // one instead of blinking out and back in.
-                              <motion.span
-                                layoutId="nav-active"
-                                aria-hidden="true"
-                                className="absolute inset-0 rounded-xl border border-accent/25 bg-accent-soft"
-                                transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                              />
-                            )}
-                            {isActive && (
-                              <span
-                                aria-hidden="true"
-                                className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent"
-                              />
-                            )}
-                            <Icon
-                              className={clsx(
-                                "relative h-[18px] w-[18px] shrink-0 transition-transform duration-300",
-                                isActive ? "scale-110" : "group-hover:scale-110"
+            <nav className="relative mt-5 flex flex-col gap-5 pb-6">
+              {SECTION_ORDER.map((section) => (
+                <div key={section}>
+                  <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
+                    {SECTION_LABELS[section]}
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {VISIBLE_NAV_ITEMS.filter((item) => item.section === section).map(
+                      ({ to, label, icon: Icon, end }) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          end={end}
+                          className={({ isActive }) =>
+                            clsx(
+                              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200",
+                              isActive ? "text-accent" : "text-ink-soft hover:bg-surface-2 hover:text-ink"
+                            )
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {isActive && (
+                                // One shared element across every link, so the
+                                // highlight slides from the old page to the new
+                                // one instead of blinking out and back in.
+                                <motion.span
+                                  layoutId="nav-active"
+                                  aria-hidden="true"
+                                  className="absolute inset-0 rounded-xl border border-accent/25 bg-accent-soft"
+                                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                                />
                               )}
-                            />
-                            <span className="relative flex-1 truncate">{label}</span>
-                            {to === "/review" && dueCount > 0 && (
-                              <span className="tnum relative rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink shadow-soft">
-                                {dueCount > 99 ? "99+" : dueCount}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </NavLink>
-                    )
-                  )}
+                              {isActive && (
+                                <span
+                                  aria-hidden="true"
+                                  className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent"
+                                />
+                              )}
+                              <Icon
+                                className={clsx(
+                                  "relative h-[18px] w-[18px] shrink-0 transition-transform duration-300",
+                                  isActive ? "scale-110" : "group-hover:scale-110"
+                                )}
+                              />
+                              <span className="relative flex-1 truncate">{label}</span>
+                              {to === "/review" && dueCount > 0 && (
+                                <span className="tnum relative rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink shadow-soft">
+                                  {dueCount > 99 ? "99+" : dueCount}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </nav>
-
+              ))}
+            </nav>
+          </div>
         </aside>
 
         {drawerOpen && (

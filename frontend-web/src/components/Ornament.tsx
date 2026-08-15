@@ -15,21 +15,20 @@ import clsx from "clsx";
  * Ornament turns into noise the moment two motifs compete, so each one here has
  * **exactly one role** and is used nowhere else:
  *
- * | Role                       | Motif                | In use |
- * | -------------------------- | -------------------- | ------ |
- * | Ground, whole page         | 青海波 seigaiha      | yes    |
- * | Ground, side panel         | 步步锦 bộ bộ cẩm     | yes    |
- * | One focal point per screen | 宝相花 bảo tương hoa | yes    |
- * | Card corner, on hover only | 如意 như ý           | yes    |
- * | Alternate page ground      | 冰裂 băng liệt       | —      |
- * | Wide-surface texture       | 七宝 · 龟背          | —      |
- * | Edge band                  | 回纹 hồi văn         | —      |
- * | Divider / progress band    | 莲瓣 · 水波          | —      |
- * | Celebration screens        | 海水江崖 · 祥云      | —      |
- * | Exam screens               | 夔龙 quỳ long        | —      |
+ * | Surface                | Motif                | Where it comes from       |
+ * | ---------------------- | -------------------- | ------------------------- |
+ * | Page ground            | 青海波 seigaiha      | `.hoavan-song`, index.css |
+ * | Side panel + cards     | 七宝 thất bảo        | `ThatBaoField`            |
+ * | Session-complete card  | 宝相花 bảo tương hoa | `BaoTuongHoa`             |
  *
- * The unused half is a palette, not dead weight: each is drawn, seamless and
- * ready, and the build drops whatever no screen imports.
+ * Everything else exported here is a drawn, seamless, unused palette: 冰裂,
+ * 龟背, 步步锦, 回纹, 莲瓣, 水波, 海水江崖, 祥云, 夔龙, 如意, 梅花. The build drops
+ * whatever no screen imports, so they cost nothing until one is wanted.
+ *
+ * Note that the page ground is applied as CSS rather than through
+ * `SeigaihaField`: the artwork was supplied as a tile and is used verbatim,
+ * masked so its baked-in gold is replaced by the theme's own token. The
+ * component remains as the hand-drawn equivalent.
  *
  * ## Four rules, three of them learned the hard way
  *
@@ -660,14 +659,10 @@ export function AmbientOrnament() {
           version needed: these fans are finer and nest four deep, so the same
           opacity reads much lighter than a single-arc scale did. */}
       <div className="hoavan-song absolute inset-0 opacity-[0.13]" />
-      {/* The screen's single focal ornament. It lives here rather than in
-          `PageHeader` because two flowers on one screen — one from the ambient
-          layer, one from the header — landed on top of each other. Whole, in
-          the empty right margin on wide screens; absent on narrow ones rather
-          than half-cropped. */}
-      <BaoTuongHoa className="animate-drift-slower absolute -right-24 top-[12%] hidden h-[36rem] w-[36rem] opacity-[0.06] xl:block" />
-      {/* A 祥云 scroll used to sit in the opposite corner. One focal ornament per
-          screen means one, even when the second is faint and far away. */}
+      {/* No focal flower here any more. The 青海波 ground carries the whole page
+          on its own, and the 宝相花 now appears only where it is earned —
+          stamped into the corner of the card shown when a session is finished.
+          A motif kept for one moment is worth more than one that is always on. */}
       <div className="absolute -left-1/4 top-0 h-[42rem] w-[42rem] rounded-full bg-gold/[0.05] blur-[120px]" />
       <div className="absolute -right-1/4 bottom-0 h-[38rem] w-[38rem] rounded-full bg-accent/[0.05] blur-[120px]" />
     </div>
@@ -692,7 +687,7 @@ export function CardOrnament({ className }: { className?: string }) {
         "pointer-events-none absolute inset-0 -z-10 h-full w-full text-gold",
         className
       )}
-      opacity={0.045}
+      opacity={0.06}
     />
   );
 }
