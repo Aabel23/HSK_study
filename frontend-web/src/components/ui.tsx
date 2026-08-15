@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
-import { CardOrnament, LotusBloom } from "./Ornament";
+import { BaoTuongHoa, CardOrnament, LienBienBand } from "./Ornament";
 import {
   IconAlert,
   IconBookmark,
@@ -25,8 +25,11 @@ export function Card({
   children: ReactNode;
   className?: string;
   as?: "div" | "section";
-  /** Draws a lotus watermark bleeding off the card's top-right corner. */
-  ornament?: "bloom" | "leaf" | "bud";
+  /**
+   * Decorates the card. `nhuy` is a ruyi head inset into the top-right corner;
+   * `thatbao` and `quyboi` are faint tiling grounds across the whole card.
+   */
+  ornament?: "nhuy" | "thatbao" | "quyboi";
   /** Raises the card towards the pointer on hover. */
   lift?: boolean;
   /** Gold hairline just inside the border, lit on hover. */
@@ -69,11 +72,9 @@ export function PageHeader({
 }) {
   return (
     <div className="animate-rise relative mb-8">
-      {/* Sits behind the title, mostly outside the viewport's reading column. */}
-      <LotusBloom
-        className="pointer-events-none absolute -top-16 right-0 hidden h-48 w-48 text-gold opacity-[0.09] sm:block"
-        detail="simple"
-      />
+      {/* The screen's one focal ornament, drawn whole in the right margin and
+          dropped entirely on narrow screens rather than shown half-cropped. */}
+      <BaoTuongHoa className="pointer-events-none absolute -top-20 right-0 -z-10 hidden h-56 w-56 text-gold opacity-[0.10] lg:block" />
       <div className="relative flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
@@ -87,7 +88,12 @@ export function PageHeader({
         </div>
         {action}
       </div>
-      <div className="rule-foil mt-6" />
+      {/* A band of lotus petals under the title: the divider is where the lotus
+          identity survives now that the flower no longer bleeds off cards. */}
+      <div className="relative mt-6 h-[18px] overflow-hidden">
+        <LienBienBand className="absolute inset-0 h-full w-full text-gold" opacity={0.5} />
+        <span aria-hidden="true" className="rule-foil absolute inset-x-0 bottom-0" />
+      </div>
     </div>
   );
 }
@@ -258,7 +264,7 @@ export function StatTile({
 }) {
   return (
     <Reveal index={index}>
-      <Card ornament="bloom" lift inlay className="h-full p-5">
+      <Card ornament="quyboi" lift inlay className="h-full p-5">
         {/* A pool of the tile's own colour, so a row of tiles reads as five
             different things at a glance rather than five identical boxes. */}
         <div
@@ -852,33 +858,44 @@ export function Modal({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto overscroll-contain p-4">
+    // Two nested elements on purpose. Centring the dialog with `items-center`
+    // directly on the scrolling element is the classic flexbox trap: once the
+    // dialog is taller than the viewport its top overflows *above* the scroll
+    // range and can never be reached — which is what put the donation QR out of
+    // reach on phones. Scrolling on the outer element and centring inside a
+    // `min-h-full` wrapper centres short dialogs and scrolls tall ones from the
+    // top.
+    <div className="fixed inset-0 z-[70] overflow-y-auto overscroll-contain">
       <button
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Đóng hộp thoại"
         tabIndex={-1}
       />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="animate-pop-in relative z-10 my-auto flex max-h-[calc(100dvh_-_2rem)] w-full max-w-lg flex-col rounded-2xl border border-border bg-surface shadow-pop"
-      >
-        <div className="flex shrink-0 items-center justify-between border-b border-border-soft px-5 py-4">
-          <h2 className="font-display text-base font-bold text-ink">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Đóng"
-            className="rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink"
-          >
-            <IconX className="h-4 w-4" />
-          </button>
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          className="animate-pop-in relative z-10 flex w-full max-w-lg flex-col rounded-2xl border border-border bg-surface shadow-pop"
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-border-soft px-5 py-4">
+            <h2 className="font-display text-base font-bold text-ink">{title}</h2>
+            <button
+              onClick={onClose}
+              aria-label="Đóng"
+              className="rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              <IconX className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="px-5 py-4">{children}</div>
+          {footer && (
+            <div className="flex shrink-0 justify-end gap-2 border-t border-border-soft px-5 py-3.5">
+              {footer}
+            </div>
+          )}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
-        {footer && (
-          <div className="flex shrink-0 justify-end gap-2 border-t border-border-soft px-5 py-3.5">{footer}</div>
-        )}
       </div>
     </div>
   );

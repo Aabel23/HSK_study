@@ -330,9 +330,10 @@ PAYOS_CHECKSUM_KEY=...`}
               {formatDong(donation?.amount ?? 0)}
             </p>
             <div className="rounded-2xl border border-border bg-white p-3">
-              {/* The QR shrinks with the viewport so the whole dialog — amount,
-                  code and footer — always fits on short phone screens. */}
-              <canvas ref={canvasRef} className="block h-auto w-[min(240px,45dvh,70vw)] max-w-full" />
+              {/* The dialog scrolls now, so the QR no longer has to shrink to
+                  fit a short screen — and a bank app needs it big enough to
+                  actually get a lock on. */}
+              <canvas ref={canvasRef} className="block h-auto w-[min(288px,72vw)] max-w-full" />
             </div>
             <p className="flex items-center gap-2 text-sm text-ink-soft">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-gold" />

@@ -8,7 +8,7 @@ import { useApi } from "../lib/useApi";
 import { formatNumber } from "../lib/format";
 import { LevelPicker } from "./LevelPicker";
 import { CommandPalette } from "./CommandPalette";
-import { AmbientOrnament, LotusBloom, LotusBud, SeigaihaField } from "./Ornament";
+import { AmbientOrnament, BoBoCamField, HoiVanBand, ThuyBaBand } from "./Ornament";
 import { Kbd } from "./ui";
 import { MOBILE_NAV, SECTION_LABELS, VISIBLE_NAV_ITEMS, type NavItem } from "./navigation";
 import { IconBolt, IconFlame, IconMenu, IconMoon, IconSearch, IconSun, IconX } from "./icons";
@@ -73,12 +73,21 @@ export function Shell({ children }: { children: ReactNode }) {
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          {/* Ornament local to the sidebar, so the panel is not a plain slab. */}
-          <SeigaihaField
-            className="pointer-events-none absolute inset-0 h-full w-full text-gold opacity-[0.045]"
-            id="seigaiha-sidebar"
+          {/* 步步锦 rather than a circular motif: this panel is 288px wide, and
+              curves at that width read as clutter while a window lattice reads
+              as joinery. Carried at 0.10 — a step up from the barely-there
+              first pass, still well under the text. */}
+          <BoBoCamField
+            className="pointer-events-none absolute inset-0 h-full w-full text-gold"
+            opacity={0.1}
           />
-          <LotusBloom className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 text-gold opacity-[0.07]" />
+          {/* Bands are the only ornament allowed to be cut, so the sidebar's
+              inner edge gets one instead of a cropped flower. */}
+          <HoiVanBand
+            className="pointer-events-none absolute inset-y-0 right-0 h-full w-5 text-gold"
+            opacity={0.18}
+            rotate={90}
+          />
 
           <div className="relative flex items-center justify-between">
             <a href="#/" className="group flex items-center gap-3">
@@ -187,8 +196,16 @@ export function Shell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="inlay relative mt-5 overflow-hidden rounded-2xl border border-border-soft bg-surface-2 p-4" data-lit="true">
-            <LotusBud className="pointer-events-none absolute -right-6 -top-4 h-28 w-20 text-gold opacity-[0.16]" />
+          <div
+            className="inlay relative isolate mt-5 overflow-hidden rounded-2xl border border-border-soft bg-surface-2 p-4"
+            data-lit="true"
+          >
+            {/* Ripples along the foot of the goal card — a band, so the crop at
+                both ends is part of the motif rather than damage to it. */}
+            <ThuyBaBand
+              className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-8 w-full text-gold"
+              opacity={0.22}
+            />
             <div className="relative flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-gold">Mục tiêu hôm nay</p>
               <span className="tnum text-xs font-semibold text-ink-soft">
