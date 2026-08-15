@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { usePlayAudio } from "../lib/useAudio";
+import { CardOrnament, LotusBloom } from "./Ornament";
 import {
   IconAlert,
   IconBookmark,
@@ -16,20 +17,40 @@ export function Card({
   children,
   className,
   as: Component = "div",
+  ornament,
+  lift = false,
+  inlay = false,
   ...rest
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "section";
+  /** Draws a lotus watermark bleeding off the card's top-right corner. */
+  ornament?: "bloom" | "leaf" | "bud";
+  /** Raises the card towards the pointer on hover. */
+  lift?: boolean;
+  /** Gold hairline just inside the border, lit on hover. */
+  inlay?: boolean;
 } & Record<string, unknown>) {
+  const decorated = Boolean(ornament) || lift || inlay;
   return (
     <Component
       className={clsx(
         "rounded-2xl border border-border bg-surface shadow-soft",
+        // `isolate` is what lets the ornament sit at a negative z-index: it
+        // creates a stacking context, so the watermark paints above the card's
+        // own background but below its content. Wrapping the children in a
+        // positioned div would do the same job and break every Card whose
+        // className makes it a flex or grid container.
+        decorated && "group relative isolate overflow-hidden",
+        inlay && "inlay",
+        lift &&
+          "transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-border-strong hover:shadow-lift",
         className
       )}
       {...rest}
     >
+      {ornament && <CardOrnament motif={ornament} />}
       {children}
     </Component>
   );
@@ -47,12 +68,138 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{eyebrow}</p>
-        <h1 className="font-display mt-1 text-3xl font-bold text-ink sm:text-4xl">{title}</h1>
-        {description && <p className="mt-2 max-w-2xl text-sm text-ink-soft sm:text-base">{description}</p>}
+    <div className="animate-rise relative mb-8">
+      {/* Sits behind the title, mostly outside the viewport's reading column. */}
+      <LotusBloom
+        className="pointer-events-none absolute -top-16 right-0 hidden h-48 w-48 text-gold opacity-[0.09] sm:block"
+        detail="simple"
+      />
+      <div className="relative flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+            <span className="inline-block h-px w-6 bg-accent/60" />
+            {eyebrow}
+          </p>
+          <h1 className="font-display text-foil mt-2 text-3xl font-bold sm:text-4xl">{title}</h1>
+          {description && (
+            <p className="mt-2 max-w-2xl text-sm text-ink-soft sm:text-base">{description}</p>
+          )}
+        </div>
+        {action}
       </div>
+      <div className="rule-foil mt-6" />
+    </div>
+  );
+}
+
+/**
+ * A number that counts up to its value when it first appears.
+ *
+ * Only worth it on figures the learner earned — a streak, an XP total, a score.
+ * Counting up an unrelated total is noise, so this is opt-in rather than baked
+ * into every number in the app.
+ *
+ * Falls straight to the final value when motion is reduced: an animation that
+ * cannot run must still leave the correct number on screen.
+ */
+export function CountUp({
+  value,
+  duration = 900,
+  decimals = 0,
+  suffix,
+}: {
+  value: number;
+  duration?: number;
+  decimals?: number;
+  suffix?: string;
+}) {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
+
+  useEffect(() => {
+    const reduced =
+      document.documentElement.dataset.reducedMotion === "true" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced || !Number.isFinite(value)) {
+      setShown(value);
+      from.current = value;
+      return;
+    }
+
+    const start = performance.now();
+    const origin = from.current;
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      // Same easing curve as the layout motion, so numbers and cards settle
+      // together instead of finishing at visibly different moments.
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setShown(origin + (value - origin) * eased);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+      else from.current = value;
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, duration]);
+
+  return (
+    <span className="tnum">
+      {shown.toLocaleString("vi-VN", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}
+      {suffix}
+    </span>
+  );
+}
+
+/**
+ * Deals its children in one after another as they enter.
+ *
+ * The stagger is carried by a CSS custom property rather than by JavaScript
+ * timers, so it costs nothing at runtime and stops by itself under the
+ * reduced-motion rules in `index.css`.
+ */
+export function Reveal({
+  children,
+  index = 0,
+  className,
+  as: Component = "div",
+}: {
+  children: ReactNode;
+  index?: number;
+  className?: string;
+  as?: "div" | "li" | "section";
+}) {
+  return (
+    <Component
+      className={clsx("animate-rise", className)}
+      style={{ "--i": index } as React.CSSProperties}
+    >
+      {children}
+    </Component>
+  );
+}
+
+/**
+ * Heading for a block within a page, with a rule that runs out to the margin.
+ *
+ * Pages had been writing this as a bare `<h2>` with their own classes, which
+ * drifted: three different sizes and two different margins across the app.
+ */
+export function SectionTitle({
+  children,
+  action,
+  className,
+}: {
+  children: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={clsx("mb-4 flex items-center gap-4", className)}>
+      <h2 className="font-display shrink-0 text-lg font-bold text-ink">{children}</h2>
+      <span aria-hidden="true" className="rule-foil hidden flex-1 sm:block" />
       {action}
     </div>
   );
@@ -85,28 +232,62 @@ const BADGE_TONE: Record<Accent | "danger", string> = {
   danger: "bg-danger-soft text-danger border-transparent",
 };
 
+const GLOW_ACCENT: Record<Accent, string> = {
+  accent: "bg-accent/20",
+  gold: "bg-gold/20",
+  jade: "bg-jade/20",
+  sky: "bg-sky/20",
+  violet: "bg-violet/20",
+};
+
 export function StatTile({
   label,
   value,
   hint,
   accent = "accent",
   icon,
+  index = 0,
 }: {
   label: string;
   value: ReactNode;
   hint?: string;
   accent?: Accent;
   icon?: ReactNode;
+  /** Position in a row of tiles, so a row deals itself out left to right. */
+  index?: number;
 }) {
   return (
-    <Card className="p-5 transition-colors duration-200 hover:border-border-strong">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">{label}</p>
-        {icon && <span className={clsx("shrink-0", TEXT_ACCENT[accent])}>{icon}</span>}
-      </div>
-      <p className={clsx("font-display tnum mt-2 text-3xl font-bold", TEXT_ACCENT[accent])}>{value}</p>
-      {hint && <p className="mt-1 text-xs text-ink-soft">{hint}</p>}
-    </Card>
+    <Reveal index={index}>
+      <Card ornament="bloom" lift inlay className="h-full p-5">
+        {/* A pool of the tile's own colour, so a row of tiles reads as five
+            different things at a glance rather than five identical boxes. */}
+        <div
+          aria-hidden="true"
+          className={clsx(
+            "pointer-events-none absolute -left-8 -top-10 -z-10 h-28 w-28 rounded-full blur-2xl transition-opacity duration-500 group-hover:opacity-100",
+            GLOW_ACCENT[accent],
+            "opacity-60"
+          )}
+        />
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">{label}</p>
+          {icon && (
+            <span
+              className={clsx(
+                "shrink-0 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110",
+                TEXT_ACCENT[accent]
+              )}
+            >
+              {icon}
+            </span>
+          )}
+        </div>
+        <p className={clsx("font-display tnum mt-2 text-3xl font-bold", TEXT_ACCENT[accent])}>
+          {value}
+        </p>
+        {hint && <p className="mt-1 text-xs text-ink-soft">{hint}</p>}
+      </Card>
+    </Reveal>
   );
 }
 
@@ -114,18 +295,26 @@ export function ProgressBar({ value, accent = "accent" }: { value: number; accen
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div
-      className="h-2 w-full overflow-hidden rounded-full bg-surface-2"
+      className="relative h-2 w-full overflow-hidden rounded-full bg-surface-2"
       role="progressbar"
       aria-valuenow={Math.round(clamped)}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       <motion.div
-        className={clsx("h-full rounded-full", BG_ACCENT[accent])}
+        className={clsx("relative h-full rounded-full", BG_ACCENT[accent])}
         initial={{ width: 0 }}
         animate={{ width: `${clamped}%` }}
+        // Deliberately not the springy curve: a bar that overshoots reads as
+        // "you are further along than you are", then takes it back.
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      />
+      >
+        {/* A brighter cap at the leading edge, so the bar has a head to it. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 right-0 w-6 rounded-full bg-gradient-to-l from-white/45 to-transparent"
+        />
+      </motion.div>
     </div>
   );
 }
@@ -158,26 +347,32 @@ export function Button({
   type?: "button" | "submit";
 } & Record<string, unknown>) {
   const variantClass = {
-    primary: "bg-accent text-accent-ink hover:bg-accent-hover shadow-soft",
-    secondary: "bg-surface-2 text-ink border border-border hover:border-border-strong",
+    primary:
+      "bg-gradient-to-br from-accent-hover to-accent text-accent-ink shadow-soft hover:shadow-lift hover:brightness-[1.06]",
+    secondary:
+      "bg-surface-2 text-ink border border-border hover:border-gold/45 hover:bg-surface-3",
     ghost: "text-ink-soft hover:text-ink hover:bg-surface-2",
-    danger: "bg-danger text-white hover:brightness-110",
+    danger: "bg-gradient-to-br from-danger to-danger text-white hover:brightness-110",
   }[variant];
   const sizeClass = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2.5 text-sm", lg: "px-6 py-3 text-base" }[size];
+  // The light sweep would read as a glitch on a button that is only ever a bit
+  // of text, so it is kept to the two filled variants.
+  const sweeps = variant === "primary" || variant === "danger";
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+        "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold transition-all duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
         variantClass,
         sizeClass,
         className
       )}
       {...rest}
     >
-      {children}
+      {sweeps && !disabled && <span className="sweep" aria-hidden="true" />}
+      <span className="relative inline-flex items-center gap-2">{children}</span>
     </button>
   );
 }

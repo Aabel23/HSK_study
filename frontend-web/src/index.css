@@ -51,6 +51,9 @@
   --shadow-pop: 0 8px 20px rgba(0, 0, 0, 0.18), 0 32px 64px -24px rgba(0, 0, 0, 0.55);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Slight overshoot. Used only on things that "arrive" (cards, modals); never
+     on a progress bar, where overshooting would misreport the value. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Dark is the default surface. Contrast targets: body text >= 7:1 on --c-base,
@@ -83,6 +86,12 @@
   --c-violet-soft: rgba(177, 151, 255, 0.16);
   --c-danger: #f7776f;
   --c-danger-soft: rgba(247, 119, 111, 0.16);
+
+  /* Gold leaf. Three stops rather than two: the pale middle is the highlight
+     that reads as metal instead of as a flat yellow gradient. */
+  --foil: linear-gradient(115deg, #b8862f 0%, #f3d98a 28%, #fff4d0 46%, #e8bf62 62%, #a9762a 100%);
+  --foil-line: linear-gradient(90deg, transparent, rgba(236, 194, 91, 0.55), transparent);
+  --glass: rgba(20, 22, 29, 0.72);
 }
 
 /* Light mode darkens every accent so text on the paper background clears
@@ -115,6 +124,15 @@
   --c-violet-soft: rgba(95, 67, 204, 0.12);
   --c-danger: #c0362c;
   --c-danger-soft: rgba(192, 54, 44, 0.12);
+
+  /* Darker foil on paper: the dark-mode highlight is near-white and vanishes
+     against a cream background, taking the lettering with it.
+     The lightest stop is capped at #a9762a, which clears 4:1 on --c-base. A
+     brighter highlight looks more like metal but leaves the middle of every
+     heading unreadable, and a heading nobody can read is not a design. */
+  --foil: linear-gradient(115deg, #4a2f05 0%, #7d5410 26%, #a9762a 46%, #6d4708 66%, #4a2f05 100%);
+  --foil-line: linear-gradient(90deg, transparent, rgba(138, 93, 12, 0.45), transparent);
+  --glass: rgba(255, 255, 255, 0.72);
 }
 
 * {
@@ -254,6 +272,192 @@ button:disabled,
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* --------------------------------------------------------------------------
+   Ornament motion
+
+   The ambient lotus layer drifts on a very long loop. The point is that it
+   should never be caught moving: at ~40s a full cycle the page feels alive when
+   you glance back at it, without anything crossing your eye while you read.
+-------------------------------------------------------------------------- */
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(1.5rem, -1.75rem, 0) rotate(4deg);
+  }
+}
+
+@keyframes drift-reverse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-2rem, 1.5rem, 0) rotate(-5deg);
+  }
+}
+
+/* A highlight travelling across gold leaf, as if the light moved. */
+@keyframes sheen {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* The one-off sweep across a button when the pointer enters it. */
+@keyframes sweep {
+  from {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* An expanding ring, for the moment an answer lands. */
+@keyframes halo {
+  from {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes bloom-in {
+  from {
+    opacity: 0;
+    transform: rotate(-14deg) scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.animate-drift-slow {
+  animation: drift 38s ease-in-out infinite;
+}
+.animate-drift-slower {
+  animation: drift-reverse 52s ease-in-out infinite;
+}
+.animate-halo {
+  animation: halo 0.7s var(--ease-out-expo) both;
+}
+.animate-bloom-in {
+  animation: bloom-in 0.7s var(--ease-spring) both;
+}
+
+/* Entrance for a list. `--i` is the item's index, set inline by the caller, so
+   a run of cards deals itself out instead of appearing all at once. */
+.animate-rise {
+  animation: rise 0.55s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* --------------------------------------------------------------------------
+   Gold leaf
+-------------------------------------------------------------------------- */
+
+/* Lettering stamped in gold. `background-clip: text` needs a transparent fill,
+   which also means the text has no colour of its own — so this belongs on
+   display type only, never on anything that has to stay readable at 12px. */
+.text-foil {
+  background: var(--foil);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: sheen 7s linear infinite;
+}
+
+/* Hairline rule that fades out at both ends, for separating sections. */
+.rule-foil {
+  height: 1px;
+  background: var(--foil-line);
+}
+
+/* A gold hairline just inside a card's edge — the inlay on a lacquer box. */
+.inlay {
+  position: relative;
+}
+.inlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--color-gold) 45%, transparent),
+    transparent 38%,
+    transparent 62%,
+    color-mix(in srgb, var(--color-gold) 28%, transparent)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease-out-expo);
+  pointer-events: none;
+}
+.group:hover .inlay::after,
+.inlay:hover::after,
+.inlay[data-lit="true"]::after {
+  opacity: 1;
+}
+
+/* Light sweeping across a button on hover. The element is inert and clipped by
+   the button's own overflow. */
+.sweep {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.sweep::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+}
+.group:hover .sweep::before,
+button:hover > .sweep::before {
+  animation: sweep 0.75s var(--ease-out-expo);
+}
+
+/* Frosted panel used by the header and the command palette. */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
 
 .animate-float-in {

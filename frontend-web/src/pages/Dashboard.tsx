@@ -1,6 +1,5 @@
 import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import clsx from "clsx";
 import { HIDDEN_ROUTES } from "../components/navigation";
 import { api } from "../lib/api";
@@ -10,12 +9,15 @@ import {
   Badge,
   Button,
   Card,
+  CountUp,
   ErrorState,
   Heatmap,
   PageHeader,
   PageSkeleton,
   ProgressBar,
   ProgressRing,
+  Reveal,
+  SectionTitle,
   Skeleton,
   StatTile,
 } from "../components/ui";
@@ -52,6 +54,37 @@ const FEATURES = [
 ].filter((feature) => !HIDDEN_ROUTES.has(feature.to));
 
 const WRITING_VISIBLE = !HIDDEN_ROUTES.has("/writing");
+
+type FeatureAccent = (typeof FEATURES)[number]["accent"];
+
+// Tailwind needs whole class names in the source to keep them in the build, so
+// these are lookup tables rather than interpolated strings.
+const FEATURE_CHIP: Record<FeatureAccent, string> = {
+  accent: "bg-accent-soft text-accent",
+  gold: "bg-gold-soft text-gold",
+  jade: "bg-jade-soft text-jade",
+  sky: "bg-sky-soft text-sky",
+  violet: "bg-violet-soft text-violet",
+};
+
+const FEATURE_TEXT: Record<FeatureAccent, string> = {
+  accent: "text-accent",
+  gold: "text-gold",
+  jade: "text-jade",
+  sky: "text-sky",
+  violet: "text-violet",
+};
+
+const FEATURE_GLOW: Record<FeatureAccent, string> = {
+  accent: "bg-accent/25",
+  gold: "bg-gold/25",
+  jade: "bg-jade/25",
+  sky: "bg-sky/25",
+  violet: "bg-violet/25",
+};
+
+/** Cycled so neighbouring tiles never carry the same watermark. */
+const FEATURE_MOTIF = ["bloom", "leaf", "bud"] as const;
 
 const LEVEL_LABEL: Record<string, string> = {
   "1": "HSK 1", "2": "HSK 2", "3": "HSK 3", "4": "HSK 4",
@@ -110,10 +143,10 @@ export default function Dashboard() {
       {/* Today's goal is the single most actionable thing on this page, so it
           leads the layout ahead of the lifetime totals. */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="flex items-center gap-6 p-6">
+        <Card ornament="leaf" lift inlay className="flex items-center gap-6 p-6">
           <ProgressRing value={streak.data?.goal_percentage ?? 0} accent="gold" size={116} stroke={9}>
             <span className="font-display tnum text-2xl font-bold text-gold">
-              {formatNumber(streak.data?.today_reviews)}
+              <CountUp value={streak.data?.today_reviews ?? 0} />
             </span>
             <span className="text-[10px] text-ink-faint">/ {formatNumber(streak.data?.daily_goal)}</span>
           </ProgressRing>
@@ -133,7 +166,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className="p-6 lg:col-span-2">
+        <Card lift inlay className="p-6 lg:col-span-2">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Lịch ôn 10 ngày tới</p>
@@ -157,18 +190,18 @@ export default function Dashboard() {
           WRITING_VISIBLE ? "lg:grid-cols-5" : "lg:grid-cols-4"
         )}
       >
-        <StatTile label="Tổng từ vựng" value={formatNumber(data.total_vocabulary)} accent="accent" icon={<IconBook className="h-4 w-4" />} />
-        <StatTile label="Đã thuộc" value={formatNumber(data.mastered_vocabulary)} hint={formatPercent(masteredPct, 1) + " tổng số"} accent="jade" />
-        <StatTile label="Đang học" value={formatNumber(data.learning_vocabulary)} accent="gold" />
-        <StatTile label="Cần ôn" value={formatNumber(data.review_vocabulary)} accent="sky" icon={<IconTarget className="h-4 w-4" />} />
+        <StatTile index={0} label="Tổng từ vựng" value={<CountUp value={data.total_vocabulary} />} accent="accent" icon={<IconBook className="h-4 w-4" />} />
+        <StatTile index={1} label="Đã thuộc" value={<CountUp value={data.mastered_vocabulary} />} hint={formatPercent(masteredPct, 1) + " tổng số"} accent="jade" />
+        <StatTile index={2} label="Đang học" value={<CountUp value={data.learning_vocabulary} />} accent="gold" />
+        <StatTile index={3} label="Cần ôn" value={<CountUp value={data.review_vocabulary} />} accent="sky" icon={<IconTarget className="h-4 w-4" />} />
         {/* A writing statistic is only meaningful while the writing page is offered. */}
         {WRITING_VISIBLE && (
-          <StatTile label="Chữ đã luyện viết" value={formatNumber(data.writing_practiced)} hint={`${formatNumber(data.writing_mastered)} thành thạo`} accent="violet" />
+          <StatTile index={4} label="Chữ đã luyện viết" value={<CountUp value={data.writing_practiced} />} hint={`${formatNumber(data.writing_mastered)} thành thạo`} accent="violet" />
         )}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <Card className="p-6 lg:col-span-2">
+        <Card ornament="bloom" lift inlay className="p-6 lg:col-span-2">
           <h2 className="font-display text-lg font-bold text-ink">Tiến độ theo cấp độ</h2>
           <div className="mt-5 flex flex-col gap-4">
             {data.hsk_levels.map((level) => {
@@ -188,7 +221,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card ornament="bud" lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Độ chính xác</h2>
           <div className="mt-4 flex flex-col gap-3 text-sm">
             <ResultRow label="Nối từ" correct={data.matching_correct} incorrect={data.matching_incorrect} accuracy={data.matching_accuracy} />
@@ -201,7 +234,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card className="p-6">
+        <Card lift inlay className="p-6">
           <h2 className="font-display text-lg font-bold text-ink">Hoạt động 14 ngày</h2>
           <div className="mt-4 h-40">
             <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
@@ -210,7 +243,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card ornament="leaf" lift inlay className="p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-ink">Chuỗi ngày học</h2>
             <Badge tone="accent">
@@ -230,43 +263,68 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <h2 className="font-display mt-10 mb-4 text-lg font-bold text-ink">Bắt đầu luyện tập</h2>
+      <div className="mt-10">
+        <SectionTitle>Bắt đầu luyện tập</SectionTitle>
+      </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {FEATURES.map((feature, index) => (
-          <motion.div
-            key={feature.to}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: Math.min(index * 0.04, 0.3) }}
-          >
-            <Link to={feature.to}>
-              <Card className="group flex h-full flex-col justify-between p-5 transition-colors duration-200 hover:border-accent/50">
+          <Reveal key={feature.to} index={index}>
+            <Link to={feature.to} className="block h-full">
+              <Card
+                ornament={FEATURE_MOTIF[index % FEATURE_MOTIF.length]}
+                lift
+                inlay
+                className="flex h-full flex-col justify-between p-5"
+              >
+                {/* The tile's own colour, pooled behind the icon. It is what
+                    makes ten tiles read as ten things instead of a grid. */}
+                <span
+                  aria-hidden="true"
+                  className={clsx(
+                    "pointer-events-none absolute -left-6 -top-8 -z-10 h-24 w-24 rounded-full opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-90",
+                    FEATURE_GLOW[feature.accent]
+                  )}
+                />
                 <div>
-                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <div
+                    className={clsx(
+                      "mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110",
+                      FEATURE_CHIP[feature.accent]
+                    )}
+                  >
                     <feature.icon className="h-5 w-5" />
                   </div>
                   <p className="font-display font-bold text-ink">{feature.label}</p>
                   <p className="mt-1 text-xs text-ink-soft">{feature.desc}</p>
                 </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  Bắt đầu <IconArrowRight className="h-3.5 w-3.5" />
+                <div
+                  className={clsx(
+                    "mt-4 flex items-center gap-1 text-xs font-semibold transition-all duration-300",
+                    "translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
+                    FEATURE_TEXT[feature.accent]
+                  )}
+                >
+                  Bắt đầu
+                  <IconArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </Card>
             </Link>
-          </motion.div>
+          </Reveal>
         ))}
       </div>
 
       {data.recent_vocabulary.length > 0 && (
         <div className="mt-10">
-          <h2 className="font-display mb-4 text-lg font-bold text-ink">Từ vựng vừa học</h2>
+          <SectionTitle>Từ vựng vừa học</SectionTitle>
           <div className="flex flex-wrap gap-2">
-            {data.recent_vocabulary.map((item) => (
-              <Badge key={item.id} tone="neutral">
-                <span className="hanzi font-semibold text-ink">{item.hanzi}</span>
-                <span className="text-ink-faint">·</span>
-                {item.meaning}
-              </Badge>
+            {data.recent_vocabulary.map((item, index) => (
+              <Reveal key={item.id} index={index} className="inline-flex">
+                <Badge tone="neutral">
+                  <span className="hanzi font-semibold text-ink">{item.hanzi}</span>
+                  <span className="text-ink-faint">·</span>
+                  {item.meaning}
+                </Badge>
+              </Reveal>
             ))}
           </div>
         </div>

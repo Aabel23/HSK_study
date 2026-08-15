@@ -1,12 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import { api } from "../lib/api";
 import { useTheme } from "../lib/theme";
 import { useApi } from "../lib/useApi";
 import { formatNumber } from "../lib/format";
 import { LevelPicker } from "./LevelPicker";
 import { CommandPalette } from "./CommandPalette";
+import { AmbientOrnament, LotusBloom, LotusBud, SeigaihaField } from "./Ornament";
 import { Kbd } from "./ui";
 import { MOBILE_NAV, SECTION_LABELS, VISIBLE_NAV_ITEMS, type NavItem } from "./navigation";
 import { IconBolt, IconFlame, IconMenu, IconMoon, IconSearch, IconSun, IconX } from "./icons";
@@ -55,27 +57,49 @@ export function Shell({ children }: { children: ReactNode }) {
   const dueCount = reviewStats.data?.due_now ?? 0;
 
   return (
-    <div className="min-h-screen bg-base">
+    <div className="relative min-h-screen bg-base">
       <a href="#main-content" className="skip-link">
         Bỏ qua điều hướng
       </a>
 
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
+      <AmbientOrnament />
+
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1600px]">
         <aside
           id="app-sidebar"
           aria-label="Điều hướng chính"
           className={clsx(
-            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border bg-surface p-5 transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:self-start",
+            "fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border bg-surface/95 p-5 backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:self-start",
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          <div className="flex items-center justify-between">
-            <a href="#/" className="flex items-center gap-3">
-              <span className="font-display flex h-11 w-11 items-center justify-center rounded-2xl bg-accent text-xl font-bold text-accent-ink">
-                学
+          {/* Ornament local to the sidebar, so the panel is not a plain slab. */}
+          <SeigaihaField
+            className="pointer-events-none absolute inset-0 h-full w-full text-gold opacity-[0.045]"
+            id="seigaiha-sidebar"
+          />
+          <LotusBloom className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 text-gold opacity-[0.07]" />
+
+          <div className="relative flex items-center justify-between">
+            <a href="#/" className="group flex items-center gap-3">
+              <span className="relative">
+                {/* Halo behind the mark, brightening as the pointer nears it. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-2xl bg-accent/40 blur-lg transition-opacity duration-500 group-hover:opacity-100 opacity-50"
+                />
+                <span className="font-display relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-hover to-accent text-xl font-bold text-accent-ink shadow-soft ring-1 ring-gold/30 transition-transform duration-500 group-hover:scale-105 group-hover:ring-gold/60">
+                  学
+                </span>
               </span>
               <span>
-                <span className="font-display block text-lg font-bold leading-tight text-ink">HSK Master</span>
+                {/* Solid gold rather than the foil gradient: at 18px this is
+                    body-sized text needing 4.5:1, which a gradient with a light
+                    highlight cannot hold. The `gold` token is contrast-checked
+                    in both themes. */}
+                <span className="font-display block text-lg font-bold leading-tight text-gold">
+                  HSK Master
+                </span>
                 <span className="block text-xs text-ink-soft">HSK 1–9 · Tiếng Việt</span>
               </span>
             </a>
@@ -90,19 +114,19 @@ export function Shell({ children }: { children: ReactNode }) {
 
           <button
             onClick={() => setPaletteOpen(true)}
-            className="mt-5 flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-left text-sm text-ink-faint transition-colors duration-200 hover:border-border-strong hover:text-ink-soft"
+            className="group relative mt-5 flex w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-left text-sm text-ink-faint transition-all duration-300 hover:border-gold/40 hover:text-ink-soft"
           >
-            <IconSearch className="h-4 w-4 shrink-0" />
+            <IconSearch className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
             <span className="flex-1 truncate">Tìm kiếm nhanh</span>
             <Kbd>Ctrl K</Kbd>
           </button>
 
-          <div className="mt-5">
+          <div className="relative mt-5">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Cấp độ đang học</p>
             <LevelPicker />
           </div>
 
-          <nav className="mt-5 flex flex-1 flex-col gap-5">
+          <nav className="relative mt-5 flex flex-1 flex-col gap-5">
             {SECTION_ORDER.map((section) => (
               <div key={section}>
                 <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
@@ -117,19 +141,43 @@ export function Shell({ children }: { children: ReactNode }) {
                         end={end}
                         className={({ isActive }) =>
                           clsx(
-                            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200",
-                            isActive
-                              ? "bg-accent-soft text-accent"
-                              : "text-ink-soft hover:bg-surface-2 hover:text-ink"
+                            "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200",
+                            isActive ? "text-accent" : "text-ink-soft hover:bg-surface-2 hover:text-ink"
                           )
                         }
                       >
-                        <Icon className="h-[18px] w-[18px] shrink-0" />
-                        <span className="flex-1 truncate">{label}</span>
-                        {to === "/review" && dueCount > 0 && (
-                          <span className="tnum rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink">
-                            {dueCount > 99 ? "99+" : dueCount}
-                          </span>
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              // One shared element across every link, so the
+                              // highlight slides from the old page to the new
+                              // one instead of blinking out and back in.
+                              <motion.span
+                                layoutId="nav-active"
+                                aria-hidden="true"
+                                className="absolute inset-0 rounded-xl border border-accent/25 bg-accent-soft"
+                                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                              />
+                            )}
+                            {isActive && (
+                              <span
+                                aria-hidden="true"
+                                className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent"
+                              />
+                            )}
+                            <Icon
+                              className={clsx(
+                                "relative h-[18px] w-[18px] shrink-0 transition-transform duration-300",
+                                isActive ? "scale-110" : "group-hover:scale-110"
+                              )}
+                            />
+                            <span className="relative flex-1 truncate">{label}</span>
+                            {to === "/review" && dueCount > 0 && (
+                              <span className="tnum relative rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink shadow-soft">
+                                {dueCount > 99 ? "99+" : dueCount}
+                              </span>
+                            )}
+                          </>
                         )}
                       </NavLink>
                     )
@@ -139,20 +187,21 @@ export function Shell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="mt-5 rounded-2xl border border-border-soft bg-surface-2 p-4">
-            <div className="flex items-center justify-between">
+          <div className="inlay relative mt-5 overflow-hidden rounded-2xl border border-border-soft bg-surface-2 p-4" data-lit="true">
+            <LotusBud className="pointer-events-none absolute -right-6 -top-4 h-28 w-20 text-gold opacity-[0.16]" />
+            <div className="relative flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-gold">Mục tiêu hôm nay</p>
               <span className="tnum text-xs font-semibold text-ink-soft">
                 {streak.data ? `${streak.data.today_reviews}/${streak.data.daily_goal}` : "—"}
               </span>
             </div>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
+            <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
               <div
-                className="h-full rounded-full bg-gold transition-[width] duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 style={{ width: `${streak.data?.goal_percentage ?? 0}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-ink-soft">
+            <p className="relative mt-2 text-xs text-ink-soft">
               {streak.data?.goal_met
                 ? "Đã hoàn thành mục tiêu hôm nay."
                 : "Nghe · Đọc · Viết · Kiểm tra, học đều mỗi ngày."}
@@ -169,7 +218,9 @@ export function Shell({ children }: { children: ReactNode }) {
         )}
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-base/85 px-4 py-3 backdrop-blur sm:px-8">
+          <header className="glass no-print sticky top-0 z-20 flex items-center gap-3 border-b border-border px-4 py-3 sm:px-8">
+            {/* Gold hairline under the header, fading at both ends. */}
+            <span aria-hidden="true" className="rule-foil absolute inset-x-0 -bottom-px" />
             <button
               className="rounded-lg p-2 text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink lg:hidden"
               onClick={() => setDrawerOpen(true)}
@@ -207,10 +258,12 @@ export function Shell({ children }: { children: ReactNode }) {
               />
               <button
                 onClick={toggle}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-ink-soft transition-colors duration-200 hover:text-accent"
+                className="group relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface text-ink-soft transition-colors duration-300 hover:border-gold/50 hover:text-gold"
                 aria-label={theme === "dark" ? "Chuyển giao diện sáng" : "Chuyển giao diện tối"}
               >
-                {theme === "dark" ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
+                <span className="transition-transform duration-500 group-hover:rotate-[140deg]">
+                  {theme === "dark" ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
+                </span>
               </button>
             </div>
           </header>
@@ -241,9 +294,11 @@ function HeaderStat({
   return (
     <span
       title={label}
-      className="hidden items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 sm:inline-flex"
+      className="group hidden items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-soft sm:inline-flex"
     >
-      <span className={tone}>{icon}</span>
+      <span className={clsx(tone, "transition-transform duration-300 group-hover:scale-125")}>
+        {icon}
+      </span>
       <span className="tnum text-xs font-bold text-ink">{value}</span>
       <span className="text-[10px] text-ink-faint">{label}</span>
     </span>
@@ -258,8 +313,9 @@ function MobileTabBar({ dueCount }: { dueCount: number }) {
   return (
     <nav
       aria-label="Điều hướng nhanh"
-      className="no-print fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface/95 backdrop-blur lg:hidden"
+      className="glass no-print fixed inset-x-0 bottom-0 z-30 flex border-t border-border lg:hidden"
     >
+      <span aria-hidden="true" className="rule-foil absolute inset-x-0 top-0" />
       {items.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
@@ -272,13 +328,30 @@ function MobileTabBar({ dueCount }: { dueCount: number }) {
             )
           }
         >
-          <span className="relative">
-            <Icon className="h-5 w-5" />
-            {to === "/review" && dueCount > 0 && (
-              <span className="absolute -right-1.5 -top-1 h-2 w-2 rounded-full bg-accent" />
-            )}
-          </span>
-          <span className="truncate">{label}</span>
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <motion.span
+                  layoutId="mobile-nav-active"
+                  aria-hidden="true"
+                  className="absolute inset-x-3 top-0 h-[2px] rounded-full bg-accent"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+              <span className="relative">
+                <Icon
+                  className={clsx(
+                    "h-5 w-5 transition-transform duration-300",
+                    isActive && "-translate-y-0.5 scale-110"
+                  )}
+                />
+                {to === "/review" && dueCount > 0 && (
+                  <span className="absolute -right-1.5 -top-1 h-2 w-2 rounded-full bg-accent" />
+                )}
+              </span>
+              <span className="truncate">{label}</span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>
