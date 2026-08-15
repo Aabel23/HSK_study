@@ -655,7 +655,11 @@ export function AmbientOrnament() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden text-gold"
     >
-      <SeigaihaField className="absolute inset-0 h-full w-full" opacity={0.05} />
+      {/* The supplied 青海波 tile, applied through `.hoavan-song` in index.css.
+          Carried at the artwork's own 0.13 rather than the 0.05 the hand-drawn
+          version needed: these fans are finer and nest four deep, so the same
+          opacity reads much lighter than a single-arc scale did. */}
+      <div className="hoavan-song absolute inset-0 opacity-[0.13]" />
       {/* The screen's single focal ornament. It lives here rather than in
           `PageHeader` because two flowers on one screen — one from the ambient
           layer, one from the header — landed on top of each other. Whole, in

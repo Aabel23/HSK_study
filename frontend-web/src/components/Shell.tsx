@@ -130,7 +130,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <LevelPicker />
           </div>
 
-          <nav className="relative mt-5 flex flex-1 flex-col gap-5">
+          <nav className="relative mt-5 flex flex-col gap-5 pb-6">
             {SECTION_ORDER.map((section) => (
               <div key={section}>
                 <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
@@ -191,28 +191,6 @@ export function Shell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div
-            className="inlay relative isolate mt-5 overflow-hidden rounded-2xl border border-border-soft bg-surface-2 p-4"
-            data-lit="true"
-          >
-            <div className="relative flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gold">Mục tiêu hôm nay</p>
-              <span className="tnum text-xs font-semibold text-ink-soft">
-                {streak.data ? `${streak.data.today_reviews}/${streak.data.daily_goal}` : "—"}
-              </span>
-            </div>
-            <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                style={{ width: `${streak.data?.goal_percentage ?? 0}%` }}
-              />
-            </div>
-            <p className="relative mt-2 text-xs text-ink-soft">
-              {streak.data?.goal_met
-                ? "Đã hoàn thành mục tiêu hôm nay."
-                : "Nghe · Đọc · Viết · Kiểm tra, học đều mỗi ngày."}
-            </p>
-          </div>
         </aside>
 
         {drawerOpen && (
