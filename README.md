@@ -36,8 +36,9 @@ Toàn bộ giao diện và dữ liệu nghĩa đều bằng tiếng Việt.
 | --- | --- |
 | **Tổng quan** | Bảng điều khiển: thống kê từ vựng, chuỗi ngày học, hoạt động gần đây. |
 | **Ôn tập thông minh** | Lặp lại ngắt quãng (SRS) — hệ thống tự xếp lịch từ cần ôn. |
-| **Từ vựng** | Tra cứu, tìm kiếm, lọc theo cấp độ HSK / chủ đề / trạng thái học. |
-| **Flashcard** | Chọn số thẻ mỗi phiên (tới 200), lật thẻ, bật/tắt pinyin, tự đánh giá (`forgot` / `hard` / `remembered`). |
+| **Từ vựng** | Tra cứu, tìm kiếm (kể cả theo âm Hán-Việt), lọc theo cấp độ HSK / chủ đề / trạng thái học. |
+| **Giải mã Hán-Việt** | Tra từng chữ Hán (âm Hán-Việt, bộ thủ, mẹo nhớ, họ từ), luyện đoán nghĩa những từ **chưa từng học**, và bảng xếp hạng chữ theo số từ mà nó mở khoá. |
+| **Thẻ ghi nhớ** | Chọn số thẻ mỗi phiên (tới 200), lật thẻ, bật/tắt pinyin, tự đánh giá (`forgot` / `hard` / `remembered`). |
 | **Nối từ** | Ghép Hán tự với nghĩa hoặc pinyin, hai chế độ chơi. |
 | **Luyện câu** | Chọn số câu mỗi phiên (tới 200), sắp xếp các cụm Hán ngữ theo đúng thứ tự, bật/tắt pinyin và bản dịch. |
 | **Luyện nghe** | Nghe phát âm (text-to-speech) rồi chọn đáp án đúng. |
@@ -47,9 +48,15 @@ Toàn bộ giao diện và dữ liệu nghĩa đều bằng tiếng Việt.
 | **Tiến độ** | Mức hoàn thành, từ cần ôn, từ đã thuộc, lịch sử phiên học. |
 | **Thành tích** | Huy hiệu và cột mốc theo quá trình học. |
 | **Cài đặt** | Tuỳ chọn hiển thị, sao lưu và khôi phục dữ liệu. |
-| **Donate cho anh Ba** | Ủng hộ tác giả bằng mã VietQR qua PayOS (tuỳ chọn, cần cấu hình khoá). |
+| **Ủng hộ anh Ba** | Ủng hộ tác giả bằng mã VietQR qua PayOS (tuỳ chọn, cần cấu hình khoá). |
 
-Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** (10.969 từ) cùng kho **218 câu luyện tập** phủ đủ bảy cấp độ, nằm trong [scripts/data/](scripts/data/) và được nạp vào SQLite khi khởi động lần đầu. Toàn bộ nghĩa của từ đều bằng tiếng Việt — xem [Nguồn dữ liệu](#nguồn-dữ-liệu).
+Dữ liệu học bao gồm bộ từ vựng **HSK 1, 2, 3, 4, 5, 6 và 7–9** (10.969 từ) cùng kho **246 câu luyện tập** phủ đủ bảy cấp độ, nằm trong [scripts/data/](scripts/data/) và được nạp vào SQLite khi khởi động lần đầu. Toàn bộ nghĩa của từ đều bằng tiếng Việt — xem [Nguồn dữ liệu](#nguồn-dữ-liệu).
+
+Dưới lớp từ vựng còn có **lớp chữ**: 8.200 chữ Hán kèm âm Hán-Việt, bộ thủ và số
+nét, trong đó 2.735 chữ xuất hiện trong kho từ. Nhờ đó **10.357 / 10.969 từ
+(94,4%)** đọc được trọn vẹn bằng âm Hán-Việt — 图书馆 là "đồ thư quán", 发展 là
+"phát triển". Đây là nền của màn hình **Giải mã Hán-Việt**, thứ giúp người học
+đọc hiểu cả những từ nằm ngoài giáo trình HSK.
 
 ## Công nghệ
 
@@ -181,6 +188,16 @@ bên ngoài, nên tab này vẫn đúng tinh thần offline-first của ứng d�
 | --- | --- | --- |
 | [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) | Chữ Hán, pinyin, nghĩa tiếng Anh tham chiếu | CC BY-SA 4.0 |
 | [CVDICT](https://github.com/ph0ngp/CVDICT) của Phong Phan | Nghĩa tiếng Việt của từ vựng HSK | CC BY-SA 4.0 |
+| [hanzi-sino-vietnamese](https://github.com/binhbuithithanh/hanzi-sino-vietnamese) | Âm Hán-Việt, nghĩa, bộ thủ và mẹo nhớ của 659 chữ HSK cốt lõi | CC BY 4.0 |
+| [English Wiktionary](https://kaikki.org/dictionary/Vietnamese/) (trích qua kaikki.org) | Âm Hán-Việt của các chữ còn lại | CC BY-SA 4.0 |
+| [Unicode Unihan](https://www.unicode.org/charts/unihan.html) | Số nét, bộ thủ, ánh xạ giản thể ↔ phồn thể | Unicode License |
+
+> **Về âm Hán-Việt.** Trường `kVietnamese` của Unihan *không* được dùng làm
+> nguồn cách đọc: nó trộn âm Hán-Việt với âm Nôm mà không phân biệt (库 ghi là
+> "kho", 貝 là "buổi", 礎 là "sờ" — đều là âm Nôm, trong khi âm Hán-Việt là khố,
+> bối, sở). Với một màn hình lấy "âm Hán-Việt cho biết nghĩa của từ" làm gốc thì
+> dạy sai còn tệ hơn là không dạy, nên chữ nào không có cách đọc đáng tin sẽ để
+> trống. Đó là lý do độ phủ dừng ở 92% số chữ (97% nếu tính theo tần suất dùng).
 
 Bộ dữ liệu HSK trong `scripts/data/` là tác phẩm phái sinh từ hai nguồn trên và
 vì vậy được chia sẻ theo **CC BY-SA 4.0**; mã nguồn của ứng dụng vẫn theo giấy
@@ -191,6 +208,7 @@ Muốn dựng lại bộ dữ liệu (ví dụ khi CVDICT có bản mới):
 ```bash
 python scripts/translate_meanings.py --download          # cập nhật nghĩa tiếng Việt
 python scripts/translate_meanings.py --download --check  # chỉ kiểm tra, không ghi
+python scripts/build_characters.py --refresh             # dựng lại lớp chữ Hán
 ```
 
 Script tự dịch những mục còn tiếng Anh, sửa chuỗi mojibake, dịch mã từ loại và
@@ -202,6 +220,7 @@ bao giờ ghi đè nghĩa tiếng Việt đã được viết tay.
 - [docs/SPEC.md](docs/SPEC.md) — đặc tả sản phẩm và quy tắc nghiệp vụ.
 - [docs/API.md](docs/API.md) — tham chiếu REST API.
 - [docs/DATABASE.md](docs/DATABASE.md) — schema SQLite.
+- [docs/DIFFERENTIATION.md](docs/DIFFERENTIATION.md) — ứng dụng hơn thị trường ở đâu, và đang thua ở đâu.
 - [docs/WINDOWS_TRUST.md](docs/WINDOWS_TRUST.md) — ký số và SmartScreen.
 - [AGENTS.md](AGENTS.md) — quy tắc bắt buộc khi sửa đổi repository.
 

@@ -8,6 +8,7 @@ from typing import Any
 from backend.database import get_connection, utc_now
 from backend.services import session_store
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
+from backend.services.gloss import gloss_length
 from backend.services.session_store import SessionKind
 from backend.services.vocabulary_service import get_random_vocabulary
 
@@ -29,8 +30,44 @@ def _shuffle_different(items: list[dict[str, Any]], original_ids: list[int]) -> 
         items.append(items.pop(0))
 
 
-def create_session(mode: str, count: int) -> dict[str, Any]:
-    vocabulary = get_random_vocabulary(count)
+#: Oversampling factor for the length-matching draw below.
+_CANDIDATE_POOL = 40
+
+
+def _pick_words(
+    count: int, hsk_level: str | None, *, balance_by_meaning: bool
+) -> list[dict[str, Any]]:
+    candidates = get_random_vocabulary(max(_CANDIDATE_POOL, count), hsk_level=hsk_level)
+    if len(candidates) < count and hsk_level:
+        candidates = get_random_vocabulary(max(_CANDIDATE_POOL, count))
+    if not balance_by_meaning or len(candidates) <= count:
+        return candidates[:count]
+
+    # Anchor on one word, then keep its nearest neighbours by gloss length, so
+    # the round is a set of comparable tiles rather than one essay and five
+    # single words.
+    anchor = random.choice(candidates)
+    anchor_length = gloss_length(anchor.get("meaning"))
+    ranked = sorted(
+        candidates, key=lambda word: abs(gloss_length(word.get("meaning")) - anchor_length)
+    )
+    return ranked[:count]
+
+
+def create_session(mode: str, count: int, hsk_level: str | None = None) -> dict[str, Any]:
+    """Deal a round of tiles.
+
+    Two things make a round playable that a plain random draw does not give:
+
+    * **One level.** Mixing an HSK 1 word with an HSK 7-9 word lets the learner
+      match by "which of these have I ever seen", not by meaning.
+    * **Tiles of a similar size.** The meaning column is drawn from full CVDICT
+      entries, and a tile reading "ăn" beside one running four hundred
+      characters is solved on sight. Oversampling and keeping the words whose
+      glosses are closest in length puts that guess back out of reach; the
+      frontend still trims each tile for display.
+    """
+    vocabulary = _pick_words(count, hsk_level, balance_by_meaning=mode == "meaning")
     if len(vocabulary) < 2:
         raise InvalidOperationError("Không đủ từ để tạo vòng nối từ.")
     session_id = session_store.start(SESSION, total_items=len(vocabulary))

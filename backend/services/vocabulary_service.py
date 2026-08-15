@@ -12,7 +12,7 @@ SELECT_FIELDS = """
     v.id, v.hanzi, v.pinyin, v.meaning, v.example, v.example_pinyin,
     v.example_meaning, v.topic, v.created_at, v.updated_at,
     v.hsk_level, v.meaning_en, v.traditional, v.pos, v.pos_vi,
-    v.classifiers, v.frequency,
+    v.classifiers, v.frequency, v.han_viet,
     COALESCE(p.status, 'new') AS status,
     COALESCE(p.review_count, 0) AS review_count,
     COALESCE(p.correct_count, 0) AS correct_count,
@@ -56,9 +56,10 @@ def list_vocabulary(
     if search and search.strip():
         term = f"%{search.strip()}%"
         conditions.append(
-            "(v.hanzi LIKE ? OR v.pinyin LIKE ? OR v.meaning LIKE ? OR v.meaning_en LIKE ?)"
+            "(v.hanzi LIKE ? OR v.pinyin LIKE ? OR v.meaning LIKE ?"
+            " OR v.meaning_en LIKE ? OR v.han_viet LIKE ?)"
         )
-        parameters.extend([term, term, term, term])
+        parameters.extend([term, term, term, term, term])
     if topic:
         conditions.append("v.topic = ?")
         parameters.append(topic)

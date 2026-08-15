@@ -46,7 +46,7 @@ const STATUS_FILTERS: Array<{ value: StatusFilter; label: string }> = [
 /** Mirrors the `sort` pattern the vocabulary endpoint accepts. */
 const SORTS: Array<{ value: string; label: string }> = [
   { value: "id", label: "Mặc định" },
-  { value: "hanzi", label: "Nét chữ" },
+  { value: "hanzi", label: "Theo chữ Hán" },
   { value: "pinyin", label: "Pinyin A→Z" },
   { value: "level", label: "Cấp độ HSK" },
   { value: "frequency", label: "Phổ biến nhất" },
@@ -149,7 +149,7 @@ export default function Vocabulary() {
       <PageHeader
         eyebrow="Từ điển"
         title="Từ vựng HSK"
-        description="Tra cứu toàn bộ từ vựng HSK 1-9: pinyin, nghĩa tiếng Việt, phồn thể, từ loại, lượng từ, câu ví dụ có phát âm và ghi chú riêng của bạn."
+        description="Tra cứu toàn bộ từ vựng HSK 1-9: pinyin, âm Hán-Việt, nghĩa tiếng Việt, phồn thể, từ loại, lượng từ, câu ví dụ có phát âm và ghi chú riêng của bạn."
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -158,7 +158,7 @@ export default function Vocabulary() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Tìm theo Hán tự, pinyin hoặc nghĩa..."
+            placeholder="Tìm theo Hán tự, pinyin, âm Hán-Việt hoặc nghĩa..."
             aria-label="Tìm từ vựng"
             className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-4 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-accent"
           />
@@ -260,6 +260,9 @@ export default function Vocabulary() {
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="hanzi text-2xl font-bold text-ink">{item.hanzi}</span>
                     <span className="text-sm text-gold">{item.pinyin}</span>
+                    {item.han_viet && (
+                      <span className="text-xs text-ink-faint">{item.han_viet}</span>
+                    )}
                   </div>
                   <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{item.meaning}</p>
                 </div>
@@ -373,6 +376,14 @@ function EntryDialog({
             )}
           </div>
           <p className="mt-1.5 text-base font-medium text-gold">{item.pinyin}</p>
+          {/* The Hán-Việt reading is the shortcut a Vietnamese learner already
+              owns: 图书馆 is "đồ thư quán", which is most of the way to "thư
+              viện" before any memorising starts. */}
+          {item.han_viet && (
+            <p className="mt-0.5 text-sm text-ink-soft">
+              Hán-Việt: <span className="font-semibold text-ink">{item.han_viet}</span>
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <AudioButton text={item.hanzi} />

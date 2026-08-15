@@ -26,6 +26,13 @@
   độ tự chấm chứ không được hỏng.
 - Frontend là React 19 + TypeScript + Vite trong `frontend-web/`; không còn giao diện vanilla JS.
 - `frontend-web/dist/` được commit vào git vì môi trường deploy (Render) không có Node — build lại và commit `dist/` sau khi sửa `frontend-web/src`.
+- Âm Hán-Việt dựng bằng `scripts/build_characters.py` từ ba nguồn có giấy phép
+  rõ ràng; giữ nguyên phần ghi công trong `README.md`. Không dùng trường
+  `kVietnamese` của Unihan làm nguồn cách đọc — nó trộn âm Hán-Việt với âm Nôm.
+  Thà để trống còn hơn dạy sai.
+- Đáp án trắc nghiệm phải cân độ dài **ở khâu chọn từ**, không chỉ cắt lúc hiển
+  thị. Quy tắc rút gọn nằm ở `backend/services/gloss.py` và
+  `frontend-web/src/lib/format.ts` — sửa thì sửa cả hai cho khớp.
 - Không viết SQL trong route; business logic đặt trong service.
 - Không hardcode dữ liệu học trong frontend.
 - Chạy `pytest` sau khi sửa backend, `npm run build` sau khi sửa frontend-web.

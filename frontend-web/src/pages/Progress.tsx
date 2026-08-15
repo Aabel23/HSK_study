@@ -4,7 +4,7 @@ import type { ProgressSummary, WritingProgressSummary } from "../lib/types";
 import { Badge, Card, LoadingState, PageHeader, ProgressBar, StatTile } from "../components/ui";
 
 const SESSION_LABEL: Record<string, string> = {
-  flashcard: "Flashcard",
+  flashcard: "Thẻ ghi nhớ",
   matching: "Nối từ",
   sentence: "Luyện câu",
   quiz: "Kiểm tra",

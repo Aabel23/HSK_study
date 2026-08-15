@@ -44,6 +44,12 @@ CATALOG: tuple[Achievement, ...] = (
     Achievement("level_5", "Cấp độ 5", "Đạt cấp độ 5 kinh nghiệm.", "star", "silver", 5, lambda s: s["level"]),
     Achievement("level_10", "Cấp độ 10", "Đạt cấp độ 10 kinh nghiệm.", "star", "gold", 10, lambda s: s["level"]),
     Achievement("collector", "Nhà sưu tầm", "Đánh dấu 25 từ yêu thích.", "bookmark", "bronze", 25, lambda s: s["favorites"]),
+    # The decoding skill. Counted in characters rather than words on purpose:
+    # a character is the unit that carries over to vocabulary never studied.
+    Achievement("decoder_50", "Vỡ chữ", "Nắm âm Hán-Việt của 50 chữ.", "spark", "bronze", 50, lambda s: s["characters_mastered"]),
+    Achievement("decoder_300", "Đọc được chữ lạ", "Nắm âm Hán-Việt của 300 chữ.", "spark", "silver", 300, lambda s: s["characters_mastered"]),
+    Achievement("decoder_1000", "Thông kim bác cổ", "Nắm âm Hán-Việt của 1.000 chữ.", "spark", "diamond", 1000, lambda s: s["characters_mastered"]),
+    Achievement("decode_100", "Giải mã thành thạo", "Giải mã đúng 100 từ chưa từng học.", "target", "silver", 100, lambda s: s["decode_correct"]),
 )
 
 
@@ -57,7 +63,11 @@ def _gather_stats() -> dict[str, Any]:
                 (SELECT COUNT(*) FROM learning_progress WHERE is_favorite = 1) AS favorites,
                 (SELECT COUNT(*) FROM writing_progress) AS writing_practiced,
                 (SELECT COALESCE(SUM(correct_items), 0) FROM listening_sessions) AS listening_correct,
-                (SELECT COALESCE(SUM(correct_items), 0) FROM quiz_sessions) AS quiz_correct
+                (SELECT COALESCE(SUM(correct_items), 0) FROM quiz_sessions) AS quiz_correct,
+                (SELECT COUNT(*) FROM character_progress WHERE status = 'mastered')
+                    AS characters_mastered,
+                (SELECT COUNT(*) FROM decode_attempts WHERE is_correct = 1)
+                    AS decode_correct
             """
         ).fetchone()
     streak = streak_service.get_summary(heatmap_days=1)
@@ -68,6 +78,8 @@ def _gather_stats() -> dict[str, Any]:
         "writing_practiced": row["writing_practiced"] or 0,
         "listening_correct": row["listening_correct"] or 0,
         "quiz_correct": row["quiz_correct"] or 0,
+        "characters_mastered": row["characters_mastered"] or 0,
+        "decode_correct": row["decode_correct"] or 0,
         "longest_streak": streak["longest_streak"],
         "level": streak["level"],
     }

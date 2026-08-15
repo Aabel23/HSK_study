@@ -560,7 +560,7 @@ export default function Hskk() {
         {(speech.listening || speech.text || speech.interim) && (
           <div className="w-full rounded-xl border border-border-soft bg-surface-2 p-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-ink-soft">Log lời nói</span>
+              <span className="text-xs font-semibold text-ink-soft">Nhật ký lời nói</span>
               {speech.listening && (
                 <span className="flex items-center gap-1.5 text-[11px] text-danger">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" /> đang nghe

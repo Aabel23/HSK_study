@@ -363,6 +363,105 @@ CREATE TABLE IF NOT EXISTS item_exposure (
     last_seen_at TEXT NOT NULL
 );
 
+-- The character layer under the word list.
+--
+-- Everything else in this schema is keyed by word, which is how HSK is taught
+-- and also where HSK stops: the syllabus ends and the learner is on their own.
+-- A Vietnamese learner does not have to be. Over half of formal Vietnamese is
+-- Sino-Vietnamese, and each character has a fixed âm Hán-Việt, so 学 = học and
+-- 生 = sinh makes 学生 read as *học sinh* — a word they have always known. The
+-- same pair then gives 学期 (học kỳ), 生活 (sinh hoạt), 医生 (y sinh) and on.
+--
+-- These tables hold that layer so the app can teach decoding rather than only
+-- recall. Content ships as scripts/data/characters.json (built by
+-- scripts/build_characters.py); `character_progress` is the learner's own
+-- state, kept separate so re-seeding never touches their history — the same
+-- split grammar_points/grammar_progress uses.
+CREATE TABLE IF NOT EXISTS characters (
+    hanzi TEXT PRIMARY KEY,
+    pinyin TEXT NOT NULL DEFAULT '',
+    han_viet TEXT NOT NULL DEFAULT '',
+    -- Which source the reading came from, so a screen can say how sure it is.
+    han_viet_source TEXT NOT NULL DEFAULT '',
+    meaning_vi TEXT NOT NULL DEFAULT '',
+    meaning_en TEXT NOT NULL DEFAULT '',
+    traditional TEXT,
+    stroke_count INTEGER,
+    radical_number INTEGER,
+    radicals_json TEXT NOT NULL DEFAULT '[]',
+    mnemonic_vi TEXT NOT NULL DEFAULT '',
+    stroke_hint_vi TEXT NOT NULL DEFAULT '',
+    -- The lowest HSK band of any word that uses it, and how many bank words
+    -- do. Both derived at seed time; they are what makes "teach me the
+    -- characters that unlock the most words" a single ORDER BY.
+    hsk_level TEXT,
+    word_count INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS radicals (
+    hanzi TEXT PRIMARY KEY,
+    name_vi TEXT NOT NULL DEFAULT '',
+    meaning_vi TEXT NOT NULL DEFAULT '',
+    mnemonic_vi TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Which characters each word is made of. Denormalised on purpose: "every word
+-- containing 学" is the query the word-family screen runs on every keystroke,
+-- and LIKE '%学%' over 11k rows cannot use an index.
+CREATE TABLE IF NOT EXISTS word_characters (
+    vocabulary_id INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    hanzi TEXT NOT NULL,
+    PRIMARY KEY (vocabulary_id, position),
+    FOREIGN KEY (vocabulary_id) REFERENCES vocabulary(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS character_progress (
+    hanzi TEXT PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'new'
+        CHECK (status IN ('new', 'learning', 'mastered')),
+    seen_count INTEGER NOT NULL DEFAULT 0,
+    correct_count INTEGER NOT NULL DEFAULT 0,
+    incorrect_count INTEGER NOT NULL DEFAULT 0,
+    is_favorite INTEGER NOT NULL DEFAULT 0,
+    last_seen_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS decode_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hsk_level TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    total_items INTEGER NOT NULL DEFAULT 0,
+    correct_items INTEGER NOT NULL DEFAULT 0,
+    incorrect_items INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS decode_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER,
+    vocabulary_id INTEGER,
+    word TEXT NOT NULL DEFAULT '',
+    mode TEXT NOT NULL DEFAULT '',
+    is_correct INTEGER NOT NULL CHECK (is_correct IN (0, 1)),
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES decode_sessions(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_word_characters_hanzi ON word_characters(hanzi);
+CREATE INDEX IF NOT EXISTS idx_characters_level ON characters(hsk_level);
+CREATE INDEX IF NOT EXISTS idx_characters_word_count ON characters(word_count DESC);
+CREATE INDEX IF NOT EXISTS idx_character_progress_status ON character_progress(status);
+CREATE INDEX IF NOT EXISTS idx_decode_sessions_started ON decode_sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_decode_attempts_session ON decode_attempts(session_id);
+
 CREATE INDEX IF NOT EXISTS idx_item_exposure_seen ON item_exposure(seen_count);
 CREATE INDEX IF NOT EXISTS idx_hskk_sessions_started ON hskk_sessions(started_at);
 CREATE INDEX IF NOT EXISTS idx_hskk_answers_session ON hskk_answers(session_id);
@@ -392,6 +491,10 @@ VOCABULARY_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("pos_vi", "TEXT"),
     ("classifiers", "TEXT"),
     ("frequency", "INTEGER"),
+    # The word spelled out in âm Hán-Việt — 图书馆 → "đồ thư quán". Stored rather
+    # than joined at read time because it is shown on the dictionary list, and
+    # a three-way join per row to render one line is not worth it.
+    ("han_viet", "TEXT"),
 )
 
 

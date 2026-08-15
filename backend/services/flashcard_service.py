@@ -17,7 +17,7 @@ SESSION = SessionKind(
     table="study_sessions",
     not_found="Không tìm thấy phiên học.",
     already_ended="Phiên học này đã kết thúc.",
-    completed="Đã hoàn tất phiên Flashcard.",
+    completed="Đã hoàn tất phiên thẻ ghi nhớ.",
     type_column="session_type",
     type_value="flashcard",
 )
@@ -32,7 +32,7 @@ def create_session(
         count, include_mastered=include_mastered, hsk_level=hsk_level
     )
     if not items:
-        raise InvalidOperationError("Không có từ phù hợp để tạo phiên Flashcard.")
+        raise InvalidOperationError("Không có từ phù hợp để tạo phiên thẻ ghi nhớ.")
     session_id = session_store.start(SESSION, total_items=len(items))
     # hsk_level is part of the payload because the card shows it as a badge;
     # without it the badge rendered "HSK undefined".
@@ -96,7 +96,7 @@ def review_card(session_id: int, vocabulary_id: int, result: str) -> dict[str, A
             "SELECT * FROM learning_progress WHERE vocabulary_id = ?", (vocabulary_id,)
         ).fetchone()
     return {
-        "message": "Đã lưu kết quả Flashcard.",
+        "message": "Đã lưu kết quả thẻ ghi nhớ.",
         "session_id": session_id,
         "vocabulary_id": vocabulary_id,
         "result": result,

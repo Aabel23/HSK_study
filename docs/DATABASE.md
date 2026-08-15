@@ -37,6 +37,44 @@ Lưu phiên luyện đặt câu và các bộ đếm tổng số câu, câu đú
 
 Lưu thứ tự `position` mà người dùng gửi và kết quả kiểm tra từ backend. Xóa phiên hoặc câu sẽ cascade xóa attempt tương ứng.
 
+## Lớp chữ Hán
+
+Bốn bảng đặt dưới lớp từ vựng, phục vụ màn hình **Giải mã Hán-Việt**. Nội dung
+ship trong `scripts/data/characters.json` (dựng bởi `scripts/build_characters.py`).
+
+### `characters`
+
+Khoá chính là chính chữ Hán. Ngoài `pinyin`, `han_viet`, `meaning_vi`,
+`stroke_count`, `radicals_json` và `mnemonic_vi`, bảng còn giữ hai cột **suy ra
+lúc seed** chứ không lấy từ nguồn:
+
+- `word_count` — số từ trong kho được dựng từ chữ này, để "chữ nào mở khoá nhiều
+  từ nhất" chỉ là một `ORDER BY`.
+- `hsk_level` — cấp HSK **thấp nhất** mà chữ xuất hiện, tức thứ tự nên học.
+
+`han_viet_source` ghi lại nguồn của cách đọc, để giao diện nói rõ mức độ chắc
+chắn thay vì im lặng tin tưởng.
+
+### `radicals`
+
+414 bộ thủ kèm tên, nghĩa và mẹo nhớ tiếng Việt.
+
+### `word_characters`
+
+Chỉ mục từ ↔ chữ (`vocabulary_id`, `position`, `hanzi`). Cố tình phi chuẩn hoá:
+"mọi từ chứa 学" là truy vấn chạy mỗi lần gõ phím, và `LIKE '%学%'` trên 11 nghìn
+dòng thì không dùng được index. Bảng này được dựng lại toàn bộ mỗi lần seed.
+
+### `character_progress`, `decode_sessions`, `decode_attempts`
+
+Tiến độ và lịch sử luyện tập của người học, tách khỏi nội dung — cùng cách chia
+mà `grammar_points` / `grammar_progress` đang dùng — nên seed lại nội dung mới
+không bao giờ đụng vào lịch sử.
+
+Cột `vocabulary.han_viet` là cách đọc Hán-Việt của **cả từ** (图书馆 → "đồ thư
+quán"). Chỉ được điền khi *mọi* chữ trong từ đều có cách đọc: một bản phiên âm
+dở dang như "đồ thư ?" đúng là trường hợp người học dễ tin nhầm nhất.
+
 ## Khởi tạo và seed
 
 `backend/database.py` tự tạo thư mục, file và bảng nếu thiếu. `scripts/seed_data.py` dùng `INSERT ... ON CONFLICT(hanzi) DO NOTHING`, sau đó bổ sung dòng tiến độ bằng `INSERT OR IGNORE`. Seed không reset hoặc xóa dữ liệu học cũ.

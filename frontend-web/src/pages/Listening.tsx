@@ -222,7 +222,7 @@ export default function Listening() {
             icon={<IconHeadphones className="h-4 w-4" />}
           />
           <StatTile
-            label="Số lần nghe lại TB"
+            label="Số lần nghe lại trung bình"
             value={dictationStats.data ? dictationStats.data.average_replays.toFixed(1) : "—"}
             hint="Càng thấp càng tốt"
             accent="sky"

@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { api } from "../lib/api";
-import type { MatchingItem } from "../lib/types";
+import { distinctOptionLabels } from "../lib/format";
+import { useLevel } from "../lib/levelContext";
+import type { HskLevel, MatchingItem } from "../lib/types";
 import { Button, Card, PageHeader, SessionComplete } from "../components/ui";
 import { IconRefresh } from "../components/icons";
 
 type Mode = "meaning" | "pinyin";
 
 export default function Matching() {
+  const { level } = useLevel();
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [mode, setMode] = useState<Mode>("meaning");
   const [left, setLeft] = useState<MatchingItem[]>([]);
@@ -20,7 +23,11 @@ export default function Matching() {
   const [finished, setFinished] = useState(false);
 
   async function start(selectedMode: Mode) {
-    const session = await api.matching.createSession(selectedMode, 6);
+    const session = await api.matching.createSession(
+      selectedMode,
+      6,
+      level === "all" ? null : (level as HskLevel)
+    );
     setSessionId(session.session_id);
     setMode(selectedMode);
     setLeft(session.left_items);
@@ -56,6 +63,18 @@ export default function Matching() {
       }, 500);
     }
   }
+
+  // A tile has room for a phrase, not for a dictionary entry. Trimming the
+  // whole column together keeps every tile the same rough size — which is the
+  // point of the game — while `distinctOptionLabels` guarantees no two tiles
+  // collapse into the same text and become unmatchable.
+  const rightLabels = useMemo(
+    () =>
+      mode === "meaning"
+        ? distinctOptionLabels(right.map((item) => item.text))
+        : right.map((item) => item.text),
+    [mode, right]
+  );
 
   function pickLeft(id: number) {
     if (matched.has(id)) return;
@@ -116,10 +135,11 @@ export default function Matching() {
           ))}
         </div>
         <div className="flex flex-col gap-3">
-          {right.map((item) => (
+          {right.map((item, position) => (
             <Tile
               key={item.vocabulary_id}
               item={item}
+              label={rightLabels[position]}
               matched={matched.has(item.vocabulary_id)}
               selected={selectedRight === item.vocabulary_id}
               wrong={wrongFlash.right === item.vocabulary_id}
@@ -134,6 +154,7 @@ export default function Matching() {
 
 function Tile({
   item,
+  label,
   hanzi,
   matched,
   selected,
@@ -141,6 +162,7 @@ function Tile({
   onClick,
 }: {
   item: MatchingItem;
+  label?: string;
   hanzi?: boolean;
   matched: boolean;
   selected: boolean;
@@ -157,8 +179,9 @@ function Tile({
         selected && !matched && "border-accent bg-accent-soft text-accent",
         wrong && "border-danger bg-danger-soft text-danger"
       )}
+      title={label && label !== item.text ? item.text : undefined}
     >
-      {item.text}
+      {label ?? item.text}
     </Card>
   );
 }

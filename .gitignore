@@ -46,6 +46,7 @@ ui-ux-pro-max-skill/
 # --- Source dictionary downloaded by scripts/translate_meanings.py ----------
 # 10 MB, only needed to rebuild scripts/data/; the rebuilt JSON is committed.
 scripts/_cvdict_cache/
+scripts/_character_cache/
 
 # --- Standalone PayOS demo kept for reference -------------------------------
 # Not part of the application, and it holds live API keys in plain text.

@@ -176,7 +176,7 @@ export default function Settings() {
             />
             <Switch
               label="Giảm hiệu ứng chuyển động"
-              description="Tắt animation nếu bạn thấy chóng mặt hoặc muốn tiết kiệm pin."
+              description="Tắt hiệu ứng chuyển động nếu bạn thấy chóng mặt hoặc muốn tiết kiệm pin."
               checked={settings.reduced_motion}
               onChange={(value) => set("reduced_motion", value)}
             />

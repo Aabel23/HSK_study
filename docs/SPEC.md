@@ -23,7 +23,57 @@ Phiên bản hiện tại là baseline di sản của dự án. Các phiên bả
    duyệt, chấm bằng Gemini khi có khoá và tự chấm khi không. Mỗi nửa thang 100,
    điểm cuối là trung bình. Xem `docs/API.md` mục Thi thử HSK cho thang điểm và
    phần cấu hình khoá.
-7. **Tiến độ**: mức hoàn thành, từ cần ôn, từ đã thuộc và lịch sử phiên gần đây.
+7. **Giải mã Hán-Việt**: xem mục riêng bên dưới.
+8. **Tiến độ**: mức hoàn thành, từ cần ôn, từ đã thuộc và lịch sử phiên gần đây.
+
+## Giải mã Hán-Việt
+
+Màn hình duy nhất trong ứng dụng **không** kiểm tra trí nhớ. Mọi màn hình khác
+hỏi lại một từ đã dạy; màn hình này đưa ra một từ **chưa** dạy và yêu cầu người
+học suy ra nghĩa.
+
+Cơ sở của nó là một lợi thế mà người học Việt Nam có còn người học nước khác thì
+không: hơn một nửa từ vựng tiếng Việt trang trọng là gốc Hán, và mỗi chữ Hán có
+một âm Hán-Việt cố định. Biết 学 = *học* và 生 = *sinh* thì 学生 không phải từ
+cần thuộc lòng — nó là "học sinh", từ đã biết từ nhỏ. Cũng hai chữ đó mở tiếp
+学期 (học kỳ), 生活 (sinh hoạt), 医生 (y sinh) và hàng trăm từ khác.
+
+Ba tab:
+
+1. **Tra chữ** — âm Hán-Việt, pinyin, nghĩa, số nét, phồn thể, chiết tự theo bộ
+   thủ kèm mẹo nhớ, và **họ từ**: mọi từ trong kho được dựng từ chữ đó, nhóm
+   theo cấp HSK.
+2. **Luyện giải mã** — ba chế độ (`han_viet_to_meaning`, `meaning_to_han_viet`,
+   `character_reading`). Đề **ưu tiên rút từ những từ người học chưa mở bao
+   giờ**: chỉ khi đó mới thật sự là giải mã chứ không phải nhớ lại. Trả lời đúng
+   một từ sẽ ghi công cho **từng chữ** trong từ, vì chữ mới là thứ mang sang
+   được từ tiếp theo.
+3. **Chữ chủ lực** — xếp hạng chữ theo số từ mà nó mở khoá.
+
+Chữ nào không có cách đọc đáng tin thì để trống chứ không đoán; xem phần ghi chú
+về Unihan trong `README.md`.
+
+## Độ dài đáp án trắc nghiệm
+
+Kho từ giữ nguyên mục từ điển đầy đủ, nên nghĩa dài từ 1 tới 472 ký tự. Rút bốn
+từ ngẫu nhiên rồi in nghĩa lên bốn nút sinh ra câu hỏi tự lộ đáp án: nút dài
+nhất là nút đúng, người học chọn được mà không cần đọc chữ Hán nào.
+
+Sửa ở **hai tầng**, và cần cả hai:
+
+- **Lúc chọn từ** (`backend/services/gloss.py`, `mcq.py`, `matching_service.py`,
+  `character_service.py`): rút dư ứng viên rồi giữ những từ có độ dài đáp án gần
+  với từ đích nhất. Với đáp án là âm Hán-Việt thì so theo **số âm tiết**, vì
+  "cáp tử" đứng cạnh "tinh ích cầu tinh" bị đoán ra bằng cách đếm chữ.
+- **Lúc hiển thị** (`frontend-web/src/lib/format.ts`): cắt mỗi nhãn còn một
+  dòng, và nới dần cho tới khi bốn nhãn khác nhau — nếu không, hai từ khác nghĩa
+  có thể cắt về cùng một chuỗi và câu hỏi mất đáp án đúng.
+
+Chỉ cắt lúc hiển thị thì **không đủ**: việc cắt xảy ra sau khi bốn từ đã được
+chọn, nên không xoá được manh mối. Quy tắc nhận biết "đoạn này là nghĩa hay là
+chú thích từ điển" (`lượng từ:`, `CL:`) nằm cả ở `gloss.py` lẫn `format.ts` —
+sửa thì phải sửa cả hai, nếu không backend cân theo một độ dài mà người học
+không hề nhìn thấy.
 
 ## Ngôn ngữ hiển thị
 

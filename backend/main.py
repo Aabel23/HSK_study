@@ -25,6 +25,7 @@ from backend.middleware import (
 from backend.routes import (
     audio,
     backup,
+    characters,
     content,
     dashboard,
     dictation,
@@ -169,6 +170,7 @@ def create_app() -> FastAPI:
     application.include_router(dictation.router)
     application.include_router(hskk.router)
     application.include_router(grammar.router)
+    application.include_router(characters.router)
     application.include_router(content.router)
     application.include_router(donate.router)
 

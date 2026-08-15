@@ -11,7 +11,11 @@ router = APIRouter(prefix="/api/matching", tags=["matching"])
 @router.post("/session", status_code=201)
 def create_matching_session(payload: MatchingSessionCreate):
     try:
-        return matching_service.create_session(payload.mode.value, payload.count)
+        return matching_service.create_session(
+            payload.mode.value,
+            payload.count,
+            hsk_level=payload.hsk_level.value if payload.hsk_level else None,
+        )
     except Exception as error:
         raise_http_error(error)
 

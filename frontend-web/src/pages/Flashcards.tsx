@@ -66,7 +66,7 @@ export default function Flashcards() {
       setFinished(false);
     } catch (error) {
       toast.error(
-        "Không tạo được phiên Flashcard",
+        "Không tạo được phiên thẻ ghi nhớ",
         error instanceof Error ? error.message : undefined
       );
     } finally {
@@ -137,7 +137,7 @@ export default function Flashcards() {
       <div className="animate-float-in">
         <PageHeader
           eyebrow="Ôn tập"
-          title="Flashcard"
+          title="Thẻ ghi nhớ"
           description="Lật thẻ, tự đánh giá mức độ nhớ của bạn cho từng từ."
         />
         <Card className="max-w-md p-6">

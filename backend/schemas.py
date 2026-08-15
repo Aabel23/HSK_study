@@ -68,9 +68,29 @@ class SessionComplete(BaseModel):
     incorrect_items: int = Field(ge=0)
 
 
+class CharacterStatusUpdate(BaseModel):
+    status: str
+
+
+class DecodeSessionCreate(BaseModel):
+    mode: str = "han_viet_to_meaning"
+    count: int = Field(default=10, ge=1, le=50)
+    hsk_level: HskLevel | None = None
+
+
+class DecodeAttemptCreate(BaseModel):
+    session_id: int = Field(gt=0)
+    word: str = Field(min_length=1)
+    is_correct: bool
+    vocabulary_id: int | None = None
+
+
 class MatchingSessionCreate(BaseModel):
     mode: MatchingMode = MatchingMode.meaning
     count: int = Field(default=6, ge=2, le=10)
+    # Optional so older clients keep working: leaving it out draws from the
+    # whole bank exactly as before.
+    hsk_level: HskLevel | None = None
 
 
 class MatchingAttemptCreate(BaseModel):

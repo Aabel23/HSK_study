@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -501,6 +502,167 @@ def seed_grammar() -> int:
     return len(points)
 
 
+CHARACTER_FILE = "characters.json"
+
+CHARACTER_SQL = """
+    INSERT INTO characters (
+        hanzi, pinyin, han_viet, han_viet_source, meaning_vi, meaning_en,
+        traditional, stroke_count, radical_number, radicals_json,
+        mnemonic_vi, stroke_hint_vi, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(hanzi) DO UPDATE SET
+        pinyin = excluded.pinyin,
+        han_viet = excluded.han_viet,
+        han_viet_source = excluded.han_viet_source,
+        meaning_vi = excluded.meaning_vi,
+        meaning_en = excluded.meaning_en,
+        traditional = excluded.traditional,
+        stroke_count = excluded.stroke_count,
+        radical_number = excluded.radical_number,
+        radicals_json = excluded.radicals_json,
+        mnemonic_vi = excluded.mnemonic_vi,
+        stroke_hint_vi = excluded.stroke_hint_vi,
+        updated_at = excluded.updated_at
+"""
+
+RADICAL_SQL = """
+    INSERT INTO radicals (hanzi, name_vi, meaning_vi, mnemonic_vi, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(hanzi) DO UPDATE SET
+        name_vi = excluded.name_vi,
+        meaning_vi = excluded.meaning_vi,
+        mnemonic_vi = excluded.mnemonic_vi,
+        updated_at = excluded.updated_at
+"""
+
+_CJK = re.compile(r"[一-鿿]")
+
+
+def seed_characters() -> dict[str, int]:
+    """Load the character layer and wire it to the words that use it.
+
+    Three things happen here, and the last two are the ones that make the
+    feature possible at all:
+
+    1. Upsert every character and radical from ``characters.json``. Same
+       contract as the grammar seeder: content is replaced, learner state in
+       `character_progress` is never touched.
+    2. Rebuild `word_characters`, the word ↔ character index. This is what
+       turns "show me every word built on 学" from a full-table LIKE scan into
+       an indexed lookup, and it is the query behind the word-family screen.
+    3. Derive, per character, the lowest HSK band it appears in and how many
+       bank words use it — so "which characters unlock the most vocabulary"
+       is an ORDER BY — and spell out each word in âm Hán-Việt.
+    """
+    path = FULL_DATA_DIR / CHARACTER_FILE
+    if not path.exists():
+        return {"characters": 0, "radicals": 0, "links": 0, "words_transcribed": 0}
+    with open(path, encoding="utf-8") as handle:
+        payload = json.load(handle)
+
+    now = utc_now()
+    characters = payload.get("characters", [])
+    radicals = payload.get("radicals", [])
+
+    with get_connection() as connection:
+        for entry in characters:
+            connection.execute(
+                CHARACTER_SQL,
+                (
+                    entry["hanzi"],
+                    entry.get("pinyin", "") or "",
+                    entry.get("han_viet", "") or "",
+                    entry.get("han_viet_source", "") or "",
+                    entry.get("meaning_vi", "") or "",
+                    entry.get("meaning_en", "") or "",
+                    entry.get("traditional"),
+                    entry.get("stroke_count"),
+                    entry.get("radical_number"),
+                    json.dumps(entry.get("radicals", []), ensure_ascii=False),
+                    entry.get("mnemonic_vi", "") or "",
+                    entry.get("stroke_hint_vi", "") or "",
+                    now,
+                    now,
+                ),
+            )
+        for radical in radicals:
+            connection.execute(
+                RADICAL_SQL,
+                (
+                    radical["hanzi"],
+                    radical.get("name_vi", ""),
+                    radical.get("meaning_vi", ""),
+                    radical.get("mnemonic_vi", ""),
+                    now,
+                    now,
+                ),
+            )
+
+        # --- link words to characters -----------------------------------
+        words = connection.execute("SELECT id, hanzi FROM vocabulary").fetchall()
+        readings = {
+            row["hanzi"]: row["han_viet"]
+            for row in connection.execute(
+                "SELECT hanzi, han_viet FROM characters WHERE han_viet <> ''"
+            )
+        }
+        links: list[tuple[int, int, str]] = []
+        transcriptions: list[tuple[str, int]] = []
+        for row in words:
+            positions = [
+                (index, char)
+                for index, char in enumerate(row["hanzi"])
+                if _CJK.match(char)
+            ]
+            links.extend((row["id"], index, char) for index, char in positions)
+            syllables = [readings.get(char) for _, char in positions]
+            # All or nothing: "đồ thư ?" reads as a bug, and a partial
+            # transcription is exactly the case where a learner would trust a
+            # reading that is not there.
+            if syllables and all(syllables):
+                transcriptions.append((" ".join(syllables), row["id"]))
+
+        connection.execute("DELETE FROM word_characters")
+        connection.executemany(
+            "INSERT INTO word_characters (vocabulary_id, position, hanzi) VALUES (?, ?, ?)",
+            links,
+        )
+        connection.executemany(
+            "UPDATE vocabulary SET han_viet = ? WHERE id = ?", transcriptions
+        )
+
+        # --- derive per-character reach ----------------------------------
+        # `hsk_level` here is the earliest band a character is met in, which is
+        # the order a learner should meet the characters themselves.
+        connection.execute(
+            """
+            UPDATE characters SET
+                word_count = COALESCE((
+                    SELECT COUNT(DISTINCT wc.vocabulary_id)
+                    FROM word_characters wc WHERE wc.hanzi = characters.hanzi
+                ), 0),
+                hsk_level = (
+                    SELECT v.hsk_level
+                    FROM word_characters wc
+                    JOIN vocabulary v ON v.id = wc.vocabulary_id
+                    WHERE wc.hanzi = characters.hanzi
+                    ORDER BY CASE v.hsk_level
+                        WHEN '1' THEN 1 WHEN '2' THEN 2 WHEN '3' THEN 3
+                        WHEN '4' THEN 4 WHEN '5' THEN 5 WHEN '6' THEN 6
+                        ELSE 7 END
+                    LIMIT 1
+                )
+            """
+        )
+
+    return {
+        "characters": len(characters),
+        "radicals": len(radicals),
+        "links": len(links),
+        "words_transcribed": len(transcriptions),
+    }
+
+
 def seed_database(return_details: bool = False) -> int | dict[str, int]:
     """Insert missing vocabulary and progress rows, preserving existing data."""
     initialize_database()
@@ -539,6 +701,8 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
     full_result = seed_full_vocabulary(return_details=True)
     leveled_sentences = seed_leveled_sentences()
     grammar_points = seed_grammar()
+    # Last, because it indexes the vocabulary the steps above just wrote.
+    characters = seed_characters()
     if return_details:
         return {
             "vocabulary_added": added,
@@ -547,6 +711,10 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
             "meanings_repaired": full_result["meanings_repaired"],
             "leveled_sentences_added": leveled_sentences,
             "grammar_points": grammar_points,
+            "characters": characters["characters"],
+            "radicals": characters["radicals"],
+            "word_character_links": characters["links"],
+            "words_transcribed": characters["words_transcribed"],
         }
     return added
 
@@ -559,6 +727,9 @@ def main() -> None:
         f"Upserted {result['full_vocabulary_upserted']} full HSK 1-9 vocabulary records "
         f"and repaired {result['meanings_repaired']} English/mojibake meanings. "
         f"Seeded {result['grammar_points']} grammar points. "
+        f"Seeded {result['characters']} characters and {result['radicals']} radicals, "
+        f"linked {result['word_character_links']} word-character pairs and "
+        f"transcribed {result['words_transcribed']} words into âm Hán-Việt. "
         f"Seed totals: {len(HSK1_VOCABULARY)} curated words, {len(HSK1_SENTENCES)} sentences."
     )
 

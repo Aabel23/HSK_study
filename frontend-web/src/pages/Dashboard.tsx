@@ -5,7 +5,7 @@ import { HIDDEN_ROUTES } from "../components/navigation";
 import { BaoTuongHoa } from "../components/Ornament";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
-import { formatNumber, formatPercent } from "../lib/format";
+import { formatNumber, formatPercent, shortMeaning } from "../lib/format";
 import {
   Badge,
   Button,
@@ -36,6 +36,7 @@ import {
   IconPencil,
   IconRefresh,
   IconShuffle,
+  IconSpark,
   IconTarget,
 } from "../components/icons";
 
@@ -44,7 +45,8 @@ import {
 const FEATURES = [
   { to: "/review", label: "Ôn tập thông minh", desc: "Đúng từ, đúng lúc", icon: IconRefresh, accent: "accent" as const },
   { to: "/vocabulary", label: "Từ vựng", desc: "Tra cứu & lọc theo cấp độ", icon: IconBook, accent: "sky" as const },
-  { to: "/flashcards", label: "Flashcard", desc: "Ôn nhanh, tự đánh giá", icon: IconLayers, accent: "gold" as const },
+  { to: "/decode", label: "Giải mã Hán-Việt", desc: "Đọc hiểu cả từ chưa học", icon: IconSpark, accent: "violet" as const },
+  { to: "/flashcards", label: "Thẻ ghi nhớ", desc: "Ôn nhanh, tự đánh giá", icon: IconLayers, accent: "gold" as const },
   { to: "/matching", label: "Nối từ", desc: "Ghép Hán tự với nghĩa/pinyin", icon: IconShuffle, accent: "jade" as const },
   { to: "/sentences", label: "Luyện câu", desc: "Sắp xếp cụm từ đúng thứ tự", icon: IconMessage, accent: "sky" as const },
   { to: "/listening", label: "Luyện nghe", desc: "Nghe phát âm, chọn đáp án", icon: IconHeadphones, accent: "violet" as const },
@@ -326,7 +328,7 @@ export default function Dashboard() {
                 <Badge tone="neutral">
                   <span className="hanzi font-semibold text-ink">{item.hanzi}</span>
                   <span className="text-ink-faint">·</span>
-                  {item.meaning}
+                  {shortMeaning(item.meaning, { senses: 2, chars: 70 })}
                 </Badge>
               </Reveal>
             ))}

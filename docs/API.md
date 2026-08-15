@@ -33,11 +33,50 @@ những phiên dài liên tục; phiên chỉ chứa tối đa số từ thực 
 
 ## Matching
 
-- `POST /matching/session` — body `{ "mode": "meaning", "count": 6 }`.
+- `POST /matching/session` — body `{ "mode": "meaning", "count": 6, "hsk_level": "1" }`.
+  `hsk_level` là tuỳ chọn; bỏ trống thì rút từ toàn bộ kho như trước.
 - `POST /matching/attempt` — body `{ "session_id": 2, "vocabulary_id": 1, "mode": "meaning", "is_correct": true }`.
 - `POST /matching/session/{session_id}/complete` — body `{ "total_items": 6, "correct_items": 6, "incorrect_items": 2 }`.
 
 `mode` chỉ nhận `meaning` hoặc `pinyin`. Hai danh sách trả về chứa cùng tập `vocabulary_id` nhưng khác thứ tự.
+
+Ở chế độ `meaning`, các từ được chọn sao cho nghĩa của chúng dài xấp xỉ nhau: ô
+ghi "ăn" nằm cạnh ô dài bốn trăm ký tự thì nhìn là nối được, không cần biết
+nghĩa. Xem `docs/SPEC.md` mục "Độ dài đáp án trắc nghiệm".
+
+## Characters (`/api/characters`)
+
+Lớp chữ Hán dưới lớp từ vựng, phục vụ màn hình Giải mã Hán-Việt.
+
+### Tra cứu
+
+- `GET /characters` — danh sách, phân trang. Query: `search` (khớp chữ Hán, âm
+  Hán-Việt, pinyin hoặc nghĩa), `hsk_level`, `sort`, `limit`, `offset`,
+  `in_bank_only`. `sort` nhận `reach` (mặc định — nhiều từ mở khoá nhất trước),
+  `strokes`, `level`, `han_viet`.
+- `GET /characters/{hanzi}` — một chữ, kèm `radical_details` (bộ thủ đã tra
+  nghĩa) và `words` (họ từ, tối đa 60 từ, xếp theo cấp HSK rồi độ dài).
+- `GET /characters/stats` — tổng số chữ, số chữ đã nắm, số từ **giải mã được**
+  và số từ **đã mở khoá** nhờ những chữ đã nắm.
+- `POST /characters/{hanzi}/status` — body `{ "status": "mastered" }`. Nhận
+  `new`, `learning` hoặc `mastered`.
+
+### Luyện giải mã
+
+- `GET /characters/modes` — ba chế độ kèm nhãn tiếng Việt.
+- `POST /characters/drill/session` — body
+  `{ "mode": "han_viet_to_meaning", "count": 10, "hsk_level": "3" }`.
+- `GET /characters/drill/session/{id}/next` — một câu hỏi: từ, pinyin, âm
+  Hán-Việt cả từ, `breakdown` (một mục cho mỗi chữ, đúng thứ tự trong từ) và
+  bốn `options`.
+- `POST /characters/drill/attempt` — body
+  `{ "session_id": 1, "word": "图书馆", "is_correct": true, "vocabulary_id": 42 }`.
+  Ghi công cho **từng chữ** trong từ, không phải cho từ.
+- `POST /characters/drill/session/{id}/complete` — như các phiên khác.
+- `GET /characters/drill/stats` — số phiên, số câu đúng/sai, độ chính xác.
+
+Đề ưu tiên rút những từ người học chưa mở bao giờ. Các lựa chọn được chọn cho
+cân độ dài (hoặc cân số âm tiết, với đáp án là âm Hán-Việt).
 
 ## Dashboard
 

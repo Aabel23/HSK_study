@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 // them instead of blocking startup.
 const Review = lazy(() => import("./pages/Review"));
 const Vocabulary = lazy(() => import("./pages/Vocabulary"));
+const Decode = lazy(() => import("./pages/Decode"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
 const Matching = lazy(() => import("./pages/Matching"));
 const Sentences = lazy(() => import("./pages/Sentences"));
@@ -40,6 +41,7 @@ export default function App() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/review" element={<Review />} />
                     <Route path="/vocabulary" element={<Vocabulary />} />
+                    <Route path="/decode" element={<Decode />} />
                     <Route path="/flashcards" element={<Flashcards />} />
                     <Route path="/matching" element={<Matching />} />
                     <Route path="/sentences" element={<Sentences />} />

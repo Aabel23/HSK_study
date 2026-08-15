@@ -7,7 +7,7 @@ import { useLevel } from "../lib/levelContext";
 import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { usePlayAudio, PLAYBACK_RATES, type PlaybackRate } from "../lib/useAudio";
-import { formatNumber, formatPercent } from "../lib/format";
+import { formatNumber, formatPercent, shortMeaning } from "../lib/format";
 import type { AnswerResult, HskLevel, TypingItem, TypingMode } from "../lib/types";
 import {
   Badge,
@@ -297,8 +297,15 @@ export default function Typing() {
                     <p className="hanzi text-6xl font-bold leading-none text-ink">{current.prompt.hanzi}</p>
                   )}
                   {current?.prompt.meaning && (
-                    <p className={clsx(current?.prompt.hanzi ? "text-sm text-ink-soft" : "text-2xl font-semibold text-ink")}>
-                      {current.prompt.meaning}
+                    <p
+                      className={clsx(current?.prompt.hanzi ? "text-sm text-ink-soft" : "text-2xl font-semibold text-ink")}
+                      title={current.prompt.meaning}
+                    >
+                      {/* The prompt has to fit on one screen. A full CVDICT
+                          entry set at text-2xl pushes the input box out of
+                          view, so the leading senses stand in and the whole
+                          gloss is revealed with the answer. */}
+                      {shortMeaning(current.prompt.meaning, { senses: 3, chars: 110 })}
                     </p>
                   )}
                   {current?.prompt.pinyin && <p className="text-lg text-accent">{current.prompt.pinyin}</p>}

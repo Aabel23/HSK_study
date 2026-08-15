@@ -8,6 +8,13 @@ import type {
   ListeningMode,
   ListeningSession,
   ListeningStats,
+  CharacterItem,
+  CharacterListResponse,
+  CharacterStats,
+  DecodeMode,
+  DecodeQuestion,
+  DecodeSession,
+  DecodeStats,
   MatchingSession,
   ProgressSummary,
   QuestionType,
@@ -134,11 +141,59 @@ export const api = {
       }),
   },
 
+  characters: {
+    list: (params: {
+      search?: string;
+      hskLevel?: HskLevel | null;
+      sort?: string;
+      limit?: number;
+      offset?: number;
+    }) => {
+      const query = new URLSearchParams();
+      if (params.search) query.set("search", params.search);
+      if (params.hskLevel) query.set("hsk_level", params.hskLevel);
+      if (params.sort) query.set("sort", params.sort);
+      query.set("limit", String(params.limit ?? 40));
+      query.set("offset", String(params.offset ?? 0));
+      return request<CharacterListResponse>(`/api/characters?${query.toString()}`);
+    },
+    get: (hanzi: string) => request<CharacterItem>(`/api/characters/${encodeURIComponent(hanzi)}`),
+    stats: () => request<CharacterStats>("/api/characters/stats"),
+    setStatus: (hanzi: string, status: "new" | "learning" | "mastered") =>
+      request(`/api/characters/${encodeURIComponent(hanzi)}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      }),
+    drillStats: () => request<DecodeStats>("/api/characters/drill/stats"),
+    createSession: (mode: DecodeMode, count: number, hskLevel?: HskLevel | null) =>
+      request<DecodeSession>("/api/characters/drill/session", {
+        method: "POST",
+        body: JSON.stringify({ mode, count, hsk_level: hskLevel ?? null }),
+      }),
+    next: (sessionId: number) =>
+      request<DecodeQuestion>(`/api/characters/drill/session/${sessionId}/next`),
+    attempt: (sessionId: number, word: string, isCorrect: boolean, vocabularyId: number | null) =>
+      request("/api/characters/drill/attempt", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          word,
+          is_correct: isCorrect,
+          vocabulary_id: vocabularyId,
+        }),
+      }),
+    complete: (sessionId: number, total: number, correct: number, incorrect: number) =>
+      request(`/api/characters/drill/session/${sessionId}/complete`, {
+        method: "POST",
+        body: JSON.stringify({ total_items: total, correct_items: correct, incorrect_items: incorrect }),
+      }),
+  },
+
   matching: {
-    createSession: (mode: "meaning" | "pinyin", count: number) =>
+    createSession: (mode: "meaning" | "pinyin", count: number, hskLevel?: HskLevel | null) =>
       request<MatchingSession>("/api/matching/session", {
         method: "POST",
-        body: JSON.stringify({ mode, count }),
+        body: JSON.stringify({ mode, count, hsk_level: hskLevel ?? null }),
       }),
     attempt: (sessionId: number, vocabularyId: number, mode: string, isCorrect: boolean) =>
       request("/api/matching/attempt", {

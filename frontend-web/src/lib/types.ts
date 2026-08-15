@@ -5,6 +5,9 @@ export const HSK_LEVELS: HskLevel[] = ["1", "2", "3", "4", "5", "6", "7-9"];
 export type ProgressStatus = "new" | "learning" | "review" | "mastered";
 
 export interface VocabularyItem {
+  /** The word spelled in âm Hán-Việt — 图书馆 → "đồ thư quán". Null when at
+   *  least one of its characters has no recorded reading. */
+  han_viet?: string | null;
   id: number;
   hanzi: string;
   pinyin: string;
@@ -649,4 +652,115 @@ export interface DonateSummary {
   paid_count: number;
   paid_total: number;
   last_paid_at: string | null;
+}
+
+/* --------------------------------------------------------------------------
+   The character layer
+
+   Everything above is keyed by word. These are keyed by character, which is
+   what the Hán-Việt decoder screen works in.
+-------------------------------------------------------------------------- */
+
+export interface RadicalDetail {
+  hanzi: string;
+  name_vi: string;
+  meaning_vi: string;
+  mnemonic_vi: string;
+}
+
+export interface CharacterWord {
+  id: number;
+  hanzi: string;
+  pinyin: string;
+  han_viet: string | null;
+  meaning: string;
+  hsk_level: HskLevel;
+  status: ProgressStatus;
+}
+
+export interface CharacterItem {
+  hanzi: string;
+  pinyin: string;
+  han_viet: string;
+  /** Which dataset the reading came from, so the page can flag the weaker ones. */
+  han_viet_source: string;
+  meaning_vi: string;
+  meaning_en: string;
+  traditional: string | null;
+  stroke_count: number | null;
+  radical_number: number | null;
+  radicals: string[];
+  mnemonic_vi: string;
+  stroke_hint_vi: string;
+  hsk_level: HskLevel | null;
+  /** How many words in the bank are built on this character. */
+  word_count: number;
+  status: "new" | "learning" | "mastered";
+  seen_count: number;
+  correct_count: number;
+  incorrect_count: number;
+  is_favorite: number;
+  last_seen_at: string | null;
+  /** Only present on the single-character lookup. */
+  radical_details?: RadicalDetail[];
+  words?: CharacterWord[];
+}
+
+export interface CharacterListResponse {
+  items: CharacterItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CharacterStats {
+  total: number;
+  with_reading: number;
+  mastered: number;
+  learning: number;
+  words_decodable: number;
+  words_total: number;
+  /** Bank words reachable from the characters already marked mastered. */
+  words_unlocked: number;
+}
+
+export type DecodeMode = "han_viet_to_meaning" | "meaning_to_han_viet" | "character_reading";
+
+export interface DecodeSession {
+  session_id: number;
+  mode: DecodeMode;
+  mode_label: string;
+  total: number;
+  hsk_level: string;
+}
+
+export interface DecodeBreakdownPart {
+  hanzi: string;
+  pinyin: string;
+  han_viet: string;
+  meaning_vi: string;
+  mnemonic_vi?: string;
+  word_count?: number;
+}
+
+export interface DecodeQuestion {
+  session_id: number;
+  mode: DecodeMode;
+  mode_label: string;
+  vocabulary_id: number | null;
+  word: string;
+  pinyin: string;
+  han_viet: string;
+  hsk_level: HskLevel;
+  meaning: string;
+  breakdown: DecodeBreakdownPart[];
+  options: string[];
+  prompt: { meaning?: string };
+}
+
+export interface DecodeStats {
+  sessions: number;
+  correct: number;
+  incorrect: number;
+  accuracy: number;
 }
