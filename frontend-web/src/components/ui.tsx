@@ -834,11 +834,13 @@ export function SessionComplete({
             GLOW_ACCENT[tone]
           )}
         />
-        {/* Placed whole in the bottom-right rather than bled off the edge. A
-            宝相花 is radially symmetric, so a cropped one reads as damage — the
-            reason it was taken off the cards in the first place. Inset, it reads
-            as a seal stamped in the corner. */}
-        <BaoTuongHoa className="pointer-events-none absolute bottom-3 right-3 -z-10 h-40 w-40 text-gold opacity-[0.18]" />
+        {/* Sized to own the bottom-right quarter of the card, and flush into the
+            corner rather than floating near it — at 10rem it read as a small
+            sticker dropped on the card instead of as part of it.
+            Still placed whole: a 宝相花 is radially symmetric, so a cropped one
+            reads as damage. Filling the corner and being cut by it are two
+            different things. */}
+        <BaoTuongHoa className="pointer-events-none absolute bottom-0 right-0 -z-10 h-1/2 w-1/2 text-gold opacity-[0.16]" />
 
         <div className="animate-bloom-in relative inline-flex">
           <ProgressRing value={percentage} accent={tone} size={148} stroke={10}>

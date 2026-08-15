@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -42,6 +43,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.seed_data import FULL_DATA_DIR, FULL_LEVEL_FILES, HSK1_VOCABULARY
+from scripts.resolve_references import REFERENCE as REFERENCE_ONLY
 from scripts.translate_meanings import load_dictionary, lookup
 
 
@@ -56,6 +58,96 @@ def _senses(gloss: str) -> set[str]:
     return {part.strip().lower() for part in (gloss or "").split(";") if part.strip()}
 
 
+#: Letters that only appear in Vietnamese, never in an English gloss.
+_VIETNAMESE_MARKS = set("àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ")
+
+
+def has_untranslated_english(gloss: str, meaning_en: str | None = None) -> bool:
+    """True when a sense is a run of English that never got translated.
+
+    The import mistranslated the English infinitive marker "to" as the
+    Vietnamese word "từ" and split it off as its own sense, stranding the rest:
+    "to make a copy" became "make a copy; từ".
+
+    Detection is per sense, and only a sense with no Vietnamese diacritic
+    anywhere in it is even considered — that alone clears "an toàn" and "to
+    lớn", which any English-word-list check would flag.
+
+    Then two tests, in order of how much they can be trusted:
+
+    1. **The sense appears verbatim in the English column.** Decisive, and the
+       only test that catches a one-word leak: 处 reads "reside; từ", and
+       "reside" is right there in "to reside; to live; to dwell". A single word
+       is far too short to judge on shape alone, so without the English column
+       to compare against it would have to be let through.
+    2. **Three or more Latin words.** The fallback for entries with no English
+       recorded. A chemical formula or a loanword never runs that long.
+    """
+    english = (meaning_en or "").lower()
+    for sense in (gloss or "").split(";"):
+        sense = sense.strip()
+        if not sense or any(char in _VIETNAMESE_MARKS for char in sense.lower()):
+            continue
+        if not re.search(r"[A-Za-z]", sense):
+            continue  # Chinese or punctuation only; nothing to judge.
+        if english and sense.lower() in english:
+            return True
+        if len(re.findall(r"[A-Za-z][A-Za-z'\-]*", sense)) >= 3:
+            return True
+    return False
+
+
+def strip_english_prefix(gloss: str, meaning_en: str | None) -> str:
+    """Drop a stranded English sense and the "từ" the importer left beside it.
+
+    The signature of this bug is exact and worth keying on. The importer read an
+    English gloss beginning "to …", mistranslated the infinitive marker as the
+    Vietnamese word "từ", and emitted the two as separate senses — so 限制 reads
+    "restrict; từ; hạn chế; giới hạn; …" with the correct Vietnamese sitting
+    right there after the wreckage.
+
+    Keying on that adjacency is what makes the repair safe. Plenty of glosses
+    hold a single Latin word that is genuinely Vietnamese — email, radio, laser,
+    sushi, World Cup — and no test of shape can tell those from "restrict".
+    A bare "từ" standing immediately after them can: it never occurs otherwise,
+    and 从 ("từ; thông qua; qua") keeps its "từ" because nothing precedes it.
+    """
+    senses = [part.strip() for part in (gloss or "").split(";")]
+    english = (meaning_en or "").lower()
+
+    kept: list[str] = []
+    index = 0
+    while index < len(senses):
+        sense = senses[index]
+        follows_marker = index + 1 < len(senses) and senses[index + 1].lower() == "từ"
+        looks_english = (
+            sense
+            and not any(char in _VIETNAMESE_MARKS for char in sense.lower())
+            and bool(re.search(r"[A-Za-z]", sense))
+            and (not english or sense.lower() in english or len(sense.split()) >= 2)
+        )
+        if follows_marker and looks_english:
+            index += 2  # drop the English sense and the "từ" after it
+            continue
+        if sense:
+            kept.append(sense)
+        index += 1
+
+    # Never strip an entry down to nothing; a broken gloss beats an empty one.
+    return "; ".join(kept) if kept else gloss
+
+
+def close_orphan_bracket(gloss: str) -> str:
+    """Put back an opening bracket the source dropped.
+
+    CVDICT ships a few glosses that open mid-qualifier — 赐 begins "hình thức
+    hạn chế) phong tặng" — which renders as a stray bracket on the card.
+    """
+    if gloss.count(")") == gloss.count("(") + 1 and not gloss.lstrip().startswith("("):
+        return f"({gloss.lstrip()}"
+    return gloss
+
+
 def _merge(current: str, candidate: str) -> str:
     """Current gloss first, then the CVDICT senses it does not already cover."""
     kept = [part.strip() for part in current.split(";") if part.strip()]
@@ -68,11 +160,19 @@ def _merge(current: str, candidate: str) -> str:
     return "; ".join(kept)
 
 
-def _decide(hanzi: str, current: str, candidate: str) -> str | None:
+def _decide(hanzi: str, current: str, candidate: str, meaning_en: str | None) -> str | None:
     """Return the reason to take ``candidate``, or ``None`` to keep ``current``."""
     current_senses = _senses(current)
     candidate_senses = _senses(candidate)
     if not candidate_senses or current_senses == candidate_senses:
+        return None
+
+    # CVDICT defines some headwords by pointing at another one — 大伙儿 is only
+    # "biến thể er hoá của 大伙". `resolve_references.py` replaces those with the
+    # target's real meaning, and without this guard the two scripts fight: this
+    # one would hand the useless pointer straight back. A gloss that explains
+    # nothing never wins, whatever the overlap rules say.
+    if REFERENCE_ONLY.match(candidate.strip()):
         return None
 
     if current_senses & candidate_senses:
@@ -93,7 +193,14 @@ def _decide(hanzi: str, current: str, candidate: str) -> str | None:
     # one — 更 is gèng "hơn" on an HSK card but gēng "thay đổi" in CVDICT's first
     # entry. Replacing there swaps a right answer for a wrong one, so single
     # characters are left alone and only ever enriched.
-    return "replaced" if len(hanzi) >= 2 else None
+    #
+    # Unless the gloss still contains raw English, which is not a disagreement
+    # between two defensible readings but a broken entry. 更's "hơn, thêm" is
+    # Vietnamese and stays protected; 抄's "make a copy; từ" is not, and CVDICT's
+    # "sao chép; đạo văn; …" can only be an improvement.
+    if len(hanzi) >= 2 or has_untranslated_english(current, meaning_en):
+        return "replaced"
+    return None
 
 
 def repair(*, dry_run: bool, level: str | None, limit: int | None) -> Counter:
@@ -129,8 +236,17 @@ def repair(*, dry_run: bool, level: str | None, limit: int | None) -> Counter:
                 counts["not_in_cvdict"] += 1
                 continue
 
-            current = (record.get("meaning") or "").strip()
-            reason = _decide(hanzi, current, candidate)
+            # Two repairs that need no second opinion from CVDICT, because the
+            # entry is damaged rather than merely disputed.
+            original = (record.get("meaning") or "").strip()
+            current = close_orphan_bracket(
+                strip_english_prefix(original, record.get("meaning_en"))
+            )
+            if current != original:
+                record["meaning"] = current
+                counts["cleaned"] += 1
+                changed += 1
+            reason = _decide(hanzi, current, candidate, record.get("meaning_en"))
             if not reason:
                 counts["kept"] += 1
                 continue
@@ -141,7 +257,9 @@ def repair(*, dry_run: bool, level: str | None, limit: int | None) -> Counter:
             # CVDICT adds. Overwriting would quietly drop a sense the current
             # gloss had and CVDICT splits differently — 才 is "mới; tài" here and
             # "khả năng; tài năng; …" there, and the adverb "mới" must survive.
-            merged = _merge(current, candidate) if reason == "enriched" else candidate
+            merged = close_orphan_bracket(
+                _merge(current, candidate) if reason == "enriched" else candidate
+            )
             if merged == current:
                 counts["kept"] += 1
                 continue

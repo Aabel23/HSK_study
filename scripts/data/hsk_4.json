@@ -96,7 +96,7 @@
     "hanzi": "无",
     "traditional": "無",
     "pinyin": "wú",
-    "meaning": "have; từ; không; không có",
+    "meaning": "không; không có; không có gì; thiếu; không-; vô-; -thiếu",
     "meaning_en": "not to have; no; none; not; to lack; un-; -less",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -168,7 +168,7 @@
     "hanzi": "呀",
     "traditional": "呀",
     "pinyin": "ya",
-    "meaning": "啊 after a vowel, expressing surprise or doubt); từ; (trợ từ tương đương với 啊 sau nguyên âm, biểu đạt sự ngạc nhiên hoặc nghi ngờ)",
+    "meaning": "(trợ từ tương đương với 啊 sau nguyên âm, biểu đạt sự ngạc nhiên hoặc nghi ngờ)",
     "meaning_en": "(particle equivalent to 啊 after a vowel, expressing surprise or doubt)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -291,7 +291,7 @@
     "hanzi": "处",
     "traditional": "處",
     "pinyin": "chǔ",
-    "meaning": "reside; từ",
+    "meaning": "cư trú; sống; ở; dừng chân; nằm ở; ở lại; hòa hợp; ở vào vị trí; xử lý; kỷ luật; trừng phạt",
     "meaning_en": "to reside; to live; to dwell; to be in; to be situated at; to stay; to get along with; to be in a position of; to deal with; to discipline; to punish",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -449,7 +449,7 @@
     "hanzi": "定",
     "traditional": "定",
     "pinyin": "dìng",
-    "meaning": "set; từ",
+    "meaning": "cố định; đặt; làm cho xác định; đặt mua (báo, v.v.); đặt trước (vé, v.v.); đặt hàng; đông lại; kết tụ; (văn học) chắc chắn",
     "meaning_en": "to set; to fix; to determine; to decide; to order",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -751,7 +751,7 @@
     "hanzi": "底",
     "traditional": "底",
     "pinyin": "de",
-    "meaning": "的 as possessive particle); từ; (tương đương với 的 như trợ từ sở hữu)",
+    "meaning": "(tương đương với 的 như trợ từ sở hữu)",
     "meaning_en": "(equivalent to 的 as possessive particle)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -770,7 +770,7 @@
     "hanzi": "不管",
     "traditional": "不管",
     "pinyin": "bù guǎn",
-    "meaning": "be concerned; từ; không; không có; không quan tâm; bất kể; dù sao đi nữa",
+    "meaning": "không; không có; không quan tâm; bất kể; dù sao đi nữa",
     "meaning_en": "not to be concerned; regardless of; no matter",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -1267,7 +1267,7 @@
     "hanzi": "投",
     "traditional": "投",
     "pinyin": "tóu",
-    "meaning": "cast; từ",
+    "meaning": "ném (thứ gì theo hướng cụ thể: bóng, lao, lựu đạn, v.v.); bỏ phiếu; phóng (ánh nhìn, bóng, v.v.); bỏ vào (tiền đầu tư, xu để vận hành máy bán hàng tự động); gửi (thư, bản thảo, v.v.); lao mình vào (sông, giếng, v.v. để tự tử); đi đến; tìm nơi trú ẩn; đặt mình vào tay ai; (thông tục) xả (quần áo) trong nước",
     "meaning_en": "to cast; to send; to throw oneself (into the river etc); to seek refuge; to place oneself into the hands of",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -1486,7 +1486,7 @@
     "hanzi": "抱",
     "traditional": "抱",
     "pinyin": "bào",
-    "meaning": "hold; từ",
+    "meaning": "ôm; mang (trong tay); ôm ấp; bao quanh; trân trọng; (khẩu ngữ) (quần áo) vừa vặn",
     "meaning_en": "to hold; to carry (in one's arms); to hug; to embrace; to surround; to cherish; (coll.) (of clothes) to fit nicely",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -1633,7 +1633,7 @@
     "hanzi": "冲",
     "traditional": "沖",
     "pinyin": "chōng",
-    "meaning": "dash against; từ",
+    "meaning": "(nước) xô vào; trộn với nước; pha; rửa; tráng; phát triển (phim); bay lên không trung; xung đột; va chạm với",
     "meaning_en": "(of water) to dash against; to mix with water; to infuse; to rinse; to flush; to develop (a film); to rise in the air; to clash; to collide with",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -1808,7 +1808,7 @@
     "hanzi": "翻",
     "traditional": "翻",
     "pinyin": "fān",
-    "meaning": "turn over; từ",
+    "meaning": "lật; lật lại; lật úp; lục tìm; dịch mã; giải mã; gấp đôi; leo qua; vượt qua",
     "meaning_en": "to turn over; to flip over; to overturn; to rummage through; to translate; to decode; to double; to climb over or into; to cross",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -1878,7 +1878,7 @@
     "hanzi": "醒",
     "traditional": "醒",
     "pinyin": "xǐng",
-    "meaning": "wake up; từ",
+    "meaning": "tỉnh dậy; tỉnh táo; nhận ra; tỉnh rượu; tỉnh lại",
     "meaning_en": "to wake up; to be awake; to become aware; to sober up; to come to",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2047,7 +2047,7 @@
     "hanzi": "落",
     "traditional": "落",
     "pinyin": "là",
-    "meaning": "leave out; từ",
+    "meaning": "bỏ sót; bị thiếu; quên không mang; bị tụt lại phía sau",
     "meaning_en": "to leave out; to be missing; to leave behind or forget to bring; to lag or fall behind",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2149,7 +2149,7 @@
     "hanzi": "烧",
     "traditional": "燒",
     "pinyin": "shāo",
-    "meaning": "burn; từ",
+    "meaning": "đốt; nấu; hầm; nướng; quay; làm nóng; đun sôi (trà, nước, v.v.); sốt; bị sốt; (khẩu ngữ) để cho mọi thứ trở nên mất kiểm soát",
     "meaning_en": "to burn; to cook; to stew; to bake; to roast; to heat; to boil (tea, water etc); fever; to run a temperature; (coll.) to let things go to one's head",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2231,7 +2231,7 @@
     "hanzi": "圈",
     "traditional": "圈",
     "pinyin": "juān",
-    "meaning": "confine; từ",
+    "meaning": "giam giữ; khóa lại; nhốt vào",
     "meaning_en": "to confine; to lock up; to pen in",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2392,7 +2392,7 @@
     "hanzi": "失败",
     "traditional": "失敗",
     "pinyin": "shī bài",
-    "meaning": "be defeated; từ; bị đánh bại; thua; thất bại (ví dụ: thí nghiệm); sự thất bại; sự thua cuộc; lượng từ: 次",
+    "meaning": "bị đánh bại; thua; thất bại (ví dụ: thí nghiệm); sự thất bại; sự thua cuộc; lượng từ: 次",
     "meaning_en": "to be defeated; to lose; to fail (e.g. experiments); failure; defeat",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2413,7 +2413,7 @@
     "hanzi": "抽",
     "traditional": "抽",
     "pinyin": "chōu",
-    "meaning": "draw out; từ; rút ra; kéo ra từ giữa; gỡ bỏ một phần của toàn bộ; (một số loại cây) nảy mầm hoặc đâm chồi; quất hoặc đánh",
+    "meaning": "rút ra; kéo ra từ giữa; gỡ bỏ một phần của toàn bộ; (một số loại cây) nảy mầm hoặc đâm chồi; quất hoặc đánh",
     "meaning_en": "to draw out; to pull out from in between; to remove part of the whole; (of certain plants) to sprout or bud; to whip or thrash",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -2879,7 +2879,7 @@
     "hanzi": "切",
     "traditional": "切",
     "pinyin": "qiē",
-    "meaning": "cut; từ",
+    "meaning": "cắt; thái; khắc; (toán) tiếp tuyến",
     "meaning_en": "to cut; to slice; to carve; (math) tangential",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3044,7 +3044,7 @@
     "hanzi": "战斗",
     "traditional": "戰鬥",
     "pinyin": "zhàn dòu",
-    "meaning": "fight; từ; chiến đấu; tham gia chiến đấu; đấu tranh; trận chiến; lượng từ: 场, 次",
+    "meaning": "chiến đấu; tham gia chiến đấu; đấu tranh; trận chiến; lượng từ: 场, 次",
     "meaning_en": "to fight; to engage in combat; struggle; battle",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3083,7 +3083,7 @@
     "hanzi": "替",
     "traditional": "替",
     "pinyin": "tì",
-    "meaning": "substitute for; từ",
+    "meaning": "thay thế cho; thay chỗ; thay thế; cho; thay mặt; đại diện cho",
     "meaning_en": "to substitute for; to take the place of; to replace; for; on behalf of; to stand in for",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3164,7 +3164,7 @@
     "hanzi": "摆",
     "traditional": "擺",
     "pinyin": "bǎi",
-    "meaning": "arrange; từ",
+    "meaning": "sắp xếp; trưng bày; di chuyển qua lại; con lắc",
     "meaning_en": "to arrange; to exhibit; to move to and fro; a pendulum",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3291,7 +3291,7 @@
     "hanzi": "编",
     "traditional": "編",
     "pinyin": "biān",
-    "meaning": "weave; từ",
+    "meaning": "dệt; bện; tổ chức; nhóm; sắp xếp; chỉnh lý; biên soạn; viết; sáng tác; bịa; chế tạo",
     "meaning_en": "to weave; to plait; to organize; to group; to arrange; to edit; to compile; to write; to compose; to fabricate; to make up",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3352,7 +3352,7 @@
     "hanzi": "躺",
     "traditional": "躺",
     "pinyin": "tǎng",
-    "meaning": "recline; từ",
+    "meaning": "ngả lưng; nằm xuống",
     "meaning_en": "to recline; to lie down",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3538,7 +3538,7 @@
     "hanzi": "擦",
     "traditional": "擦",
     "pinyin": "cā",
-    "meaning": "rub; từ",
+    "meaning": "chà; cào; lao; đánh bóng; thoa (son, kem v.v.); lướt qua; bào sợi (rau củ v.v.)",
     "meaning_en": "to rub; to scratch; to towel; to wipe with a towel; to apply (lipstick, lotion etc); to touch; to brush (past); to shred (vegetables etc)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3633,7 +3633,7 @@
     "hanzi": "贴",
     "traditional": "貼",
     "pinyin": "tiē",
-    "meaning": "stick; từ; dán; dính; đăng (ví dụ: trên blog); dựa sát; phù hợp chặt; trợ cấp (ví dụ: tiền ăn hoặc ở); hình dán; lượng từ cho băng dán: miếng",
+    "meaning": "dán; dính; đăng (ví dụ: trên blog); dựa sát; phù hợp chặt; trợ cấp (ví dụ: tiền ăn hoặc ở); hình dán; lượng từ cho băng dán: miếng",
     "meaning_en": "to stick; to paste; to post (e.g. on a blog); to keep close to; to fit snugly; to subsidize; allowance (e.g. money for food or housing); sticker; classifier for sticking plaster: strip",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3828,7 +3828,7 @@
     "hanzi": "结",
     "traditional": "結",
     "pinyin": "jiē",
-    "meaning": "produce (fruit or seeds); từ",
+    "meaning": "(cây) ra (quả hoặc hạt); cách phát âm Đài Loan jié",
     "meaning_en": "(of a plant) to produce (fruit or seeds); Taiwan pr. [jié]",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3883,7 +3883,7 @@
     "hanzi": "烦",
     "traditional": "煩",
     "pinyin": "fán",
-    "meaning": "feel vexed; từ",
+    "meaning": "cảm thấy bực bội; làm phiền; quấy rầy; dư thừa và rối rắm; bức bối",
     "meaning_en": "to feel vexed; to bother; to trouble; superfluous and confusing; edgy",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3921,7 +3921,7 @@
     "hanzi": "卷",
     "traditional": "卷",
     "pinyin": "juǎn",
-    "meaning": "roll up; từ; cuộn lại; Lượng từ cho vật nhỏ được cuộn (cuộn tiền, cuộn phim, v.v.)",
+    "meaning": "cuộn lại; Lượng từ cho vật nhỏ được cuộn (cuộn tiền, cuộn phim, v.v.)",
     "meaning_en": "to roll up; roll; classifier for small rolled things (wad of paper money, movie reel etc)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3942,7 +3942,7 @@
     "hanzi": "透",
     "traditional": "透",
     "pinyin": "tòu",
-    "meaning": "penetrate; từ",
+    "meaning": "(hình thức kết hợp) thâm nhập; thấm qua; nói bí mật; rò rỉ; kỹ lưỡng; tường tận; xuất hiện; lộ ra",
     "meaning_en": "(bound form) to penetrate; to seep through; to tell secretly; to leak; thoroughly; through and through; to appear; to show",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -3961,7 +3961,7 @@
     "hanzi": "治",
     "traditional": "治",
     "pinyin": "zhì",
-    "meaning": "rule; từ",
+    "meaning": "quản lý; cai trị; kiểm soát; điều hành; khai thác (sông ngòi); điều trị (bệnh); tiêu diệt (sâu bệnh); trừng phạt; nghiên cứu",
     "meaning_en": "to rule; to govern; to manage; to control; to harness (a river); to treat (a disease); to wipe out (a pest); to punish; to research",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4111,7 +4111,7 @@
     "hanzi": "量",
     "traditional": "量",
     "pinyin": "liáng",
-    "meaning": "measure; từ",
+    "meaning": "đo lường",
     "meaning_en": "to measure",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4290,7 +4290,7 @@
     "hanzi": "列",
     "traditional": "列",
     "pinyin": "liè",
-    "meaning": "arrange; từ",
+    "meaning": "sắp xếp; xếp hàng; hàng; dãy; (trong bảng dữ liệu) cột; (Đài Loan) hàng",
     "meaning_en": "to arrange; to line up; file; series; (in data tables) column; (Tw) row",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4482,7 +4482,7 @@
     "hanzi": "脱",
     "traditional": "脫",
     "pinyin": "tuō",
-    "meaning": "shed; từ",
+    "meaning": "rụng; cởi; thoát; thoát khỏi",
     "meaning_en": "to shed; to take off; to escape; to get away from",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4499,7 +4499,7 @@
     "hanzi": "挑",
     "traditional": "挑",
     "pinyin": "tiāo",
-    "meaning": "carry on a shoulder pole; từ",
+    "meaning": "gánh bằng đòn gánh; chọn; lựa; chỉ trích; bới móc",
     "meaning_en": "to carry on a shoulder pole; to choose; to pick; to nitpick",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4633,7 +4633,7 @@
     "hanzi": "吸",
     "traditional": "吸",
     "pinyin": "xī",
-    "meaning": "breathe; từ",
+    "meaning": "thở; hút vào; hấp thụ; hít vào",
     "meaning_en": "to breathe; to suck in; to absorb; to inhale",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -4834,7 +4834,7 @@
     "hanzi": "批",
     "traditional": "批",
     "pinyin": "pī",
-    "meaning": "ascertain; từ; xác minh; xử lý; phê bình; chuyển tiếp; lượng từ cho lô, đợt, chuyến bay quân sự; hạng (trong xếp hạng các trường đại học và cao đẳng)",
+    "meaning": "xác minh; xử lý; phê bình; chuyển tiếp; lượng từ cho lô, đợt, chuyến bay quân sự; hạng (trong xếp hạng các trường đại học và cao đẳng)",
     "meaning_en": "to ascertain; to act on; to criticize; to pass on; classifier for batches, lots, military flights; tier (for the ranking of universities and colleges)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5019,7 +5019,7 @@
     "hanzi": "限制",
     "traditional": "限制",
     "pinyin": "xiàn zhì",
-    "meaning": "restrict; từ; hạn chế; giới hạn; ràng buộc; sự hạn chế; lượng từ: 个",
+    "meaning": "hạn chế; giới hạn; ràng buộc; sự hạn chế; lượng từ: 个",
     "meaning_en": "to restrict; to limit; to confine; restriction; limit",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5451,7 +5451,7 @@
     "hanzi": "守",
     "traditional": "守",
     "pinyin": "shǒu",
-    "meaning": "guard; từ",
+    "meaning": "canh gác; phòng thủ; theo dõi; tuân thủ pháp luật; tuân theo (quy tắc hoặc nghi thức); gần; bên cạnh",
     "meaning_en": "to guard; to defend; to keep watch; to abide by the law; to observe (rules or ritual); nearby; adjoining",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5540,7 +5540,7 @@
     "hanzi": "获",
     "traditional": "獲",
     "pinyin": "huò",
-    "meaning": "catch; từ",
+    "meaning": "(văn học) bắt; thu giữ; (văn học) nhận được; đạt được; giành được",
     "meaning_en": "(literary) to catch; to capture; (literary) to get; to obtain; to win",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5557,7 +5557,7 @@
     "hanzi": "指挥",
     "traditional": "指揮",
     "pinyin": "zhǐ huī",
-    "meaning": "conduct; từ; chỉ huy; điều khiển; hướng dẫn; nhạc trưởng (dàn nhạc); lượng từ: 个",
+    "meaning": "chỉ huy; điều khiển; hướng dẫn; nhạc trưởng (dàn nhạc); lượng từ: 个",
     "meaning_en": "to conduct; to command; to direct; conductor (of an orchestra)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5750,7 +5750,7 @@
     "hanzi": "登",
     "traditional": "登",
     "pinyin": "dēng",
-    "meaning": "scale (a height); từ",
+    "meaning": "leo (lên độ cao); đi lên; trèo lên; xuất bản hoặc ghi lại; nhập (ví dụ: vào sổ); đạp chân xuống; dẫm hoặc đạp lên; mang (giày hoặc quần) (phương ngữ); được thu gom và đưa đến sân đập lúa (xưa)",
     "meaning_en": "to scale (a height); to ascend; to mount; to publish or record; to enter (e.g. in a register); to press down with the foot; to step or tread on; to put on (shoes or trousers) (dialect); to be gathered and taken to the threshing ground (old)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5859,7 +5859,7 @@
     "hanzi": "寄",
     "traditional": "寄",
     "pinyin": "jì",
-    "meaning": "send; từ",
+    "meaning": "gửi; gửi thư; giao phó; phụ thuộc; tựa vào; sống (trong nhà); ở nhờ; nuôi dưỡng (con trai,...)",
     "meaning_en": "to send; to mail; to entrust; to depend on; to attach oneself to; to live (in a house); to lodge; foster (son etc)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5893,7 +5893,7 @@
     "hanzi": "引",
     "traditional": "引",
     "pinyin": "yǐn",
-    "meaning": "draw (e.g. a bow); từ",
+    "meaning": "kéo (ví dụ: dây cung); lôi; kéo căng ra; mở rộng; kéo dài; liên quan hoặc làm dính líu đến; thu hút; dẫn dắt; rời khỏi; cung cấp bằng chứng hoặc lý do; chứng minh; đơn vị đo lường cũ bằng 10 丈 (zhàng), một phần ba mươi km hoặc 33,33 mét",
     "meaning_en": "to draw (e.g. a bow); to pull; to stretch sth; to extend; to lengthen; to involve or implicate in; to attract; to lead; to guide; to leave; to provide evidence or justification for; old unit of distance equal to 10 丈, one-thirtieth of a km or 33.33 meters",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -5910,7 +5910,7 @@
     "hanzi": "降",
     "traditional": "降",
     "pinyin": "jiàng",
-    "meaning": "drop; từ",
+    "meaning": "rơi; giảm; xuống; hạ xuống",
     "meaning_en": "to drop; to fall; to come down; to descend",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -6253,7 +6253,7 @@
     "hanzi": "划",
     "traditional": "划",
     "pinyin": "huá",
-    "meaning": "row; từ",
+    "meaning": "cắt; cứa; cào (rạch vào bề mặt của gì đó); quẹt (diêm)",
     "meaning_en": "to row; to paddle; profitable; worth (the effort); it pays (to do sth)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -6270,7 +6270,7 @@
     "hanzi": "移",
     "traditional": "移",
     "pinyin": "yí",
-    "meaning": "move; từ",
+    "meaning": "di chuyển; dịch; chuyển; thay đổi; dời",
     "meaning_en": "to move; to shift; to change; to alter; to remove",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -6287,7 +6287,7 @@
     "hanzi": "测",
     "traditional": "測",
     "pinyin": "cè",
-    "meaning": "survey; từ",
+    "meaning": "khảo sát; đo; phỏng đoán",
     "meaning_en": "to survey; to measure; to conjecture",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -6414,7 +6414,7 @@
     "hanzi": "刷",
     "traditional": "刷",
     "pinyin": "shuā",
-    "meaning": "brush; từ",
+    "meaning": "chải; sơn; quét; đăng lên; bỏ học (của học sinh); sa thải khỏi công việc",
     "meaning_en": "to brush; to paint; to daub; to paste up; to skip class (of students); to fire from a job",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -8844,7 +8844,7 @@
     "hanzi": "沉",
     "traditional": "沉",
     "pinyin": "chén",
-    "meaning": "submerge; từ",
+    "meaning": "chìm; ngâm; lặn; đè xuống; hạ; thả xuống; sâu; sắc sảo; nặng",
     "meaning_en": "to submerge; to immerse; to sink; to keep down; to lower; to drop; deep; profound; heavy",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -9029,7 +9029,7 @@
     "hanzi": "填",
     "traditional": "填",
     "pinyin": "tián",
-    "meaning": "fill or stuff; từ",
+    "meaning": "lấp hoặc nhồi; (đối với biểu mẫu, v.v.) điền vào",
     "meaning_en": "to fill or stuff; (of a form etc) to fill in",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -9191,7 +9191,7 @@
     "hanzi": "不在乎",
     "traditional": "不在乎",
     "pinyin": "bù zài hu",
-    "meaning": "care; từ; không; không có; không quan tâm",
+    "meaning": "không; không có; không quan tâm",
     "meaning_en": "not to care",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -9373,7 +9373,7 @@
     "hanzi": "败",
     "traditional": "敗",
     "pinyin": "bài",
-    "meaning": "defeat; từ",
+    "meaning": "đánh bại; phá hỏng; thua (một đối thủ); thất bại; héo úa",
     "meaning_en": "to defeat; to damage; to lose (to an opponent); to fail; to wither",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -9464,7 +9464,7 @@
     "hanzi": "尺",
     "traditional": "尺",
     "pinyin": "chě",
-    "meaning": "represent a musical note in gongche notation, 工尺谱; từ",
+    "meaning": "một trong các ký tự dùng để biểu diễn nốt nhạc trong phổ gongche, 工尺谱 (gōng chě pǔ)",
     "meaning_en": "one of the characters used to represent a musical note in gongche notation, 工尺谱",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -9898,7 +9898,7 @@
     "hanzi": "扫",
     "traditional": "掃",
     "pinyin": "sǎo",
-    "meaning": "sweep; từ",
+    "meaning": "quét (bằng chổi hoặc chổi quét); quét sạch; xoá bỏ; loại bỏ; quét qua (mắt, v.v.); nhìn lướt",
     "meaning_en": "to sweep",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -10097,7 +10097,7 @@
     "hanzi": "逛",
     "traditional": "逛",
     "pinyin": "guàng",
-    "meaning": "stroll; từ",
+    "meaning": "đi dạo; thăm",
     "meaning_en": "to stroll; to visit",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -10476,7 +10476,7 @@
     "hanzi": "误会",
     "traditional": "誤會",
     "pinyin": "wù huì",
-    "meaning": "misunderstand; từ; hiểu lầm; nhầm lẫn; sự hiểu lầm; lượng từ: 个",
+    "meaning": "hiểu lầm; nhầm lẫn; sự hiểu lầm; lượng từ: 个",
     "meaning_en": "to misunderstand; to mistake; misunderstanding",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -10666,7 +10666,7 @@
     "hanzi": "弯",
     "traditional": "彎",
     "pinyin": "wān",
-    "meaning": "bend; từ; uốn cong; một khúc cua; một chỗ rẽ (trên đường, v.v.); lượng từ: 道",
+    "meaning": "uốn cong; một khúc cua; một chỗ rẽ (trên đường, v.v.); lượng từ: 道",
     "meaning_en": "to bend; bent; a bend; a turn (in a road etc)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -11022,7 +11022,7 @@
     "hanzi": "对比",
     "traditional": "對比",
     "pinyin": "duì bǐ",
-    "meaning": "contrast; từ; so sánh; tương phản; tỉ lệ; lượng từ: 个",
+    "meaning": "so sánh; tương phản; tỉ lệ; lượng từ: 个",
     "meaning_en": "to contrast; contrast; ratio",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -11060,7 +11060,7 @@
     "hanzi": "争论",
     "traditional": "爭論",
     "pinyin": "zhēng lùn",
-    "meaning": "argue; từ; tranh luận; thảo luận; đấu tranh; lập luận; sự tranh cãi; tranh chấp; lượng từ: 次, 场",
+    "meaning": "tranh luận; thảo luận; đấu tranh; lập luận; sự tranh cãi; tranh chấp; lượng từ: 次, 场",
     "meaning_en": "to argue; to debate; to contend; argument; contention; controversy; debate",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -11349,7 +11349,7 @@
     "hanzi": "包裹",
     "traditional": "包裹",
     "pinyin": "bāo guǒ",
-    "meaning": "wrap up; từ; gói lại; băng lại; bọc; bưu kiện; kiện hàng; lượng từ: 个",
+    "meaning": "gói lại; băng lại; bọc; bưu kiện; kiện hàng; lượng từ: 个",
     "meaning_en": "to wrap up; to bind up; bundle; parcel; package",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -11387,7 +11387,7 @@
     "hanzi": "著作",
     "traditional": "著作",
     "pinyin": "zhù zuò",
-    "meaning": "write; từ; viết; tác phẩm văn học; sách; bài viết; lượng từ: 部",
+    "meaning": "viết; tác phẩm văn học; sách; bài viết; lượng từ: 部",
     "meaning_en": "to write; literary work; book; article; writings",
     "meaning_is_vietnamese": true,
     "pos": [],
@@ -11832,7 +11832,7 @@
     "hanzi": "汇",
     "traditional": "匯",
     "pinyin": "huì",
-    "meaning": "remit; từ",
+    "meaning": "chuyển tiền; hội tụ (của sông ngòi); trao đổi",
     "meaning_en": "to remit; to converge (of rivers); to exchange",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -12364,7 +12364,7 @@
     "hanzi": "避",
     "traditional": "避",
     "pinyin": "bì",
-    "meaning": "avoid; từ",
+    "meaning": "tránh; lẩn; trốn; chạy trốn; tránh xa; rời đi; trốn khỏi",
     "meaning_en": "to avoid; to shun; to flee; to escape; to keep away from; to leave; to hide from",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -13144,7 +13144,7 @@
     "hanzi": "抄",
     "traditional": "抄",
     "pinyin": "chāo",
-    "meaning": "make a copy; từ",
+    "meaning": "sao chép; đạo văn; khám xét; tịch thu; chụp lấy; mang đi; đi đường tắt; di chuyển vòng; ngồi khoanh tay",
     "meaning_en": "to make a copy; to plagiarize; to search and seize; to raid; to grab; to go off with; to take a shortcut; to make a turning move; to fold one's arms",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -14274,7 +14274,7 @@
     "hanzi": "赏",
     "traditional": "賞",
     "pinyin": "shǎng",
-    "meaning": "bestow (a reward); từ",
+    "meaning": "ban tặng (phần thưởng); đưa cho (người cấp dưới); truyền lại; phần thưởng (được ban bởi cấp trên); thưởng thức (vẻ đẹp)",
     "meaning_en": "to bestow (a reward); to give (to an inferior); to hand down; a reward (bestowed by a superior); to appreciate (beauty)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -14308,7 +14308,7 @@
     "hanzi": "引进",
     "traditional": "引進",
     "pinyin": "yǐn jìn",
-    "meaning": "recommend; từ; giới thiệu; du nhập (từ bên ngoài)",
+    "meaning": "giới thiệu; du nhập (từ bên ngoài)",
     "meaning_en": "to recommend; to introduce (from outside)",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -15236,7 +15236,7 @@
     "hanzi": "议论",
     "traditional": "議論",
     "pinyin": "yì lùn",
-    "meaning": "comment; từ; bình luận; nói về; thảo luận; lượng từ: 个",
+    "meaning": "bình luận; nói về; thảo luận; lượng từ: 个",
     "meaning_en": "to comment; to talk about; to discuss; discussion",
     "meaning_is_vietnamese": true,
     "pos": [
@@ -15552,7 +15552,7 @@
     "hanzi": "改正",
     "traditional": "改正",
     "pinyin": "gǎi zhèng",
-    "meaning": "correct; từ; sửa chữa; chỉnh sửa; điều chỉnh; sự sửa chữa; lượng từ: 个",
+    "meaning": "sửa chữa; chỉnh sửa; điều chỉnh; sự sửa chữa; lượng từ: 个",
     "meaning_en": "to correct; to amend; to put right; correction",
     "meaning_is_vietnamese": true,
     "pos": [
