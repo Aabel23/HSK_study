@@ -60,6 +60,34 @@ hạ cấp vì một lần sai; cái giá của lần sai là khoảng ôn bị 
 Chữ nào không có cách đọc đáng tin thì để trống chứ không đoán; xem phần ghi chú
 về Unihan trong `README.md`.
 
+## Phím tắt dùng chung
+
+Một hợp đồng bàn phím cho mọi màn hình luyện tập, định nghĩa ở
+`frontend-web/src/lib/useShortcuts.ts`:
+
+| Phím | Nghĩa |
+| --- | --- |
+| `Space` | **Xác nhận** — hiện đáp án, kiểm tra câu trả lời |
+| `Enter` | **Sang câu tiếp theo** |
+| `1`–`9` | Chọn đáp án thứ n, hoặc mức đánh giá thứ n |
+| `Esc` | Đóng hộp thoại, hoặc kết thúc phiên sớm |
+
+Trước đây `Space` và `Enter` là đồng nghĩa, cùng nghĩa "bước tiếp theo". Cách đó
+đổ vỡ ở mọi màn hình có hai bước: ở Luyện câu, cùng một phím phải vừa mang nghĩa
+"kiểm tra cách sắp xếp của tôi" vừa mang nghĩa "cho tôi câu tiếp theo", nên nó
+mang nghĩa nào là tuỳ trang đó nối vào đâu. Tách ra thì người học có một nhịp
+duy nhất đúng ở mọi nơi.
+
+Hai ngoại lệ, đều có lý do bắt buộc:
+
+- **Trong ô nhập liệu** (Luyện gõ, Nghe chép) `Space` phải gõ ra dấu cách — người
+  học gõ "ni hao" cần nó. Hook có sẵn bộ chặn "đang gõ" nên không cướp phím;
+  `Enter` kiểm tra, và sau khi đã chấm thì ô bị khoá nên cả hai phím lại cùng
+  sang câu tiếp.
+- **Màn hình chỉ có một bước** (Thẻ ghi nhớ, Ôn tập): phím còn lại rơi xuống
+  chính hành động đó thay vì không làm gì, để người quen bấm `Enter` vẫn lật
+  được thẻ.
+
 ## Lịch ôn nhận phản hồi từ mọi bài luyện
 
 Trước đây lịch SM-2 chỉ nhúc nhích ở màn hình Ôn tập. Người học có thể sai chữ
@@ -134,7 +162,12 @@ lặp lại việc sửa trên các database đã tồn tại. Quy tắc nhận 
 ## Luyện câu
 
 - Dữ liệu câu nằm trong SQLite, phủ đủ bảy cấp độ HSK 1–9.
-- Mỗi cụm từ có `position` riêng; backend kiểm tra danh sách vị trí thay vì so sánh nội dung hiển thị.
+- Mỗi cụm từ có `position` riêng, nhưng **chấm theo câu người học ghép ra chứ
+  không theo ô nào được bấm**. 22 trong 246 câu có cụm lặp — 这个饭馆又便宜又好吃。
+  có hai chữ 又, 越练习，你进步得越快。 có hai chữ 越 — nên bấm ô thứ hai trước vẫn
+  ra đúng câu đó từ một dãy vị trí khác. So sánh vị trí gọi trường hợp đó là sai
+  rồi hiện lại chính câu người học vừa ghép làm "đáp án đúng"; so sánh nội dung
+  thì không thể mắc lỗi đó.
 - Một câu sai không bị khóa và không lộ đáp án, người dùng có thể sắp xếp lại.
 - Khi câu đúng, giao diện hiển thị câu hoàn chỉnh, Pinyin và bản dịch theo tùy chọn phụ đề.
 - Trạng thái bật/tắt Pinyin và tiếng Việt có hiệu lực ngay trong phiên.

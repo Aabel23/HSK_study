@@ -52,6 +52,12 @@ nghĩa. Xem `docs/SPEC.md` mục "Độ dài đáp án trắc nghiệm".
 
 ## Characters (`/api/characters`)
 
+Tham số `search` khớp cả chữ Hán, pinyin, âm Hán-Việt và nghĩa — **có dấu lẫn
+không dấu**. `hoc` và `xue` đều ra 学, vì hai cách đọc mà ứng dụng hiển thị đều
+mang dấu (pinyin có dấu thanh, âm Hán-Việt có dấu tiếng Việt) và không ai gõ
+đúng dấu ngay lần đầu. Hai cột `pinyin_plain` và `han_viet_plain` giữ bản không
+dấu để `LIKE` khớp được.
+
 Lớp chữ Hán dưới lớp từ vựng, phục vụ màn hình Giải mã Hán-Việt.
 
 ### Tra cứu
