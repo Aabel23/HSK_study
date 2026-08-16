@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import random
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from backend.database import get_connection, utc_now
@@ -74,6 +75,9 @@ CHARACTER_FIELDS = """
     COALESCE(p.correct_count, 0) AS correct_count,
     COALESCE(p.incorrect_count, 0) AS incorrect_count,
     COALESCE(p.is_favorite, 0) AS is_favorite,
+    COALESCE(p.repetitions, 0) AS repetitions,
+    COALESCE(p.lapses, 0) AS lapses,
+    p.due_at,
     p.last_seen_at
 """
 
@@ -218,8 +222,11 @@ def stats() -> dict[str, Any]:
                     AS learning,
                 (SELECT COUNT(*) FROM vocabulary WHERE han_viet IS NOT NULL)
                     AS words_decodable,
-                (SELECT COUNT(*) FROM vocabulary) AS words_total
-            """
+                (SELECT COUNT(*) FROM vocabulary) AS words_total,
+                (SELECT COUNT(*) FROM character_progress
+                    WHERE due_at IS NOT NULL AND due_at <= :now) AS due_now
+            """,
+            {"now": utc_now()},
         ).fetchone()
         result = dict(row)
         # How much vocabulary the characters already marked mastered reach. This
@@ -264,35 +271,110 @@ def set_status(hanzi: str, status: str) -> dict[str, Any]:
     return {"hanzi": hanzi, "status": status}
 
 
+#: Ten minutes, matching `srs_service.RELEARN_INTERVAL_DAYS`. A missed reading
+#: should come back inside the same sitting.
+RELEARN_INTERVAL_DAYS = 10 / (24 * 60)
+DEFAULT_EASE = 2.5
+
+
+def _next_character_interval(interval: float, repetitions: int, ease: float) -> float:
+    """SM-2's growth curve, with the ratings collapsed to right or wrong.
+
+    The word queue asks the learner how hard a card felt and has four ratings to
+    work with. A character question is multiple choice, so there is no such
+    signal to ask for — only whether they got it. Same shape of schedule, one
+    bit of input.
+    """
+    if repetitions <= 1:
+        return 1.0
+    if repetitions == 2:
+        return 4.0
+    return round(min(max(interval, 1.0) * ease, 365.0), 4)
+
+
 def _record_seen(connection: Any, hanzi: str, is_correct: bool) -> None:
+    """Count the answer and move the character's schedule.
+
+    Characters are the unit most worth scheduling in this app: unlike a word, a
+    character carries over to vocabulary the learner has never studied, so a
+    reading recalled today is worth something on a page they read next month.
+    Before this, `character_progress` counted right and wrong answers and
+    nothing else, and the drill drew at random — a reading missed thirty
+    seconds ago was no likelier to come back than any other.
+    """
     now = utc_now()
+    current = connection.execute(
+        """
+        SELECT COALESCE(ease_factor, ?) AS ease_factor,
+               COALESCE(interval_days, 0) AS interval_days,
+               COALESCE(repetitions, 0) AS repetitions,
+               COALESCE(lapses, 0) AS lapses
+        FROM character_progress WHERE hanzi = ?
+        """,
+        (DEFAULT_EASE, hanzi),
+    ).fetchone()
+
+    ease = float(current["ease_factor"]) if current else DEFAULT_EASE
+    interval = float(current["interval_days"]) if current else 0.0
+    repetitions = int(current["repetitions"]) if current else 0
+    lapses = int(current["lapses"]) if current else 0
+
+    if is_correct:
+        repetitions += 1
+        interval = _next_character_interval(interval, repetitions, ease)
+        ease = min(2.8, ease + 0.05)
+    else:
+        repetitions = 0
+        lapses += 1
+        interval = RELEARN_INTERVAL_DAYS
+        ease = max(1.3, ease - 0.2)
+
+    due_at = (
+        datetime.now(timezone.utc) + timedelta(days=interval)
+    ).isoformat(timespec="seconds")
+    # Six correct answers in a row is roughly a month of intervals; below that
+    # the learner is still meeting it. Marking a character mastered by hand on
+    # the lookup screen stays available and is not undone here.
+    status = "mastered" if repetitions >= 6 else "learning"
+
     connection.execute(
         """
         INSERT INTO character_progress (
             hanzi, status, seen_count, correct_count, incorrect_count,
-            last_seen_at, created_at, updated_at
-        ) VALUES (?, 'learning', 1, ?, ?, ?, ?, ?)
+            last_seen_at, created_at, updated_at,
+            ease_factor, interval_days, repetitions, lapses, due_at
+        ) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(hanzi) DO UPDATE SET
             seen_count = seen_count + 1,
-            correct_count = correct_count + ?,
-            incorrect_count = incorrect_count + ?,
-            last_seen_at = ?,
-            -- A character only leaves 'new' by being practised, and never
-            -- drops back out of 'mastered' on a single slip.
-            status = CASE WHEN status = 'new' THEN 'learning' ELSE status END,
-            updated_at = ?
+            correct_count = correct_count + excluded.correct_count,
+            incorrect_count = incorrect_count + excluded.incorrect_count,
+            last_seen_at = excluded.last_seen_at,
+            -- A character never drops back out of 'mastered' on one slip; the
+            -- shortened interval is what a lapse costs it.
+            status = CASE
+                WHEN character_progress.status = 'mastered' THEN 'mastered'
+                ELSE excluded.status
+            END,
+            updated_at = excluded.updated_at,
+            ease_factor = excluded.ease_factor,
+            interval_days = excluded.interval_days,
+            repetitions = excluded.repetitions,
+            lapses = excluded.lapses,
+            due_at = excluded.due_at
         """,
         (
             hanzi,
+            status,
             1 if is_correct else 0,
             0 if is_correct else 1,
             now,
             now,
             now,
-            1 if is_correct else 0,
-            0 if is_correct else 1,
-            now,
-            now,
+            ease,
+            interval,
+            repetitions,
+            lapses,
+            due_at,
         ),
     )
 
@@ -450,19 +532,39 @@ def _character_reading_question(session_id: int, level: str | None) -> dict[str,
         conditions.append("c.hsk_level = ?")
         parameters.append(level)
     where_clause = " AND ".join(conditions)
-    with get_connection() as connection:
-        rows = connection.execute(
-            f"""
+    select = """
             SELECT c.hanzi, c.pinyin, c.han_viet, c.meaning_vi, c.mnemonic_vi,
                    c.word_count, c.hsk_level
-            FROM characters c WHERE {where_clause}
+            FROM characters c
+    """
+    with get_connection() as connection:
+        # A reading the learner missed earlier should come back before a
+        # reading picked out of eight thousand at random. Overdue first, then
+        # the widest-reaching characters they have not met — which is the order
+        # the leverage list already argues for.
+        due = connection.execute(
+            f"""
+            {select}
+            JOIN character_progress p ON p.hanzi = c.hanzi
+            WHERE {where_clause} AND p.due_at IS NOT NULL AND p.due_at <= ?
+            ORDER BY p.due_at ASC LIMIT 1
+            """,
+            [*parameters, utc_now()],
+        ).fetchone()
+
+        rows = connection.execute(
+            f"""
+            {select}
+            WHERE {where_clause}
             ORDER BY RANDOM() LIMIT ?
             """,
             [*parameters, OPTION_COUNT * 4],
         ).fetchall()
         if len(rows) < OPTION_COUNT:
             raise InvalidOperationError("Không đủ chữ Hán để tạo câu hỏi.")
-        target = dict(rows[0])
+        # The distractors still come from the random draw; only the character
+        # being asked about is chosen by schedule.
+        target = dict(due) if due else dict(rows[0])
         # Every reading here is a single syllable, so there is no length
         # giveaway to defend against — only duplicates to filter out.
         distractors = [

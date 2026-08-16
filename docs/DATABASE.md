@@ -67,6 +67,13 @@ dòng thì không dùng được index. Bảng này được dựng lại toàn 
 
 ### `character_progress`, `decode_sessions`, `decode_attempts`
 
+`character_progress` mang cả lịch ôn riêng cho chữ (`ease_factor`,
+`interval_days`, `repetitions`, `lapses`, `due_at` — thêm bằng ALTER TABLE nên
+database cũ nâng cấp tại chỗ). Chữ là đơn vị đáng lên lịch nhất trong ứng dụng
+này: khác với từ, một chữ nhớ được hôm nay còn dùng được cho những từ chưa bao
+giờ học. Trước khi có lịch, bảng chỉ đếm đúng/sai và bài luyện rút ngẫu nhiên —
+chữ vừa quên ba mươi giây trước không hề dễ gặp lại hơn chữ nào khác.
+
 Tiến độ và lịch sử luyện tập của người học, tách khỏi nội dung — cùng cách chia
 mà `grammar_points` / `grammar_progress` đang dùng — nên seed lại nội dung mới
 không bao giờ đụng vào lịch sử.

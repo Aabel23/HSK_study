@@ -161,6 +161,7 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
 | SRS dùng chung mọi hoạt động | Xong một chiều | Sai ở bất kỳ bài luyện nào cũng kéo từ về hàng đợi ôn. Câu đúng cố tình không tính, để một cú đoán mò không thành "đã thuộc". |
 | Di động | Chỉ web | Không có app native. |
 | Mẹo nhớ Hán tự | 659 / 2.735 chữ trong kho | Phần còn lại chưa có mnemonic. |
+| Lịch ôn cho chữ | Xong | Chữ có lịch SM-2 riêng; chữ quá hạn được hỏi trước. Không app nào khác lên lịch ở mức chữ. |
 
 ### Việc nên làm tiếp, theo thứ tự
 
@@ -168,9 +169,7 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
    cách đánh chỉ mục 483 câu dự án đã tự viết và đã kiểm (kho luyện câu, ví dụ
    trong bài ngữ pháp, đề nói HSKK). Muốn vượt mốc này phải soạn thêm câu —
    Tatoeba chỉ có 798 cặp Trung–Việt nên không giải quyết được vấn đề.
-2. **Đưa lớp chữ vào SRS.** `character_progress` hiện đếm đúng/sai nhưng chưa có
-   lịch. Chữ mới là đơn vị đáng lên lịch nhất, vì nó khái quát hoá.
-3. **Mnemonic cho phần chữ còn lại**, để phần chiết tự phủ đều thay vì chỉ 659
+2. **Mnemonic cho phần chữ còn lại**, để phần chiết tự phủ đều thay vì chỉ 659
    chữ cốt lõi.
 4. **App di động.** Hiện chỉ có web và bản `.exe` Windows.
 

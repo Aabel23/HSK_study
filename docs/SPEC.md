@@ -50,6 +50,13 @@ Ba tab:
    được từ tiếp theo.
 3. **Chữ chủ lực** — xếp hạng chữ theo số từ mà nó mở khoá.
 
+Chế độ `character_reading` có **lịch ôn riêng cho từng chữ**: chữ quá hạn được
+hỏi trước, chữ trả lời sai quay lại sau mười phút, chữ trả lời đúng giãn dần
+theo đường cong SM-2. Khác với lịch của từ, ở đây câu đúng **có** làm giãn
+khoảng ôn — vì đây chính là vòng học dành riêng cho chữ, tương đương màn hình Ôn
+tập của từ, chứ không phải một bài luyện phụ. Chữ đã đánh dấu "đã nắm" không bị
+hạ cấp vì một lần sai; cái giá của lần sai là khoảng ôn bị rút ngắn.
+
 Chữ nào không có cách đọc đáng tin thì để trống chứ không đoán; xem phần ghi chú
 về Unihan trong `README.md`.
 

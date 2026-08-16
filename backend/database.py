@@ -550,6 +550,21 @@ HSKK_SESSION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("feedback_mode", "TEXT NOT NULL DEFAULT 'instant'"),
 )
 
+# A schedule for the character layer.
+#
+# `character_progress` shipped counting right and wrong answers and nothing
+# else, which meant the decode drill had no way to come back to a reading the
+# learner had just missed — it drew at random every time. Characters are the
+# unit most worth scheduling here, because unlike a word a character carries
+# over to vocabulary that was never studied.
+CHARACTER_PROGRESS_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("ease_factor", "REAL NOT NULL DEFAULT 2.5"),
+    ("interval_days", "REAL NOT NULL DEFAULT 0"),
+    ("repetitions", "INTEGER NOT NULL DEFAULT 0"),
+    ("lapses", "INTEGER NOT NULL DEFAULT 0"),
+    ("due_at", "TEXT"),
+)
+
 HSKK_ANSWER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("graded_by", "TEXT NOT NULL DEFAULT 'self'"),
     ("ai_score", "REAL"),
@@ -622,6 +637,25 @@ def _migrate_hskk_columns(connection: sqlite3.Connection) -> None:
     _add_missing_columns(connection, "hskk_answers", HSKK_ANSWER_COLUMN_MIGRATIONS)
 
 
+def _migrate_character_progress_columns(connection: sqlite3.Connection) -> None:
+    _add_missing_columns(
+        connection, "character_progress", CHARACTER_PROGRESS_COLUMN_MIGRATIONS
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_character_progress_due ON character_progress(due_at)"
+    )
+    # Rows written before the schedule existed have counts but no due date.
+    # Giving them one derived from the practice they already had puts them in
+    # the queue straight away rather than stranding them as unscheduled.
+    connection.execute(
+        """
+        UPDATE character_progress
+        SET due_at = COALESCE(last_seen_at, created_at)
+        WHERE due_at IS NULL AND status != 'new'
+        """
+    )
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -638,6 +672,7 @@ def initialize_database(database_path: str | Path | None = None) -> Path:
         _migrate_progress_columns(connection)
         _migrate_sentence_columns(connection)
         _migrate_hskk_columns(connection)
+        _migrate_character_progress_columns(connection)
         connection.commit()
     finally:
         connection.close()

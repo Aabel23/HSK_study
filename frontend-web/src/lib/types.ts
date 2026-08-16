@@ -712,6 +712,10 @@ export interface CharacterItem {
   correct_count: number;
   incorrect_count: number;
   is_favorite: number;
+  repetitions: number;
+  lapses: number;
+  /** When this character's reading comes round again; null if never drilled. */
+  due_at: string | null;
   last_seen_at: string | null;
   /** Only present on the single-character lookup. */
   radical_details?: RadicalDetail[];
@@ -734,6 +738,8 @@ export interface CharacterStats {
   words_total: number;
   /** Bank words reachable from the characters already marked mastered. */
   words_unlocked: number;
+  /** Characters whose review has come round. */
+  due_now: number;
 }
 
 export type DecodeMode = "han_viet_to_meaning" | "meaning_to_han_viet" | "character_reading";

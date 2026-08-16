@@ -240,3 +240,128 @@ def test_modes_are_listed_in_vietnamese(client):
         "character_reading",
     }
     assert all(item["label"] for item in items)
+
+
+# --------------------------------------------------------------------------
+# The character schedule
+# --------------------------------------------------------------------------
+
+
+def progress(hanzi):
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        return connection.execute(
+            """
+            SELECT status, seen_count, correct_count, incorrect_count,
+                   repetitions, lapses, interval_days, due_at
+            FROM character_progress WHERE hanzi = ?
+            """,
+            (hanzi,),
+        ).fetchone()
+
+
+def answer(client, session_id, word, correct, vocabulary_id=None):
+    return client.post(
+        "/api/characters/drill/attempt",
+        json={
+            "session_id": session_id,
+            "word": word,
+            "is_correct": correct,
+            "vocabulary_id": vocabulary_id,
+        },
+    )
+
+
+def test_a_right_answer_pushes_the_character_further_out(client):
+    session = start_drill(client, mode="character_reading", count=10)
+    hanzi = client.get(
+        f"/api/characters/drill/session/{session['session_id']}/next"
+    ).json()["word"]
+
+    intervals = []
+    for _ in range(3):
+        answer(client, session["session_id"], hanzi, True)
+        intervals.append(progress(hanzi)["interval_days"])
+
+    # 1 day, then 4, then ease-multiplied — the SM-2 curve with the ratings
+    # collapsed to right or wrong, because a multiple-choice answer carries no
+    # "how hard was that" signal to ask for.
+    assert intervals == sorted(intervals)
+    assert intervals[0] < intervals[-1]
+    assert progress(hanzi)["repetitions"] == 3
+
+
+def test_a_wrong_answer_brings_the_character_straight_back(client):
+    from datetime import datetime, timedelta, timezone
+
+    session = start_drill(client, mode="character_reading", count=10)
+    hanzi = client.get(
+        f"/api/characters/drill/session/{session['session_id']}/next"
+    ).json()["word"]
+
+    for _ in range(3):
+        answer(client, session["session_id"], hanzi, True)
+    settled = progress(hanzi)
+
+    answer(client, session["session_id"], hanzi, False)
+    lapsed = progress(hanzi)
+
+    assert lapsed["interval_days"] < settled["interval_days"]
+    assert lapsed["repetitions"] == 0
+    assert lapsed["lapses"] == settled["lapses"] + 1
+    due = datetime.fromisoformat(lapsed["due_at"])
+    assert due < datetime.now(timezone.utc) + timedelta(hours=1)
+
+
+def test_an_overdue_character_is_asked_before_a_random_one(client):
+    """A reading missed thirty seconds ago must not wait its turn among 8.200."""
+    session = start_drill(client, mode="character_reading", count=10)
+    first = client.get(
+        f"/api/characters/drill/session/{session['session_id']}/next"
+    ).json()["word"]
+
+    answer(client, session["session_id"], first, False)
+
+    # The lapse is due in ten minutes rather than now, so nudge it into the past
+    # the way waiting would.
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        connection.execute(
+            "UPDATE character_progress SET due_at = '2000-01-01T00:00:00+00:00' WHERE hanzi = ?",
+            (first,),
+        )
+
+    served = client.get(
+        f"/api/characters/drill/session/{session['session_id']}/next"
+    ).json()["word"]
+    assert served == first
+
+
+def test_a_mastered_character_is_not_demoted_by_one_slip(client):
+    from urllib.parse import quote
+
+    client.post(f"/api/characters/{quote('学')}/status", json={"status": "mastered"})
+    session = start_drill(client, mode="character_reading", count=5)
+    answer(client, session["session_id"], "学", False)
+    assert progress("学")["status"] == "mastered"
+    # The shortened interval is what the slip costs it, not the status.
+    assert progress("学")["lapses"] == 1
+
+
+def test_stats_report_characters_due(client):
+    session = start_drill(client, mode="character_reading", count=5)
+    hanzi = client.get(
+        f"/api/characters/drill/session/{session['session_id']}/next"
+    ).json()["word"]
+    answer(client, session["session_id"], hanzi, False)
+
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        connection.execute(
+            "UPDATE character_progress SET due_at = '2000-01-01T00:00:00+00:00' WHERE hanzi = ?",
+            (hanzi,),
+        )
+    assert client.get("/api/characters/stats").json()["due_now"] >= 1

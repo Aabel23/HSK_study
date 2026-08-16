@@ -511,9 +511,13 @@ function DrillTab() {
             index={1}
           />
           <StatTile
-            label="Từ giải mã được"
-            value={decodable == null ? "—" : `${decodable}%`}
-            hint={`${formatNumber(overview.data?.words_decodable)} từ có đủ âm Hán-Việt`}
+            label="Chữ đến hạn ôn"
+            value={formatNumber(overview.data?.due_now)}
+            hint={
+              decodable == null
+                ? "sẽ có sau vài lượt luyện"
+                : `${decodable}% từ trong kho giải mã được`
+            }
             accent="sky"
             index={2}
           />
@@ -563,7 +567,9 @@ function DrillTab() {
               : `Bắt đầu ${count} câu (${level === "all" ? "mọi cấp độ" : `HSK ${level}`})`}
           </Button>
           <p className="mt-3 text-center text-xs text-ink-faint">
-            Đề ưu tiên những từ bạn chưa mở bao giờ — vì chỉ khi đó bạn mới thật sự phải giải mã.
+            {mode === "character_reading"
+              ? "Chữ nào bạn vừa quên sẽ quay lại trước — lịch ôn riêng cho từng chữ."
+              : "Đề ưu tiên những từ bạn chưa mở bao giờ — vì chỉ khi đó bạn mới thật sự phải giải mã."}
           </p>
         </Card>
       </div>
