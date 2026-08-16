@@ -455,6 +455,32 @@ CREATE TABLE IF NOT EXISTS decode_attempts (
     FOREIGN KEY (session_id) REFERENCES decode_sessions(id) ON DELETE SET NULL
 );
 
+-- Example sentences for a word, gathered from material already in this repo.
+--
+-- Only 150 of 10.969 words shipped with an example, which is the widest gap
+-- between this and a real dictionary. Rather than import a corpus whose
+-- Vietnamese nobody here has read, the seeder indexes the sentences the
+-- project already has and has already checked: the rearrange bank, the worked
+-- examples inside each grammar lesson, and the HSKK speaking prompts. That is
+-- 519 sentences, every one carrying hanzi, pinyin and a Vietnamese
+-- translation, and every one written by a human for this app.
+--
+-- Derived rather than authored, so it is rebuilt from scratch on every seed
+-- and holds nothing a learner would miss.
+CREATE TABLE IF NOT EXISTS word_examples (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vocabulary_id INTEGER NOT NULL,
+    hanzi TEXT NOT NULL,
+    pinyin TEXT NOT NULL DEFAULT '',
+    meaning_vi TEXT NOT NULL DEFAULT '',
+    -- 'sentences' | 'grammar' | 'hskk', so a screen can say where it came from.
+    source TEXT NOT NULL DEFAULT '',
+    source_ref TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (vocabulary_id) REFERENCES vocabulary(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_word_examples_vocabulary ON word_examples(vocabulary_id);
 CREATE INDEX IF NOT EXISTS idx_word_characters_hanzi ON word_characters(hanzi);
 CREATE INDEX IF NOT EXISTS idx_characters_level ON characters(hsk_level);
 CREATE INDEX IF NOT EXISTS idx_characters_word_count ON characters(word_count DESC);

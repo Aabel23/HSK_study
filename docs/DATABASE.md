@@ -75,6 +75,26 @@ Cột `vocabulary.han_viet` là cách đọc Hán-Việt của **cả từ** (�
 quán"). Chỉ được điền khi *mọi* chữ trong từ đều có cách đọc: một bản phiên âm
 dở dang như "đồ thư ?" đúng là trường hợp người học dễ tin nhầm nhất.
 
+## `word_examples`
+
+Câu ví dụ cho từng từ. Chỉ 150/10.969 từ có sẵn ví dụ khi ship, nên seeder đánh
+chỉ mục **kho câu sẵn có của chính dự án** thay vì nhập một corpus mà không ai ở
+đây đọc được phần tiếng Việt: kho luyện câu (`sentences`), ví dụ trong từng bài
+ngữ pháp, và đề nói HSKK — 483 câu đều có đủ Hán tự, pinyin và bản dịch tiếng
+Việt do người viết cho chính ứng dụng này. Kết quả: **1.177 từ (10,7%)** có ví dụ.
+
+Ba quy tắc đáng nhớ, vì bỏ quy tắc nào cũng sinh ra lỗi hiển thị thật:
+
+- **Bỏ đề nói mở.** Các mục có `hints` là đề tả tranh, `vi` của chúng là gợi ý
+  dàn ý chứ không phải bản dịch của `hanzi` bên cạnh — dùng làm ví dụ sẽ hiện
+  bản dịch lệch hẳn.
+- **Khử trùng theo nội dung câu.** Ba nguồn có chồng lấn (你叫什么名字？ nằm ở cả
+  kho câu lẫn đề HSKK), nếu không khử thì cùng một câu hiện hai lần dưới một từ.
+- **Từ một chữ bị siết chặt.** 的 xuất hiện trong gần như mọi câu, nên từ một chữ
+  chỉ lấy tối đa 2 ví dụ và chỉ từ câu ngắn; từ nhiều chữ lấy tối đa 4.
+
+Bảng là dữ liệu suy ra, dựng lại từ đầu mỗi lần seed, không chứa gì của người học.
+
 ## Khởi tạo và seed
 
 `backend/database.py` tự tạo thư mục, file và bảng nếu thiếu. `scripts/seed_data.py` dùng `INSERT ... ON CONFLICT(hanzi) DO NOTHING`, sau đó bổ sung dòng tiến độ bằng `INSERT OR IGNORE`. Seed không reset hoặc xóa dữ liệu học cũ.

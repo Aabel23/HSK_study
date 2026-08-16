@@ -15,6 +15,12 @@ Lỗi validation trả HTTP `422`; tài nguyên không tồn tại trả `404`; 
 - `GET /vocabulary/random?count=10&status=` — từ ngẫu nhiên.
 - `GET /vocabulary/{vocabulary_id}` — chi tiết từ và tiến độ.
 
+Riêng `GET /vocabulary/{id}` trả thêm `examples`: danh sách câu ví dụ, mỗi câu
+gồm `hanzi`, `pinyin`, `meaning_vi`, `source` (`sentences` | `grammar` | `hskk`)
+và `source_ref`. Endpoint danh sách **không** kèm trường này — mỗi trang hiển
+thị hai chục thẻ và không có chỗ cho câu ví dụ, nên join thêm bảng cho mỗi dòng
+chỉ tốn truy vấn mà không đổi được gì.
+
 ## Progress
 
 - `GET /progress` — tổng hợp trạng thái, phần trăm hoàn thành, danh sách và phiên gần đây.

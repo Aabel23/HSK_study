@@ -4,7 +4,7 @@ import { useLevel } from "../lib/levelContext";
 import { api } from "../lib/api";
 import { useToast } from "../lib/toast";
 import { formatDate, formatNumber, formatInterval } from "../lib/format";
-import type { ProgressStatus, VocabularyItem } from "../lib/types";
+import type { ProgressStatus, VocabularyItem, WordExample } from "../lib/types";
 import {
   AudioButton,
   Badge,
@@ -331,8 +331,31 @@ function EntryDialog({
   const toast = useToast();
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [examples, setExamples] = useState<WordExample[]>([]);
 
   useEffect(() => setNote(item?.note ?? ""), [item?.id, item?.note]);
+
+  // The list endpoint deliberately does not carry example sentences — two
+  // dozen cards a page have no room for them — so the dialog fetches the full
+  // entry when it opens. Failing silently is right here: the rest of the entry
+  // is already on screen and useful without them.
+  useEffect(() => {
+    if (!item) {
+      setExamples([]);
+      return;
+    }
+    let cancelled = false;
+    setExamples([]);
+    api.vocabulary
+      .detail(item.id)
+      .then((full) => {
+        if (!cancelled) setExamples(full.examples ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [item?.id]);
 
   if (!item) return null;
 
@@ -414,6 +437,30 @@ function EntryDialog({
             {item.example_meaning && <p className="mt-0.5 text-xs text-ink-soft">{item.example_meaning}</p>}
           </div>
           <AudioButton text={item.example} size="sm" />
+        </div>
+      )}
+
+      {examples.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-semibold text-ink-soft">
+            Câu ví dụ{" "}
+            <span className="font-normal text-ink-faint">({examples.length})</span>
+          </p>
+          <div className="mt-2 space-y-2">
+            {examples.map((example) => (
+              <div
+                key={`${example.source}-${example.source_ref}`}
+                className="flex items-start justify-between gap-2 rounded-xl bg-surface-2 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="hanzi text-base text-ink">{example.hanzi}</p>
+                  {example.pinyin && <p className="mt-0.5 text-xs text-gold">{example.pinyin}</p>}
+                  <p className="mt-0.5 text-xs text-ink-soft">{example.meaning_vi}</p>
+                </div>
+                <AudioButton text={example.hanzi} size="sm" />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

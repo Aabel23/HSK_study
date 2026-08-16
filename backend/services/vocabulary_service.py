@@ -104,6 +104,13 @@ def list_vocabulary(
 
 
 def get_vocabulary(vocabulary_id: int) -> dict[str, Any]:
+    """One word, with the sentences that use it.
+
+    Examples are attached here rather than in :func:`list_vocabulary` on
+    purpose: the list renders two dozen cards per page and has no room for
+    them, so joining a second table for every row would cost a query and buy
+    nothing.
+    """
     with get_connection() as connection:
         row = connection.execute(
             f"""
@@ -114,9 +121,22 @@ def get_vocabulary(vocabulary_id: int) -> dict[str, Any]:
             """,
             (vocabulary_id,),
         ).fetchone()
-    if not row:
-        raise ResourceNotFoundError("Không tìm thấy từ vựng.")
-    return dict(row)
+        if not row:
+            raise ResourceNotFoundError("Không tìm thấy từ vựng.")
+        entry = dict(row)
+        entry["examples"] = [
+            dict(item)
+            for item in connection.execute(
+                """
+                SELECT hanzi, pinyin, meaning_vi, source, source_ref
+                FROM word_examples
+                WHERE vocabulary_id = ?
+                ORDER BY sort_order
+                """,
+                (vocabulary_id,),
+            )
+        ]
+    return entry
 
 
 def get_random_vocabulary(

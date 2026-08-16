@@ -4,7 +4,19 @@ export const HSK_LEVELS: HskLevel[] = ["1", "2", "3", "4", "5", "6", "7-9"];
 
 export type ProgressStatus = "new" | "learning" | "review" | "mastered";
 
+export interface WordExample {
+  hanzi: string;
+  pinyin: string;
+  meaning_vi: string;
+  /** 'sentences' | 'grammar' | 'hskk' — which part of the app it came from. */
+  source: string;
+  source_ref: string;
+}
+
 export interface VocabularyItem {
+  /** Sentences using this word. Only the single-entry endpoint fills this in;
+   *  the list leaves it undefined. */
+  examples?: WordExample[];
   /** The word spelled in âm Hán-Việt — 图书馆 → "đồ thư quán". Null when at
    *  least one of its characters has no recorded reading. */
   han_viet?: string | null;

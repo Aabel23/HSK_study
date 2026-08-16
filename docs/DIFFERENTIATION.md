@@ -157,15 +157,17 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
 | --- | --- | --- |
 | Tra bằng chữ viết tay / ảnh / giọng nói | Không có | Hanzii có cả ba. Cần model on-device, chi phí lớn. |
 | Số lượng đề thi thử | Ít hơn nhiều | Hanzii có 200+ đề biên soạn tay. Ngân hàng của ta hiện 397 câu, mọi pool đủ cho ít nhất 4 lượt thi không lặp câu nào. |
-| Câu ví dụ cho từ | **Chỉ 150 / 10.969 từ (1,4%)** | Khoảng trống lớn nhất về dữ liệu hiện nay. |
+| Câu ví dụ cho từ | 1.177 / 10.969 từ (10,7%) | Đã tăng 8 lần bằng cách đánh chỉ mục chính kho câu sẵn có của dự án. Vẫn kém xa một từ điển thật; muốn hơn nữa phải có nguồn câu mới. |
 | SRS dùng chung mọi hoạt động | Chưa | Lịch SM-2 chỉ chạy ở màn hình Ôn tập; thẻ ghi nhớ, kiểm tra, luyện nghe ghi trạng thái nhưng không đẩy lịch. |
 | Di động | Chỉ web | Không có app native. |
 | Mẹo nhớ Hán tự | 659 / 2.735 chữ trong kho | Phần còn lại chưa có mnemonic. |
 
 ### Việc nên làm tiếp, theo thứ tự
 
-1. **Câu ví dụ.** 1,4% độ phủ là điểm yếu rõ nhất so với một từ điển thật. Có thể
-   khai thác chính CVDICT hoặc kho câu Tatoeba (CC BY 2.0).
+1. **Thêm câu ví dụ.** Đã đi từ 1,4% lên 10,7% mà không nhập nguồn ngoài, bằng
+   cách đánh chỉ mục 483 câu dự án đã tự viết và đã kiểm (kho luyện câu, ví dụ
+   trong bài ngữ pháp, đề nói HSKK). Muốn vượt mốc này phải soạn thêm câu —
+   Tatoeba chỉ có 798 cặp Trung–Việt nên không giải quyết được vấn đề.
 2. **Nối SRS vào mọi hoạt động.** Trả lời sai trong bài kiểm tra nên kéo từ đó
    sớm quay lại lịch ôn. Hạ tầng đã có sẵn ở `srs_service`, chỉ chưa nối dây.
 3. **Đưa lớp chữ vào SRS.** `character_progress` hiện đếm đúng/sai nhưng chưa có

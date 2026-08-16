@@ -6,6 +6,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 
 if __package__ in {None, ""}:
@@ -663,6 +664,138 @@ def seed_characters() -> dict[str, int]:
     }
 
 
+#: Most examples one word gets. Four shows a couple of grammatical frames
+#: without turning a dictionary entry into a wall of text.
+_MAX_EXAMPLES = 4
+
+#: A one-character word appears in nearly every sentence, so an unrestricted
+#: match would hand 的 four arbitrary sentences and call it a dictionary. Single
+#: characters get fewer, and only from short sentences where the character has
+#: room to carry weight.
+_MAX_EXAMPLES_SINGLE = 2
+_SHORT_SENTENCE = 18
+
+HSKK_FILE = "hskk_bank.json"
+
+
+def _example_sources() -> list[tuple[str, str, str, str, str]]:
+    """Every sentence in the project that has hanzi, pinyin and Vietnamese.
+
+    Three places already held vetted sentences and none of them was reachable
+    from a dictionary entry: the rearrange bank in `sentences`, the worked
+    examples inside each grammar lesson, and the HSKK speaking prompts.
+    Gathering them is what takes example coverage from 150 words to roughly
+    1.200 without importing anything new.
+    """
+    rows: list[tuple[str, str, str, str, str]] = []
+    with get_connection() as connection:
+        for row in connection.execute("SELECT id, hanzi, pinyin, meaning FROM sentences"):
+            rows.append(
+                (row["hanzi"], row["pinyin"], row["meaning"], "sentences", str(row["id"]))
+            )
+
+    grammar_path = FULL_DATA_DIR / GRAMMAR_FILE
+    if grammar_path.exists():
+        with open(grammar_path, encoding="utf-8") as handle:
+            payload = json.load(handle)
+        for point in payload.get("points", []):
+            for example in point.get("examples", []):
+                if example.get("hanzi") and example.get("vi"):
+                    rows.append(
+                        (
+                            example["hanzi"],
+                            example.get("pinyin", ""),
+                            example["vi"],
+                            "grammar",
+                            point["code"],
+                        )
+                    )
+
+    hskk_path = FULL_DATA_DIR / HSKK_FILE
+    if hskk_path.exists():
+        with open(hskk_path, encoding="utf-8") as handle:
+            payload = json.load(handle)
+        for level in payload.get("levels", {}).values():
+            for pool in level.get("pools", {}).values():
+                for item in pool:
+                    if not (item.get("hanzi") and item.get("vi")):
+                        continue
+                    # Open-ended speaking prompts carry `hints`, and their `vi`
+                    # is a suggested outline rather than a translation of the
+                    # `hanzi` beside it — 两个同学在图书馆一起复习 is glossed with
+                    # a whole story about how the exam went. Correct for a
+                    # speaking task, wrong on a dictionary entry, so those
+                    # items are not example sentences.
+                    if item.get("hints"):
+                        continue
+                    rows.append(
+                        (
+                            item["hanzi"],
+                            item.get("pinyin", ""),
+                            item["vi"],
+                            "hskk",
+                            item["id"],
+                        )
+                    )
+    return rows
+
+
+def seed_word_examples() -> dict[str, int]:
+    """Index the project's own sentences against the words they contain."""
+    sources = _example_sources()
+    if not sources:
+        return {"sentences": 0, "words": 0, "examples": 0}
+
+    # The three source files overlap: 你叫什么名字？ is both a rearrange sentence
+    # and an HSKK prompt, and 我是学生。 is both a sentence and a grammar
+    # example. Left alone that puts the identical line twice under one
+    # headword, which reads as a bug. Keyed on the text, first writer wins, and
+    # `_example_sources` lists them in the order their pinyin is most reliable.
+    unique: dict[str, tuple[str, str, str, str, str]] = {}
+    for sentence in sources:
+        unique.setdefault(sentence[0], sentence)
+    sources = list(unique.values())
+
+    # Shortest first. An example only helps if the learner can read the rest of
+    # it, and the shortest sentence containing a word usually shows it plainest.
+    sources.sort(key=lambda row: len(row[0]))
+
+    with get_connection() as connection:
+        words = connection.execute("SELECT id, hanzi FROM vocabulary").fetchall()
+        rows: list[tuple[Any, ...]] = []
+        matched = 0
+        for word in words:
+            text = word["hanzi"]
+            if not text:
+                continue
+            single = len(text) == 1
+            limit = _MAX_EXAMPLES_SINGLE if single else _MAX_EXAMPLES
+            found = 0
+            for sentence in sources:
+                if found >= limit:
+                    break
+                if text not in sentence[0]:
+                    continue
+                if single and len(sentence[0]) > _SHORT_SENTENCE:
+                    continue
+                rows.append((word["id"], *sentence, found))
+                found += 1
+            if found:
+                matched += 1
+
+        connection.execute("DELETE FROM word_examples")
+        connection.executemany(
+            """
+            INSERT INTO word_examples (
+                vocabulary_id, hanzi, pinyin, meaning_vi, source, source_ref, sort_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+
+    return {"sentences": len(sources), "words": matched, "examples": len(rows)}
+
+
 def seed_database(return_details: bool = False) -> int | dict[str, int]:
     """Insert missing vocabulary and progress rows, preserving existing data."""
     initialize_database()
@@ -701,8 +834,10 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
     full_result = seed_full_vocabulary(return_details=True)
     leveled_sentences = seed_leveled_sentences()
     grammar_points = seed_grammar()
-    # Last, because it indexes the vocabulary the steps above just wrote.
+    # Last, because both index the vocabulary and sentences the steps above
+    # just wrote.
     characters = seed_characters()
+    examples = seed_word_examples()
     if return_details:
         return {
             "vocabulary_added": added,
@@ -715,6 +850,9 @@ def seed_database(return_details: bool = False) -> int | dict[str, int]:
             "radicals": characters["radicals"],
             "word_character_links": characters["links"],
             "words_transcribed": characters["words_transcribed"],
+            "example_sentences": examples["sentences"],
+            "words_with_examples": examples["words"],
+            "word_examples": examples["examples"],
         }
     return added
 
@@ -730,6 +868,8 @@ def main() -> None:
         f"Seeded {result['characters']} characters and {result['radicals']} radicals, "
         f"linked {result['word_character_links']} word-character pairs and "
         f"transcribed {result['words_transcribed']} words into âm Hán-Việt. "
+        f"Indexed {result['example_sentences']} sentences into "
+        f"{result['word_examples']} examples across {result['words_with_examples']} words. "
         f"Seed totals: {len(HSK1_VOCABULARY)} curated words, {len(HSK1_SENTENCES)} sentences."
     )
 

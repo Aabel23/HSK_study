@@ -58,6 +58,9 @@ nét, trong đó 2.735 chữ xuất hiện trong kho từ. Nhờ đó **10.357 /
 "phát triển". Đây là nền của màn hình **Giải mã Hán-Việt**, thứ giúp người học
 đọc hiểu cả những từ nằm ngoài giáo trình HSK.
 
+Kho câu của dự án cũng được đánh chỉ mục ngược lại vào từ điển: **1.177 từ**
+nay có câu ví dụ kèm pinyin và bản dịch, thay vì 150 từ như trước.
+
 ## Công nghệ
 
 | Lớp | Thành phần |
