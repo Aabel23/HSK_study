@@ -93,7 +93,8 @@ Số liệu thật từ cơ sở dữ liệu hiện tại:
   từ HSK.
 - **10.357 / 10.969 từ (94,4%)** đọc được **trọn vẹn** bằng âm Hán-Việt.
 - Tính theo **tần suất sử dụng**, độ phủ chữ đạt **97,1%**.
-- **414 bộ thủ** kèm tên, nghĩa và mẹo nhớ tiếng Việt cho phần chiết tự.
+- **414 bộ thủ** kèm tên, nghĩa và mẹo nhớ tiếng Việt; **83% chữ trong kho** có
+  ít nhất bộ thủ chính kèm chú giải.
 
 ### Chỗ ta chọn *không* làm, và vì sao đó là điểm mạnh
 
@@ -160,7 +161,8 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
 | Câu ví dụ cho từ | 1.177 / 10.969 từ (10,7%) | Đã tăng 8 lần bằng cách đánh chỉ mục chính kho câu sẵn có của dự án. Vẫn kém xa một từ điển thật; muốn hơn nữa phải có nguồn câu mới. |
 | SRS dùng chung mọi hoạt động | Xong một chiều | Sai ở bất kỳ bài luyện nào cũng kéo từ về hàng đợi ôn. Câu đúng cố tình không tính, để một cú đoán mò không thành "đã thuộc". |
 | Di động | Chỉ web | Không có app native. |
-| Mẹo nhớ Hán tự | 659 / 2.735 chữ trong kho | Phần còn lại chưa có mnemonic. |
+| Mẹo nhớ Hán tự | 659 / 2.735 chữ trong kho | Phần còn lại chưa có mnemonic viết tay. |
+| Chiết tự / bộ thủ | 2.279 / 2.735 chữ (83%) | 659 chữ có chiết tự đầy đủ; số còn lại có bộ thủ chính suy từ Unihan, kèm tên và mẹo nhớ tiếng Việt, và được ghi nhãn đúng là bộ thủ chứ không phải chiết tự. |
 | Lịch ôn cho chữ | Xong | Chữ có lịch SM-2 riêng; chữ quá hạn được hỏi trước. Không app nào khác lên lịch ở mức chữ. |
 
 ### Việc nên làm tiếp, theo thứ tự

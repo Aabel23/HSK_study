@@ -302,7 +302,13 @@ function CharacterDetail({
 
       {(item.radical_details ?? []).length > 0 && (
         <section>
-          <SectionTitle>Chiết tự</SectionTitle>
+          {/* Only 659 characters have a hand-written decomposition. The rest
+              get the radical they are filed under, which is one component
+              rather than a breakdown — so the heading says which of the two
+              this is instead of passing one off as the other. */}
+          <SectionTitle>
+            {item.radical_source === "kangxi" ? "Bộ thủ" : "Chiết tự"}
+          </SectionTitle>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(item.radical_details ?? []).map((radical) => (
               <Card key={radical.hanzi} className="p-4">

@@ -53,7 +53,11 @@ lúc seed** chứ không lấy từ nguồn:
 - `hsk_level` — cấp HSK **thấp nhất** mà chữ xuất hiện, tức thứ tự nên học.
 
 `han_viet_source` ghi lại nguồn của cách đọc, để giao diện nói rõ mức độ chắc
-chắn thay vì im lặng tin tưởng.
+chắn thay vì im lặng tin tưởng. `radical_source` làm việc tương tự cho phần
+components: `dataset` là chiết tự đầy đủ do người viết (659 chữ), `kangxi` là bộ
+thủ chính suy từ Unihan (số còn lại). Một thành phần kèm chú giải kém xa một bản
+chiết tự đầy đủ nhưng hơn hẳn một khung trống, nên nó được hiện ra và **được ghi
+nhãn đúng là bộ thủ** chứ không đội lốt chiết tự.
 
 ### `radicals`
 

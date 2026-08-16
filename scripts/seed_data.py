@@ -509,8 +509,8 @@ CHARACTER_SQL = """
     INSERT INTO characters (
         hanzi, pinyin, han_viet, han_viet_source, meaning_vi, meaning_en,
         traditional, stroke_count, radical_number, radicals_json,
-        mnemonic_vi, stroke_hint_vi, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        radical_source, mnemonic_vi, stroke_hint_vi, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(hanzi) DO UPDATE SET
         pinyin = excluded.pinyin,
         han_viet = excluded.han_viet,
@@ -521,6 +521,7 @@ CHARACTER_SQL = """
         stroke_count = excluded.stroke_count,
         radical_number = excluded.radical_number,
         radicals_json = excluded.radicals_json,
+        radical_source = excluded.radical_source,
         mnemonic_vi = excluded.mnemonic_vi,
         stroke_hint_vi = excluded.stroke_hint_vi,
         updated_at = excluded.updated_at
@@ -580,6 +581,7 @@ def seed_characters() -> dict[str, int]:
                     entry.get("stroke_count"),
                     entry.get("radical_number"),
                     json.dumps(entry.get("radicals", []), ensure_ascii=False),
+                    entry.get("radical_source", "") or "",
                     entry.get("mnemonic_vi", "") or "",
                     entry.get("stroke_hint_vi", "") or "",
                     now,

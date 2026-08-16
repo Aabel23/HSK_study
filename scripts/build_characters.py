@@ -177,6 +177,19 @@ def _first_codepoint(value: str) -> str | None:
     return chr(int(match.group(1), 16)) if match else None
 
 
+#: Kangxi radical *number* to the ordinary character for that radical.
+#:
+#: Unicode's Kangxi Radicals block runs U+2F00..U+2FD5 as radicals 1 to 214 in
+#: order, and each of those compatibility characters normalises under NFKC to
+#: the unified ideograph a reader would recognise — ⼝ becomes 口. So the map is
+#: derived rather than typed out, which is both shorter and impossible to get
+#: subtly wrong halfway down a list of 214 entries.
+KANGXI_RADICALS: dict[int, str] = {
+    number: unicodedata.normalize("NFKC", chr(0x2F00 + number - 1))
+    for number in range(1, 215)
+}
+
+
 def build(refresh: bool) -> dict[str, Any]:
     print("Fetching sources")
     paths = {name: _download(name, url, refresh=refresh) for name, url in SOURCES.items()}
@@ -263,6 +276,25 @@ def build(refresh: bool) -> dict[str, Any]:
         if facts.get("kRSUnicode"):
             head = facts["kRSUnicode"].split()[0]
             radical_number = head.split(".")[0].rstrip("'")
+        number = int(radical_number) if radical_number and radical_number.isdigit() else None
+
+        # The hand-written dataset decomposes 659 characters fully — 学 into
+        # ⺍ 冖 子 — and that is the material the 'Chiết tự' panel was built for.
+        # For the other two thousand in the bank there is no decomposition
+        # anywhere with a licence, but Unihan does give the radical every
+        # character is *filed* under, and the radical table has a Vietnamese
+        # name and mnemonic for it. One component with a gloss is a long way
+        # short of a full breakdown and a long way better than an empty panel,
+        # so it is offered and labelled as what it is.
+        # Named `components` rather than `radicals`: the latter is the whole
+        # radical table this function also builds, and shadowing it here left
+        # that list holding one character's parts.
+        components = source.get("radicals") or []
+        radical_source = "dataset" if components else ""
+        if not components and number and KANGXI_RADICALS.get(number):
+            components = [KANGXI_RADICALS[number]]
+            radical_source = "kangxi"
+
         entries.append(
             {
                 "hanzi": char,
@@ -273,8 +305,9 @@ def build(refresh: bool) -> dict[str, Any]:
                 "meaning_en": (facts.get("kDefinition") or "").strip(),
                 "traditional": source.get("traditional") or _first_codepoint(facts.get("kTraditionalVariant", "")),
                 "stroke_count": int(strokes[0]) if strokes and strokes[0].isdigit() else None,
-                "radical_number": int(radical_number) if radical_number and radical_number.isdigit() else None,
-                "radicals": source.get("radicals") or [],
+                "radical_number": number,
+                "radicals": components,
+                "radical_source": radical_source,
                 "mnemonic_vi": source.get("mnemonic") or "",
                 "stroke_hint_vi": source.get("strokeHint") or "",
             }

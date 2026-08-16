@@ -389,6 +389,9 @@ CREATE TABLE IF NOT EXISTS characters (
     stroke_count INTEGER,
     radical_number INTEGER,
     radicals_json TEXT NOT NULL DEFAULT '[]',
+    -- 'dataset' = full decomposition, 'kangxi' = the filing radical only.
+    -- The screen says which, rather than passing one off as the other.
+    radical_source TEXT NOT NULL DEFAULT '',
     mnemonic_vi TEXT NOT NULL DEFAULT '',
     stroke_hint_vi TEXT NOT NULL DEFAULT '',
     -- The lowest HSK band of any word that uses it, and how many bank words
@@ -557,6 +560,10 @@ HSKK_SESSION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
 # learner had just missed — it drew at random every time. Characters are the
 # unit most worth scheduling here, because unlike a word a character carries
 # over to vocabulary that was never studied.
+CHARACTER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("radical_source", "TEXT NOT NULL DEFAULT ''"),
+)
+
 CHARACTER_PROGRESS_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("ease_factor", "REAL NOT NULL DEFAULT 2.5"),
     ("interval_days", "REAL NOT NULL DEFAULT 0"),
@@ -638,6 +645,7 @@ def _migrate_hskk_columns(connection: sqlite3.Connection) -> None:
 
 
 def _migrate_character_progress_columns(connection: sqlite3.Connection) -> None:
+    _add_missing_columns(connection, "characters", CHARACTER_COLUMN_MIGRATIONS)
     _add_missing_columns(
         connection, "character_progress", CHARACTER_PROGRESS_COLUMN_MIGRATIONS
     )

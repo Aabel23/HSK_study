@@ -365,3 +365,32 @@ def test_stats_report_characters_due(client):
             (hanzi,),
         )
     assert client.get("/api/characters/stats").json()["due_now"] >= 1
+
+
+def test_every_bank_character_has_at_least_its_radical(client):
+    """An empty 'Chiết tự' panel was the common case, not the exception.
+
+    Only 659 characters carry a hand-written decomposition. Unihan files every
+    character under a Kangxi radical, and the radical table glosses most of
+    those in Vietnamese, so the panel has something to show for the rest.
+    """
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        empty = connection.execute(
+            "SELECT COUNT(*) FROM characters WHERE word_count > 0 AND radicals_json = '[]'"
+        ).fetchone()[0]
+    assert empty == 0
+
+
+def test_a_derived_radical_is_labelled_as_one(client):
+    """性 has no authored decomposition, so it gets 心 and says so."""
+    data = lookup(client, "性").json()
+    assert data["radicals"] == ["心"]
+    assert data["radical_source"] == "kangxi"
+    assert data["radical_details"][0]["name_vi"]
+
+    # 学 does have one, and keeps the fuller breakdown.
+    authored = lookup(client, "学").json()
+    assert authored["radical_source"] == "dataset"
+    assert len(authored["radicals"]) > 1

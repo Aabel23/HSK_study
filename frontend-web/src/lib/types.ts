@@ -702,6 +702,8 @@ export interface CharacterItem {
   stroke_count: number | null;
   radical_number: number | null;
   radicals: string[];
+  /** 'dataset' = full decomposition, 'kangxi' = the filing radical only. */
+  radical_source: string;
   mnemonic_vi: string;
   stroke_hint_vi: string;
   hsk_level: HskLevel | null;

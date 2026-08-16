@@ -68,7 +68,7 @@ CANDIDATE_POOL = 60
 CHARACTER_FIELDS = """
     c.hanzi, c.pinyin, c.han_viet, c.han_viet_source, c.meaning_vi,
     c.meaning_en, c.traditional, c.stroke_count, c.radical_number,
-    c.radicals_json, c.mnemonic_vi, c.stroke_hint_vi, c.hsk_level,
+    c.radicals_json, c.radical_source, c.mnemonic_vi, c.stroke_hint_vi, c.hsk_level,
     c.word_count,
     COALESCE(p.status, 'new') AS status,
     COALESCE(p.seen_count, 0) AS seen_count,
