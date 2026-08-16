@@ -8,6 +8,7 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { PLAYBACK_RATES, usePlayAudio, type PlaybackRate } from "../lib/useAudio";
 import { distinctOptionLabels, formatNumber, formatPercent } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type {
   AnswerResult,
   DictationItem,
@@ -173,6 +174,29 @@ export default function Listening() {
       setBusy(false);
     }
   }
+
+  // Space cannot mean "confirm" while the caret is in the answer box — a
+  // learner typing "ni hao" needs the space bar to type a space, and the hook's
+  // typing guard leaves it alone. Once an answer is graded the box is disabled,
+  // so from that point Space and Enter both move on, matching every other
+  // screen.
+  const answered = isDictation ? Boolean(result) : picked !== null;
+  useShortcuts({
+    enabled: Boolean(sessionId) && !finished,
+    onConfirm: () => {
+      if (answered) void next();
+    },
+    onNext: () => {
+      if (answered) void next();
+    },
+    onPick: (choice) => {
+      // Only the multiple-choice drills; the dictation ones want the digit
+      // typed into the answer box, and the typing guard already sees to that.
+      if (isDictation || picked !== null || !currentChoice) return;
+      const option = currentChoice.options[choice - 1];
+      if (option) void choose(option);
+    },
+  });
 
   async function next() {
     if (!sessionId) return;
@@ -432,7 +456,7 @@ export default function Listening() {
 
           <div className="mt-5 flex items-center justify-between gap-3">
             <span className="text-xs text-ink-faint">
-              <Kbd>Enter</Kbd> {result ? "để tiếp tục" : "để kiểm tra"}
+              <Kbd>Enter</Kbd> {result ? "để sang câu tiếp theo" : "để kiểm tra"}
             </span>
             {result ? (
               <Button onClick={next}>Tiếp theo</Button>

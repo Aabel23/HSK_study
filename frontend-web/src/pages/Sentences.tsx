@@ -6,6 +6,7 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { useApi } from "../lib/useApi";
 import { formatNumber } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { HskLevel, SentenceItem, SentenceToken } from "../lib/types";
 import {
   AudioButton,
@@ -13,6 +14,7 @@ import {
   Card,
   EmptyState,
   InlineSwitch,
+  Kbd,
   PageHeader,
   PracticeBar,
   SessionSizePicker,
@@ -131,6 +133,25 @@ export default function Sentences() {
     setChosen([]);
     setResult(null);
   }
+
+  // The two-step screen the split contract exists for: Space checks the
+  // arrangement, Enter takes the next sentence. Number keys pick the nth clause
+  // still waiting in the pool, so a whole sentence can be built without the
+  // mouse.
+  useShortcuts({
+    enabled: Boolean(sessionId) && !finished,
+    onConfirm: () => {
+      if (!result && pool.length === 0 && !busy) void submit();
+    },
+    onNext: () => {
+      if (result) void next();
+    },
+    onPick: (choice) => {
+      if (result) return;
+      const token = pool[choice - 1];
+      if (token) pick(token);
+    },
+  });
 
   if (!sessionId) {
     return (
@@ -271,6 +292,18 @@ export default function Sentences() {
           </Button>
         </Card>
       )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+        <span>
+          <Kbd>1</Kbd>–<Kbd>9</Kbd> chọn cụm
+        </span>
+        <span>
+          <Kbd>Space</Kbd> kiểm tra
+        </span>
+        <span>
+          <Kbd>Enter</Kbd> câu tiếp theo
+        </span>
+      </div>
 
       <div className="mt-6 flex items-center justify-between gap-3 text-xs text-ink-faint">
         <span className="tnum">

@@ -33,6 +33,7 @@ from backend.database import get_connection, utc_now
 from backend.services import session_store, srs_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.gloss import short_gloss
+from backend.services.pinyin_utils import plain_letters
 from backend.services.session_store import SessionKind
 
 
@@ -169,10 +170,14 @@ def list_characters(
         parameters.append(hsk_level)
     if search and search.strip():
         term = f"%{search.strip()}%"
+        # Searched twice over: once as typed, and once accent-free, because
+        # "xue" and "hoc" are what a learner reaches for before "xué" and "học".
+        plain = f"%{plain_letters(search)}%"
         conditions.append(
-            "(c.hanzi LIKE ? OR c.han_viet LIKE ? OR c.pinyin LIKE ? OR c.meaning_vi LIKE ?)"
+            "(c.hanzi LIKE ? OR c.han_viet LIKE ? OR c.pinyin LIKE ? OR c.meaning_vi LIKE ?"
+            " OR c.pinyin_plain LIKE ? OR c.han_viet_plain LIKE ?)"
         )
-        parameters.extend([term, term, term, term])
+        parameters.extend([term, term, term, term, plain, plain])
 
     # Whitelisted: the value is interpolated into SQL.
     orders = {

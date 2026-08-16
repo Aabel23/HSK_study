@@ -3,8 +3,9 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "../lib/api";
 import { useToast } from "../lib/toast";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { ReadingPart, ReadingQuestion, ReadingSection, ReadingVerdict } from "../lib/types";
-import { Badge, Button, Card, ProgressBar } from "../components/ui";
+import { Badge, Button, Card, Kbd, ProgressBar } from "../components/ui";
 import { IconCheck, IconX } from "../components/icons";
 
 /** One question paired with the part it belongs to, so the runner is a flat list. */
@@ -92,6 +93,39 @@ export function ReadingRunner({
   }
 
   const answered = Boolean(verdict);
+
+  // The exam paper follows the same keyboard contract as every practice
+  // screen: Space commits, Enter moves on. 判断对错 answers with 1 and 2, the
+  // multiple-choice parts with 1-4, and 排列顺序 builds the clause order with
+  // the number keys before Space checks it.
+  useShortcuts({
+    onConfirm: () => {
+      if (answered || busy) return;
+      if (
+        part.question_type === "sentence_reordering" &&
+        ordered.length === (question.words_zh?.length ?? 0)
+      ) {
+        void submit(ordered);
+      }
+    },
+    onNext: () => {
+      if (answered) next();
+    },
+    onPick: (choice) => {
+      if (answered || busy) return;
+      if (part.question_type === "judge_true_false") {
+        if (choice <= 2) void submit(choice === 1);
+        return;
+      }
+      if (part.question_type === "sentence_reordering") {
+        const clause = question.words_zh?.[choice - 1];
+        if (clause) toggleClause(clause);
+        return;
+      }
+      const option = question.options?.[choice - 1];
+      if (option) void submit(option.text_zh);
+    },
+  });
 
   return (
     <div className="animate-float-in mx-auto max-w-2xl">
@@ -295,6 +329,20 @@ export function ReadingRunner({
           {index + 1 >= slots.length ? "Sang phần thi nói" : "Câu tiếp theo"}
         </Button>
       )}
+
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+        <span>
+          <Kbd>1</Kbd>–<Kbd>9</Kbd> chọn đáp án
+        </span>
+        {part.question_type === "sentence_reordering" && (
+          <span>
+            <Kbd>Space</Kbd> kiểm tra
+          </span>
+        )}
+        <span>
+          <Kbd>Enter</Kbd> câu tiếp theo
+        </span>
+      </p>
     </div>
   );
 }

@@ -132,3 +132,17 @@ def character_diff(expected: str, answer: str) -> list[dict[str, object]]:
         typed = answer_clean[index] if index < len(answer_clean) else None
         result.append({"expected": char, "typed": typed, "correct": typed == char})
     return result
+
+
+def plain_letters(text: str | None) -> str:
+    """Lowercase letters only, with every accent removed.
+
+    Used to make search match what a learner types. Both readings this app
+    shows carry diacritics — pinyin as tone marks (xué) and âm Hán-Việt as
+    Vietnamese accents (học) — and nobody types either on a first attempt.
+    NFD splits a letter from its marks, and dropping the combining marks leaves
+    the bare letters; đ has no decomposition so it is mapped by hand.
+    """
+    lowered = unicodedata.normalize("NFD", (text or "").strip().lower())
+    stripped = "".join(char for char in lowered if not unicodedata.combining(char))
+    return stripped.replace("đ", "d")

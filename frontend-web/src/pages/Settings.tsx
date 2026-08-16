@@ -29,15 +29,23 @@ const LEVEL_OPTIONS = [
   { value: "7-9", label: "HSK 7-9" },
 ];
 
+/**
+ * The same four keys on every practice screen.
+ *
+ * Space and Enter used to be synonyms for "next step", which fell apart on any
+ * screen with two steps. They mean different things now, and the list says so
+ * — see `frontend-web/src/lib/useShortcuts.ts` for the contract itself.
+ */
 const SHORTCUTS = [
+  { keys: ["Space"], description: "Xác nhận: hiện đáp án, kiểm tra câu trả lời" },
+  { keys: ["Enter"], description: "Sang câu tiếp theo" },
+  { keys: ["1"], description: "Chọn đáp án 1 · Đánh giá: Quên rồi" },
+  { keys: ["2"], description: "Chọn đáp án 2 · Đánh giá: Khó" },
+  { keys: ["3"], description: "Chọn đáp án 3 · Đánh giá: Nhớ" },
+  { keys: ["4"], description: "Chọn đáp án 4 · Đánh giá: Quá dễ" },
+  { keys: ["Esc"], description: "Đóng hộp thoại, hoặc kết thúc phiên sớm" },
   { keys: ["Ctrl", "K"], description: "Mở bảng lệnh tìm kiếm nhanh" },
   { keys: ["/"], description: "Mở bảng lệnh (khi không gõ trong ô nhập)" },
-  { keys: ["Space"], description: "Hiện đáp án khi đang ôn tập" },
-  { keys: ["1"], description: "Đánh giá: Quên rồi" },
-  { keys: ["2"], description: "Đánh giá: Khó" },
-  { keys: ["3"], description: "Đánh giá: Nhớ" },
-  { keys: ["4"], description: "Đánh giá: Quá dễ" },
-  { keys: ["Esc"], description: "Đóng hộp thoại đang mở" },
 ];
 
 export default function Settings() {

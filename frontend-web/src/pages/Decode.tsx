@@ -33,6 +33,7 @@ import {
   Card,
   EmptyState,
   ErrorState,
+  Kbd,
   LoadingState,
   PageHeader,
   PracticeBar,
@@ -122,6 +123,39 @@ function LookupTab() {
     return chars[0] ?? "";
   }, [debounced]);
 
+  // Most people cannot type Chinese. Asking a screen about âm Hán-Việt to be
+  // opened with a Chinese character first is backwards: the whole promise is
+  // that the learner already knows "học", so typing that — or the pinyin
+  // "xue", with or without its tone mark — has to find 学.
+  const [matches, setMatches] = useState<CharacterItem[]>([]);
+  const romanised = !target && /[a-zà-ỹ]/i.test(debounced);
+
+  useEffect(() => {
+    if (!romanised) {
+      setMatches([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    api.characters
+      .list({ search: debounced, limit: 24 })
+      .then((data) => {
+        if (!cancelled) {
+          setMatches(data.items);
+          setError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMatches([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debounced, romanised]);
+
   useEffect(() => {
     if (!target) {
       setDetail(null);
@@ -168,7 +202,7 @@ function LookupTab() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Gõ hoặc dán một chữ Hán, ví dụ 学 hoặc 图书馆..."
+            placeholder="Gõ chữ Hán, pinyin hoặc âm Hán-Việt: 学, xue, hoc..."
             className="hanzi w-full rounded-xl border border-border bg-surface-2 py-2.5 pl-10 pr-3 text-base text-ink outline-none focus:border-accent"
           />
         </label>
@@ -194,10 +228,45 @@ function LookupTab() {
 
       {loading && <LoadingState label="Đang tra chữ" />}
       {!loading && error && <ErrorState message={error} />}
-      {!loading && !error && !target && (
+
+      {!loading && !error && romanised && matches.length > 0 && (
+        <section>
+          <SectionTitle>Chữ khớp với “{debounced}”</SectionTitle>
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {matches.map((match) => (
+              <Card
+                key={match.hanzi}
+                className="cursor-pointer p-3 transition-colors hover:border-border-strong"
+                onClick={() => setQuery(match.hanzi)}
+                lift
+              >
+                <div className="flex items-start gap-3">
+                  <span className="hanzi text-3xl font-bold leading-none text-ink">
+                    {match.hanzi}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-display text-sm font-bold text-gold">{match.han_viet}</p>
+                    <p className="text-xs text-accent">{match.pinyin}</p>
+                    <p className="line-clamp-1 text-xs text-ink-soft">{match.meaning_vi}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!loading && !error && romanised && matches.length === 0 && (
         <EmptyState
-          title="Nhập một chữ Hán để bắt đầu"
-          description="Bạn có thể dán cả từ — ứng dụng sẽ tách từng chữ ra cho bạn chọn."
+          title={`Không có chữ nào khớp “${debounced}”`}
+          description="Thử một âm Hán-Việt khác, hoặc gõ thẳng chữ Hán."
+        />
+      )}
+
+      {!loading && !error && !target && !romanised && (
+        <EmptyState
+          title="Nhập chữ Hán, pinyin hoặc âm Hán-Việt"
+          description="Gõ “hoc” hay “xue” đều ra 学. Dán cả từ thì ứng dụng tách từng chữ ra cho bạn chọn."
         />
       )}
       {!loading && !error && detail && <CharacterDetail item={detail} onPick={setQuery} />}
@@ -468,7 +537,7 @@ function DrillTab() {
 
   useShortcuts({
     enabled: Boolean(sessionId) && !finished,
-    onAdvance: () => {
+    onNext: () => {
       if (picked) void advance();
     },
     onPick: (choice) => {
@@ -635,6 +704,15 @@ function DrillTab() {
           <p className="hanzi mt-4 text-4xl font-bold text-ink">{question.word}</p>
         )}
       </Card>
+
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+        <span>
+          <Kbd>1</Kbd>–<Kbd>4</Kbd> chọn đáp án
+        </span>
+        <span>
+          <Kbd>Enter</Kbd> câu tiếp theo
+        </span>
+      </p>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {question.options.map((option, position) => {

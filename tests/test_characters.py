@@ -394,3 +394,50 @@ def test_a_derived_radical_is_labelled_as_one(client):
     authored = lookup(client, "学").json()
     assert authored["radical_source"] == "dataset"
     assert len(authored["radicals"]) > 1
+
+
+# --------------------------------------------------------------------------
+# Looking a character up by its readings
+# --------------------------------------------------------------------------
+
+
+def search(client, term):
+    return [
+        item["hanzi"]
+        for item in client.get(f"/api/characters?search={term}&limit=20").json()["items"]
+    ]
+
+
+def test_lookup_by_han_viet_without_the_accents(client):
+    """A learner who knows "học" types "hoc"; nobody reaches for the accents."""
+    assert "学" in search(client, "hoc")
+    assert "学" in search(client, "học")
+
+
+def test_lookup_by_pinyin_without_the_tone_mark(client):
+    assert "学" in search(client, "xue")
+    assert "学" in search(client, "xué")
+
+
+def test_plain_columns_are_filled_for_every_character(client):
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        missing = connection.execute(
+            """
+            SELECT COUNT(*) FROM characters
+            WHERE (pinyin <> '' AND pinyin_plain = '')
+               OR (han_viet <> '' AND han_viet_plain = '')
+            """
+        ).fetchone()[0]
+    assert missing == 0
+
+
+def test_plain_letters_strips_both_alphabets():
+    from backend.services.pinyin_utils import plain_letters
+
+    assert plain_letters("xué") == "xue"
+    assert plain_letters("học") == "hoc"
+    # đ has no canonical decomposition, so it is mapped explicitly.
+    assert plain_letters("đồ thư quán") == "do thu quan"
+    assert plain_letters(None) == ""

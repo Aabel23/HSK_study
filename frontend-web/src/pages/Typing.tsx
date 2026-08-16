@@ -8,6 +8,7 @@ import { useSettings } from "../lib/settings";
 import { useToast } from "../lib/toast";
 import { usePlayAudio, PLAYBACK_RATES, type PlaybackRate } from "../lib/useAudio";
 import { formatNumber, formatPercent, shortMeaning } from "../lib/format";
+import { useShortcuts } from "../lib/useShortcuts";
 import type { AnswerResult, HskLevel, TypingItem, TypingMode } from "../lib/types";
 import {
   Badge,
@@ -129,6 +130,15 @@ export default function Typing() {
     setAnswer("");
     setResult(null);
   }
+
+  // Same reasoning as Luyện nghe: the space bar belongs to the answer box
+  // while the learner is typing, and takes over once the answer is graded.
+  useShortcuts({
+    enabled: Boolean(sessionId) && !finished,
+    onAdvance: () => {
+      if (result) void next();
+    },
+  });
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key !== "Enter") return;
@@ -337,7 +347,7 @@ export default function Typing() {
 
             <div className="mt-5 flex items-center justify-between gap-3">
               <span className="text-xs text-ink-faint">
-                <Kbd>Enter</Kbd> {result ? "để tiếp tục" : "để kiểm tra"}
+                <Kbd>Enter</Kbd> {result ? "để sang câu tiếp theo" : "để kiểm tra"}
               </span>
               {result ? (
                 <Button onClick={next}>Tiếp theo</Button>

@@ -100,3 +100,68 @@ def test_long_sentence_session_is_allowed(client):
     # The corpus is smaller than the request, so the session holds what exists.
     assert 0 < len(response.json()["items"]) <= 100
 
+
+
+def test_duplicate_clauses_are_graded_on_the_sentence_not_the_tiles(client):
+    """这个饭馆又便宜又好吃。 has 又 twice, and both tiles look identical.
+
+    Tapping the second 又 first builds exactly the right sentence out of a
+    different set of positions. Grading on positions called that wrong and then
+    showed the learner their own answer back as the correction.
+    """
+    import json
+
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT id, tokens_json FROM sentences WHERE hanzi = ?",
+            ("这个饭馆又便宜又好吃。",),
+        ).fetchone()
+    assert row, "câu mẫu phải có trong kho"
+    tokens = json.loads(row["tokens_json"])
+
+    # Swap the two identical 又 tiles: same sentence, different positions.
+    duplicated = [i for i, token in enumerate(tokens) if tokens.count(token) > 1]
+    assert len(duplicated) >= 2
+    order = list(range(len(tokens)))
+    order[duplicated[0]], order[duplicated[1]] = order[duplicated[1]], order[duplicated[0]]
+    assert order != list(range(len(tokens)))
+    assert [tokens[i] for i in order] == tokens
+
+    session = client.post("/api/sentences/session", json={"count": 5}).json()
+    response = client.post(
+        "/api/sentences/attempt",
+        json={
+            "session_id": session["session_id"],
+            "sentence_id": row["id"],
+            "ordered_positions": order,
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["is_correct"] is True
+
+
+def test_a_genuinely_wrong_order_is_still_wrong(client):
+    import json
+
+    from backend.database import get_connection
+
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT id, tokens_json FROM sentences WHERE hanzi = ?",
+            ("这个饭馆又便宜又好吃。",),
+        ).fetchone()
+    tokens = json.loads(row["tokens_json"])
+    order = list(reversed(range(len(tokens))))
+
+    session = client.post("/api/sentences/session", json={"count": 5}).json()
+    response = client.post(
+        "/api/sentences/attempt",
+        json={
+            "session_id": session["session_id"],
+            "sentence_id": row["id"],
+            "ordered_positions": order,
+        },
+    )
+    assert response.json()["is_correct"] is False

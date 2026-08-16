@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from backend.database import get_connection, initialize_database, utc_now
+from backend.services.pinyin_utils import plain_letters
 from scripts.meaning_quality import is_english_gloss, repair_mojibake
 
 
@@ -509,8 +510,9 @@ CHARACTER_SQL = """
     INSERT INTO characters (
         hanzi, pinyin, han_viet, han_viet_source, meaning_vi, meaning_en,
         traditional, stroke_count, radical_number, radicals_json,
-        radical_source, mnemonic_vi, stroke_hint_vi, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        radical_source, mnemonic_vi, stroke_hint_vi, pinyin_plain, han_viet_plain,
+        created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(hanzi) DO UPDATE SET
         pinyin = excluded.pinyin,
         han_viet = excluded.han_viet,
@@ -524,6 +526,8 @@ CHARACTER_SQL = """
         radical_source = excluded.radical_source,
         mnemonic_vi = excluded.mnemonic_vi,
         stroke_hint_vi = excluded.stroke_hint_vi,
+        pinyin_plain = excluded.pinyin_plain,
+        han_viet_plain = excluded.han_viet_plain,
         updated_at = excluded.updated_at
 """
 
@@ -584,6 +588,8 @@ def seed_characters() -> dict[str, int]:
                     entry.get("radical_source", "") or "",
                     entry.get("mnemonic_vi", "") or "",
                     entry.get("stroke_hint_vi", "") or "",
+                    plain_letters(entry.get("pinyin")),
+                    plain_letters(entry.get("han_viet")),
                     now,
                     now,
                 ),

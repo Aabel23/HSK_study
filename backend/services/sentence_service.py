@@ -127,11 +127,22 @@ def record_attempt(
         ).fetchone()
         if not sentence:
             raise ResourceNotFoundError("Không tìm thấy câu luyện tập.")
-        token_count = len(json.loads(sentence["tokens_json"]))
+        tokens = json.loads(sentence["tokens_json"])
+        token_count = len(tokens)
         expected_positions = list(range(token_count))
         if len(ordered_positions) != token_count or sorted(ordered_positions) != expected_positions:
             raise InvalidOperationError("Thứ tự gửi lên phải chứa đủ mỗi cụm từ đúng một lần.")
-        is_correct = ordered_positions == expected_positions
+
+        # Graded on the sentence the learner built, not on which tile they
+        # happened to touch.
+        #
+        # 22 of the 246 sentences repeat a clause — 这个饭馆又便宜又好吃。 has 又
+        # twice, and 越练习，你进步得越快。 has 越 twice. The two tiles are
+        # identical on screen, so tapping the second one first produces exactly
+        # the right sentence from positions [0,1,4,3,2,5]. Comparing positions
+        # called that wrong, and the learner was shown their own answer back as
+        # the correction. Comparing the text cannot make that mistake.
+        is_correct = [tokens[position] for position in ordered_positions] == tokens
         connection.execute(
             """
             INSERT INTO sentence_attempts (

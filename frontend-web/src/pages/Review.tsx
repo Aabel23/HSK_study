@@ -133,6 +133,8 @@ export default function Review() {
   // Space reveals, 1-4 rate. Only bound while a card is on screen.
   useShortcuts({
     enabled: Boolean(current),
+    // One step: the card is revealed, then a rating key advances it. Both
+    // keys reveal so neither is dead.
     onAdvance: () => setRevealed(true),
     onPick: (choice) => {
       if (!revealed) return;

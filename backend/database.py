@@ -562,6 +562,11 @@ HSKK_SESSION_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
 # over to vocabulary that was never studied.
 CHARACTER_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
     ("radical_source", "TEXT NOT NULL DEFAULT ''"),
+    # Accent-free copies of the two readings, purely so search can match what a
+    # learner actually types. Nobody types "xué" or "học" with the diacritics on
+    # a first attempt, and SQLite's LIKE has no way to fold them.
+    ("pinyin_plain", "TEXT NOT NULL DEFAULT ''"),
+    ("han_viet_plain", "TEXT NOT NULL DEFAULT ''"),
 )
 
 CHARACTER_PROGRESS_COLUMN_MIGRATIONS: tuple[tuple[str, str], ...] = (
@@ -646,6 +651,12 @@ def _migrate_hskk_columns(connection: sqlite3.Connection) -> None:
 
 def _migrate_character_progress_columns(connection: sqlite3.Connection) -> None:
     _add_missing_columns(connection, "characters", CHARACTER_COLUMN_MIGRATIONS)
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_characters_pinyin_plain ON characters(pinyin_plain)"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_characters_han_viet_plain ON characters(han_viet_plain)"
+    )
     _add_missing_columns(
         connection, "character_progress", CHARACTER_PROGRESS_COLUMN_MIGRATIONS
     )

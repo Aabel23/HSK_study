@@ -6,7 +6,7 @@ import { usePlayAudio } from "../lib/useAudio";
 import { distinctOptionLabels } from "../lib/format";
 import { useShortcuts } from "../lib/useShortcuts";
 import type { QuestionType, QuizOption, QuizQuestion } from "../lib/types";
-import { Button, Card, PageHeader, ProgressBar, SessionComplete } from "../components/ui";
+import { Button, Card, Kbd, PageHeader, ProgressBar, SessionComplete } from "../components/ui";
 import { IconCheckSquare, IconPlay, IconRefresh } from "../components/icons";
 
 const TYPE_LABEL: Record<QuestionType, string> = {
@@ -70,7 +70,9 @@ export default function Quiz() {
   // above the early returns because hooks cannot be called conditionally.
   useShortcuts({
     enabled: Boolean(sessionId) && !finished,
-    onAdvance: () => {
+    // The answer commits itself the moment a number key picks it, so Space
+     // has nothing left to confirm and both keys mean "next".
+    onNext: () => {
       if (picked !== null) void next();
     },
     onPick: (choice) => {
@@ -187,6 +189,15 @@ export default function Quiz() {
           Câu tiếp theo
         </Button>
       )}
+
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+        <span>
+          <Kbd>1</Kbd>–<Kbd>4</Kbd> chọn đáp án
+        </span>
+        <span>
+          <Kbd>Enter</Kbd> câu tiếp theo
+        </span>
+      </p>
     </div>
   );
 }
