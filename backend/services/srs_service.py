@@ -162,8 +162,20 @@ def get_due_queue(
     }
 
 
-def submit_review(vocabulary_id: int, rating: str, source: str = "review") -> dict[str, Any]:
-    """Apply an SM-2 update for one word and record it against today's activity."""
+def submit_review(
+    vocabulary_id: int,
+    rating: str,
+    source: str = "review",
+    *,
+    record_streak: bool = True,
+) -> dict[str, Any]:
+    """Apply an SM-2 update for one word and record it against today's activity.
+
+    ``record_streak`` is off when the caller has already credited the day's
+    work — the drills that feed :func:`record_lapse` count their own answers,
+    and awarding XP again here would pay for the same answer twice. Same flag
+    and the same reason as ``session_store.complete``.
+    """
     if rating not in RATING_QUALITY:
         raise InvalidOperationError("Mức đánh giá không hợp lệ.")
     quality = RATING_QUALITY[rating]
@@ -245,12 +257,13 @@ def submit_review(vocabulary_id: int, rating: str, source: str = "review") -> di
             (vocabulary_id, rating, previous_interval, interval, ease, source, now_iso),
         )
 
-    streak_service.record_activity(
-        connection=None,
-        correct=correct == 1,
-        new_learned=1 if is_first_review else 0,
-        xp=streak_service.xp_for_rating(rating),
-    )
+    if record_streak:
+        streak_service.record_activity(
+            connection=None,
+            correct=correct == 1,
+            new_learned=1 if is_first_review else 0,
+            xp=streak_service.xp_for_rating(rating),
+        )
 
     return {
         "vocabulary_id": vocabulary_id,
@@ -262,6 +275,37 @@ def submit_review(vocabulary_id: int, rating: str, source: str = "review") -> di
         "lapses": lapses,
         "due_at": due_at,
     }
+
+
+def record_lapse(vocabulary_id: int | None, source: str) -> dict[str, Any] | None:
+    """Pull a word back into the review queue after getting it wrong elsewhere.
+
+    Until now the SM-2 schedule only moved on the Ôn tập screen. A learner
+    could miss 我 in a listening drill, miss it again in a typing drill, and the
+    review queue would still consider it settled — the one place that decides
+    what to show tomorrow never heard about either mistake.
+
+    The feedback deliberately runs **one way: wrong answers only.** A
+    four-option question is right by luck a quarter of the time, so treating a
+    correct answer as evidence would push words out to longer intervals on no
+    evidence at all and let a guess look like mastery. A wrong answer carries
+    no such ambiguity. So a drill can pull a word *back* into the queue and can
+    never push one out of it; the learner's own rating on the review screen
+    stays the only thing that lengthens an interval.
+
+    Returns ``None`` when there is nothing to schedule — dictation on a whole
+    sentence has no single word to blame — so callers can pass through whatever
+    id they happen to have.
+    """
+    if vocabulary_id is None:
+        return None
+    try:
+        return submit_review(vocabulary_id, "again", source=source, record_streak=False)
+    except ResourceNotFoundError:
+        # The caller already verified the word exists before writing its own
+        # attempt row; if it vanished in between, the attempt is still worth
+        # keeping and the schedule is not worth failing the request over.
+        return None
 
 
 def get_forecast(days: int = 14) -> list[dict[str, Any]]:

@@ -158,7 +158,7 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
 | Tra bằng chữ viết tay / ảnh / giọng nói | Không có | Hanzii có cả ba. Cần model on-device, chi phí lớn. |
 | Số lượng đề thi thử | Ít hơn nhiều | Hanzii có 200+ đề biên soạn tay. Ngân hàng của ta hiện 397 câu, mọi pool đủ cho ít nhất 4 lượt thi không lặp câu nào. |
 | Câu ví dụ cho từ | 1.177 / 10.969 từ (10,7%) | Đã tăng 8 lần bằng cách đánh chỉ mục chính kho câu sẵn có của dự án. Vẫn kém xa một từ điển thật; muốn hơn nữa phải có nguồn câu mới. |
-| SRS dùng chung mọi hoạt động | Chưa | Lịch SM-2 chỉ chạy ở màn hình Ôn tập; thẻ ghi nhớ, kiểm tra, luyện nghe ghi trạng thái nhưng không đẩy lịch. |
+| SRS dùng chung mọi hoạt động | Xong một chiều | Sai ở bất kỳ bài luyện nào cũng kéo từ về hàng đợi ôn. Câu đúng cố tình không tính, để một cú đoán mò không thành "đã thuộc". |
 | Di động | Chỉ web | Không có app native. |
 | Mẹo nhớ Hán tự | 659 / 2.735 chữ trong kho | Phần còn lại chưa có mnemonic. |
 
@@ -168,12 +168,11 @@ không, và bài thi không bao giờ hỏng vì thiếu khoá.
    cách đánh chỉ mục 483 câu dự án đã tự viết và đã kiểm (kho luyện câu, ví dụ
    trong bài ngữ pháp, đề nói HSKK). Muốn vượt mốc này phải soạn thêm câu —
    Tatoeba chỉ có 798 cặp Trung–Việt nên không giải quyết được vấn đề.
-2. **Nối SRS vào mọi hoạt động.** Trả lời sai trong bài kiểm tra nên kéo từ đó
-   sớm quay lại lịch ôn. Hạ tầng đã có sẵn ở `srs_service`, chỉ chưa nối dây.
-3. **Đưa lớp chữ vào SRS.** `character_progress` hiện đếm đúng/sai nhưng chưa có
+2. **Đưa lớp chữ vào SRS.** `character_progress` hiện đếm đúng/sai nhưng chưa có
    lịch. Chữ mới là đơn vị đáng lên lịch nhất, vì nó khái quát hoá.
-4. **Mnemonic cho phần chữ còn lại**, để phần chiết tự phủ đều thay vì chỉ 659
+3. **Mnemonic cho phần chữ còn lại**, để phần chiết tự phủ đều thay vì chỉ 659
    chữ cốt lõi.
+4. **App di động.** Hiện chỉ có web và bản `.exe` Windows.
 
 ---
 

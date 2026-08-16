@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import pinyin_utils, session_store, streak_service
+from backend.services import pinyin_utils, session_store, srs_service, streak_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.session_store import SessionKind
 
@@ -161,6 +161,11 @@ def check_answer(
     xp = 0
     if is_correct:
         xp = XP_CORRECT + (XP_FIRST_LISTEN_BONUS if replays <= 1 else 0)
+    # Sentence dictation has no single word to blame, and `record_lapse`
+    # returns None for that rather than making every caller check.
+    if not is_correct:
+        srs_service.record_lapse(None if is_sentence else target_id, source="dictation")
+
     streak_service.record_activity(correct=is_correct, xp=xp)
 
     return {

@@ -7,7 +7,7 @@ import random
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import mcq, session_store
+from backend.services import mcq, session_store, srs_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.session_store import SessionKind
 
@@ -122,6 +122,11 @@ def record_attempt(
             """,
             (session_id, vocabulary_id, question_type, int(is_correct), utc_now()),
         )
+    # A wrong answer here is evidence for the review queue; see
+    # `srs_service.record_lapse` for why a right answer is not.
+    if not is_correct:
+        srs_service.record_lapse(vocabulary_id, source="quiz")
+
     return {
         "message": "Đã ghi nhận câu trả lời.",
         "session_id": session_id,

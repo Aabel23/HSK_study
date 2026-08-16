@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import mcq, session_store
+from backend.services import mcq, session_store, srs_service
 from backend.services.errors import ResourceNotFoundError
 from backend.services.session_store import SessionKind
 
@@ -72,6 +72,11 @@ def record_attempt(
             """,
             (session_id, vocabulary_id, mode, int(is_correct), utc_now()),
         )
+    # A wrong answer here is evidence for the review queue; see
+    # `srs_service.record_lapse` for why a right answer is not.
+    if not is_correct:
+        srs_service.record_lapse(vocabulary_id, source="listening")
+
     return {
         "message": "Đã ghi nhận lần nghe.",
         "session_id": session_id,

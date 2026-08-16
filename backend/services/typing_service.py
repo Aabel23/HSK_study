@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import pinyin_utils, session_store, streak_service
+from backend.services import pinyin_utils, session_store, srs_service, streak_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.session_store import SessionKind
 
@@ -145,6 +145,11 @@ def check_answer(
         correct=is_correct,
         xp=(XP_CORRECT_WITH_TONES if tones_correct else XP_CORRECT) if is_correct else 0,
     )
+
+    # A wrong answer here is evidence for the review queue; see
+    # `srs_service.record_lapse` for why a right answer is not.
+    if not is_correct:
+        srs_service.record_lapse(vocabulary_id, source="typing")
 
     return {
         "vocabulary_id": vocabulary_id,

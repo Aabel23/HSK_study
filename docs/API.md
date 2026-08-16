@@ -84,6 +84,20 @@ Lớp chữ Hán dưới lớp từ vựng, phục vụ màn hình Giải mã H�
 Đề ưu tiên rút những từ người học chưa mở bao giờ. Các lựa chọn được chọn cho
 cân độ dài (hoặc cân số âm tiết, với đáp án là âm Hán-Việt).
 
+## Lịch ôn và các bài luyện
+
+Mọi endpoint ghi nhận câu trả lời sai của một từ (`/quiz/attempt`,
+`/listening/attempt`, `/matching/attempt`, `/typing/check`, `/dictation/check`,
+`/characters/drill/attempt`) đều đẩy từ đó trở lại hàng đợi ôn qua
+`srs_service.record_lapse`, và `review_log.source` ghi lại màn hình nào gây ra.
+
+Câu **đúng** cố tình không ảnh hưởng tới lịch: câu bốn lựa chọn đúng nhờ may mắn
+một phần tư số lần, nên chỉ đánh giá của người học ở `/review/submit` mới làm
+giãn khoảng ôn. Bài luyện chỉ kéo từ về gần, không bao giờ đẩy ra xa.
+
+Phản hồi này không cộng thêm điểm kinh nghiệm — các bài luyện đã tự cộng cho câu
+trả lời của mình rồi.
+
 ## Dashboard
 
 - `GET /dashboard` — thống kê từ vựng, kết quả nối từ và hoạt động gần đây.

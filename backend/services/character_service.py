@@ -29,7 +29,7 @@ import random
 from typing import Any
 
 from backend.database import get_connection, utc_now
-from backend.services import session_store
+from backend.services import session_store, srs_service
 from backend.services.errors import InvalidOperationError, ResourceNotFoundError
 from backend.services.gloss import short_gloss
 from backend.services.session_store import SessionKind
@@ -532,6 +532,10 @@ def record_attempt(
         )
         for char in {c for c in word if "一" <= c <= "鿿"}:
             _record_seen(connection, char, is_correct)
+    # The characters are credited above; the word itself belongs to the review
+    # queue, so a word the learner could not decode comes back round sooner.
+    if not is_correct:
+        srs_service.record_lapse(vocabulary_id, source="decode")
     return {"message": "Đã ghi nhận câu trả lời.", "is_correct": is_correct}
 
 

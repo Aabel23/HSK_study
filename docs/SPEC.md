@@ -53,6 +53,32 @@ Ba tab:
 Chữ nào không có cách đọc đáng tin thì để trống chứ không đoán; xem phần ghi chú
 về Unihan trong `README.md`.
 
+## Lịch ôn nhận phản hồi từ mọi bài luyện
+
+Trước đây lịch SM-2 chỉ nhúc nhích ở màn hình Ôn tập. Người học có thể sai chữ
+我 ở bài luyện nghe, sai tiếp ở bài luyện gõ, mà cái quyết định ngày mai cho học
+gì lại không hề biết cả hai lần đó.
+
+Nay sáu bài luyện — kiểm tra, luyện nghe, nối từ, luyện gõ, nghe chép và giải mã
+— đều gọi `srs_service.record_lapse` khi trả lời sai. `review_log.source` ghi
+lại màn hình nào gây ra, nên lịch sử vẫn phân biệt được.
+
+Chiều phản hồi là **một chiều, chỉ tính câu sai**, và đây là phần dễ làm hỏng
+nhất. Câu bốn lựa chọn đúng nhờ may mắn một phần tư số lần, nên coi câu đúng là
+bằng chứng sẽ đẩy khoảng ôn dài ra dựa trên không có gì, và một cú đoán mò trông
+sẽ giống như đã thuộc. Câu sai thì không có chỗ nào mơ hồ như vậy. Vì thế bài
+luyện chỉ có thể **kéo từ trở lại** hàng đợi, không bao giờ đẩy từ ra khỏi đó;
+chỉ đánh giá của chính người học ở màn hình Ôn tập mới làm giãn khoảng ôn.
+
+Hai chi tiết bắt buộc:
+
+- `submit_review(..., record_streak=False)` khi gọi từ bài luyện, vì các bài đó
+  đã tự cộng điểm cho câu trả lời rồi — cộng lần nữa là trả công hai lần cho
+  cùng một câu. Cùng cờ và cùng lý do với `session_store.complete`.
+- `record_lapse` trả `None` khi không có từ nào để quy trách nhiệm (nghe chép cả
+  câu) hoặc khi từ không còn tồn tại. Lịch ôn là tác dụng phụ, không được phép
+  làm hỏng việc lưu câu trả lời.
+
 ## Độ sâu ngân hàng đề
 
 Mỗi pool phải chứa **ít nhất gấp bốn số câu rút ra mỗi lượt thi**. Trước đây
